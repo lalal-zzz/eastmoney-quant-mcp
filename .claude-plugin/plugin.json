@@ -1,0 +1,14 @@
+{
+  "name": "eastmoney-quant-mcp",
+  "description": "A-share stock quantitative analysis MCP server. Stock screening, sector analysis, technical indicators, popularity rankings, and comprehensive reports with support/resistance/risk/position advice. Uses local SQLite for fast queries after one-time data initialization.",
+  "author": {
+    "name": "lalal-zzz",
+    "email": "lalal-zzz@users.noreply.github.com"
+  },
+  "mcpServers": {
+    "eastmoney-quant": {
+      "command": "npx",
+      "args": ["eastmoney-quant-mcp"]
+    }
+  }
+}
