@@ -1,0 +1,75 @@
+{
+  "name": "eastmoney-quant-mcp",
+  "version": "0.1.0",
+  "description": "东方财富量化 MCP 服务 — AI 驱动的股票数据、人气榜单、板块分析、形态选股助手",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "eastmoney-quant-mcp": "./index.js"
+  },
+  "files": [
+    "index.js",
+    "install-skill.js",
+    "src/",
+    "pyproject.toml",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "postinstall": "python -m pip install -e . --quiet 2>/dev/null || pip install -e . --quiet 2>/dev/null || echo '[warn] Python deps install failed, make sure pip is available' && node install-skill.js",
+    "start": "node index.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "eastmoney",
+    "stock",
+    "quant",
+    "china-stock",
+    "a-stock",
+    "ai",
+    "finance"
+  ],
+  "author": "lalal-zzz <lalal-zzz@users.noreply.github.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lalal-zzz/eastmoney-quant-mcp"
+  },
+  "bugs": {
+    "url": "https://github.com/lalal-zzz/eastmoney-quant-mcp/issues"
+  },
+  "homepage": "https://github.com/lalal-zzz/eastmoney-quant-mcp#readme",
+  "engines": {
+    "node": ">=18"
+  },
+  "mcp": {
+    "server": {
+      "command": "npx",
+      "args": ["eastmoney-quant-mcp"]
+    },
+    "tools": [
+      "get_stock_list",
+      "get_stock_history",
+      "get_latest_indicators",
+      "get_stock_indicators",
+      "search_stock",
+      "get_popularity_rankings",
+      "get_top_gainers_rank",
+      "get_top_volume_rank",
+      "get_top_turnover_rank",
+      "get_sector_list",
+      "get_sector_members",
+      "get_sector_kline",
+      "screen_by_pattern",
+      "get_pattern_list",
+      "screen_top_sectors",
+      "screen_main_inflow_sectors",
+      "screen_sector_with_leaders",
+      "get_full_sector_analysis"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
