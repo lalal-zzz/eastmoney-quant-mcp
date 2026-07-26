@@ -176,8 +176,17 @@ async def get_sector_members(sector_code: str) -> list[dict]:
 
 
 async def get_sector_kline(sector_code: str, limit: int = 120) -> list[dict]:
-    """获取板块历史 K 线"""
+    """获取板块历史 K 线(本地优先, 无数据回退网络)"""
     code = normalize_sector_code(sector_code)
+    # 尝试本地
+    try:
+        from ..data.search import get_sector_kline_local
+        local = get_sector_kline_local(code, limit)
+        if local:
+            return local
+    except Exception:
+        pass
+    # 回退网络
     params = {
         "secid": f"90.{code}",
         "ut": "fa5fd1943c7b386f172d6893dbfba10b",

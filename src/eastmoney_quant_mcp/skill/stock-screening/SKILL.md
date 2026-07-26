@@ -90,9 +90,27 @@ screen_stocks(conditions, top_n=50, sort_by="change_pct", sector_code=None, name
 ### 3. 板块→股票挖掘
 
 ```
-get_top_sectors_rank(sort_by="change_pct") → 找强势板块
-get_sector_members_flow(sector_code)        → 板块内龙头+资金流向
-get_stock_belong_sectors("000001")          → 反向查股票所属板块
+get_sector_list(sector_type="concept")  → 获取全部板块, 客户端按 change_pct 排序取 top N
+get_sector_members_flow(sector_code)    → 板块内龙头+资金流向+人气
+get_stock_belong_sectors("000001")      → 反向查股票所属板块
+```
+
+### 4. K线批量预热(技能内循环)
+
+当选出候选池后, 对候选股逐一调 `get_kline_local_or_net` 可提前缓存K线+指标:
+```
+for symbol in candidates:
+    get_kline_local_or_net(symbol, days=250)
+```
+无需专用 `batch_download_kline` 工具。
+
+### 5. 人气排名多维度排序(技能内处理)
+
+```
+get_popularity_rankings(top_n=100)
+→ 客户端按 change_pct 排序 → 相当于 get_top_gainers_rank
+→ 客户端按 volume 排序     → 相当于 get_top_volume_rank
+→ 客户端按 turnover_rate 排序 → 相当于 get_top_turnover_rank
 ```
 
 ---

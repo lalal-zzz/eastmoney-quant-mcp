@@ -316,8 +316,10 @@ def screen_stocks_local(
         params.append(val)
 
     if name_keyword:
-        clauses.append("s.name LIKE ?")
-        params.append(f"%{name_keyword.strip()}%")
+        clauses.append("(s.name LIKE ? OR s.symbol LIKE ?)")
+        kw = f"%{name_keyword.strip()}%"
+        params.append(kw)
+        params.append(kw)
 
     where_sql = " AND ".join(clauses) if clauses else "1=1"
 
