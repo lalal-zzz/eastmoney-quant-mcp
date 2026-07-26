@@ -337,7 +337,12 @@ def screen_stocks_local(
         params.extend(m["stock_code"] for m in member_rows)
 
     sort_col = sort_by if sort_by in _VALID_SORT_COLS else "change_pct"
-    order = "ASC" if sort_col == "popularity_rank" else "DESC"
+    if sort_col == "popularity_rank":
+        order = "ASC"
+        order_col = "r.popularity_rank"
+    else:
+        order = "DESC"
+        order_col = f"s.{sort_col}"
 
     sql = f"""
         SELECT s.symbol, s.name,
@@ -350,7 +355,7 @@ def screen_stocks_local(
         FROM stock_spot s
         LEFT JOIN stock_rank r ON s.symbol = r.symbol AND r.rank_date = ?
         WHERE {where_sql}
-        ORDER BY {sort_col} {order}
+        ORDER BY {order_col} {order}
         LIMIT ?
     """
     all_params = [_TODAY] + params + [top_n]

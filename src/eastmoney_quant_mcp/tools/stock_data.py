@@ -103,51 +103,124 @@ async def get_stock_history(
     return df[result_cols].to_dict(orient="records")
 
 
-# ── 实时行情(东财 spot) ──
+# ── 实时行情(东财 spot, 直连API绕过akshare的requests) ──
+
+SPOT_HOSTS = [
+    "https://push2.eastmoney.com/webguest/api/qt/clist/get",
+    "https://82.push2.eastmoney.com/webguest/api/qt/clist/get",
+    "https://73.push2.eastmoney.com/webguest/api/qt/clist/get",
+]
+SPOT_FIELDS = (
+    "f2,f3,f4,f5,f6,f7,f8,f9,f10,f12,f14,f15,f16,f17,f18,"
+    "f20,f21,f23,f24,f25,f62,f115,f128,f140,f141,f136,f152"
+)
+SPOT_FS = "m:0+t:6,m:0+t:80,m:1+t:2,m:1+t:23,m:0+t:81+s:2048"
+
+FIELD_MAP = {
+    "f2":  "latest_price",   "f3":  "change_pct",
+    "f4":  "change_amount",  "f5":  "volume",
+    "f6":  "amount",         "f7":  "amplitude",
+    "f8":  "turnover_rate",  "f9":  "pe_dynamic",
+    "f10": "volume_ratio",   "f12": "raw_code",
+    "f14": "name",           "f15": "high",
+    "f16": "low",            "f17": "open",
+    "f18": "pre_close",      "f20": "total_market_cap",
+    "f21": "float_market_cap","f23": "pb",
+    "f24": "sixty_day_change","f25": "ytd_change",
+    "f62": "main_net_inflow","f115":"pe_ttm",
+    "f128":"sector_name",    "f140":"speed",
+    "f141":"five_min_change","f136":"volume_ratio_5d",
+    "f152":"amplitude_5d",
+}
 
 
 async def get_latest_indicators() -> list[dict]:
-    """获取全市场最新行情(L2 数据: 量比/换手/涨跌幅等)"""
-    import akshare as ak
+    """获取全市场最新行情(直连东财API, curl_cffi 多host重试)"""
+    from ..data.network import http_get
 
-    try:
-        df = ak.stock_zh_a_spot_em()
-    except Exception:
-        df = ak.stock_zh_a_spot()
+    all_rows = None
+    for host_url in SPOT_HOSTS:
+        page = 1
+        psz = 100
+        temp_rows = []
+        failed = False
+        while True:
+            params = {
+                "fid": "f3", "po": "1", "pz": str(psz), "pn": str(page),
+                "np": "1", "fltt": "2", "invt": "2",
+                "ut": "8dec03ba335b81bf4ebdf7b29ec27d15",
+                "fs": SPOT_FS, "fields": SPOT_FIELDS,
+            }
+            payload = http_get(host_url, params=params, retries=2, timeout=30)
+            if not payload:
+                failed = True
+                break
+            data = payload.get("data")
+            if not data:
+                failed = True
+                break
+            diff = data.get("diff")
+            if not diff:
+                failed = True
+                break
+            temp_rows.extend(diff)
+            total = data.get("total", 0)
+            if page * psz >= total:
+                break
+            page += 1
+        if not failed and temp_rows:
+            all_rows = temp_rows
+            break
 
-    if df is None or df.empty:
-        return []
+    if not all_rows:
+        # fallback: 旧版 akshare API (字段少)
+        import akshare as ak
+        try:
+            df = ak.stock_zh_a_spot()
+        except Exception:
+            return []
+        result = []
+        for _, row in df.iterrows():
+            symbol = normalize_symbol(str(row.get("代码", "")))
+            result.append({
+                "symbol": symbol, "name": str(row.get("名称", "")),
+                "latest_price": _safe_float(row.get("最新价")),
+                "change_pct": _safe_float(row.get("涨跌幅")),
+                "change_amount": _safe_float(row.get("涨跌额")),
+                "volume": _safe_float(row.get("成交量")),
+                "amount": _safe_float(row.get("成交额")),
+                "high": _safe_float(row.get("最高")),
+                "low": _safe_float(row.get("最低")),
+                "open": _safe_float(row.get("今开")),
+                "pre_close": _safe_float(row.get("昨收")),
+            })
+        return result
 
     result = []
-    col_map = {
-        "代码": "symbol", "名称": "name",
-        "最新价": "latest_price", "涨跌幅": "change_pct",
-        "涨跌额": "change_amount", "成交量": "volume",
-        "成交额": "amount", "振幅": "amplitude",
-        "最高": "high", "最低": "low",
-        "今开": "open", "昨收": "pre_close",
-        "量比": "volume_ratio", "换手率": "turnover_rate",
-        "市盈率-动态": "pe_dynamic", "市净率": "pb",
-        "总市值": "total_market_cap", "流通市值": "float_market_cap",
-        "涨速": "speed", "60日涨跌幅": "sixty_day_change",
-        "年初至今涨跌幅": "ytd_change",
-    }
-
-    for _, row in df.iterrows():
+    for row in all_rows:
         item = {}
-        for cn, en in col_map.items():
-            if cn in df.columns:
-                val = row[cn]
+        for fkey, ename in FIELD_MAP.items():
+            val = row.get(fkey)
+            if val is not None and val not in ("-", ""):
                 try:
-                    item[en] = float(val) if val not in (None, "-", "") else None
+                    item[ename] = float(val)
                 except (ValueError, TypeError):
-                    item[en] = str(val) if val not in (None, "-", "") else None
-        if "symbol" in item or "代码" in str(df.columns):
-            raw_code = row.get("代码", "")
-            item["symbol"] = normalize_symbol(str(raw_code))
+                    item[ename] = str(val)
+            else:
+                item[ename] = None
+        symbol = normalize_symbol(str(row.get("f12", "")))
+        item["symbol"] = symbol
         result.append(item)
-
     return result
+
+
+def _safe_float(val):
+    if val is None or val in ("-", ""):
+        return None
+    try:
+        return float(val)
+    except (ValueError, TypeError):
+        return None
 
 
 # ── 技术指标 ──

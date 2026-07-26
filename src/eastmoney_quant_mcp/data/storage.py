@@ -236,45 +236,58 @@ def save_stock_basic(rows: list[dict]):
 
 
 def save_stock_kline(rows: list[dict]):
+    cols = [
+        "symbol", "date", "open", "high", "low", "close",
+        "volume", "amount", "amplitude", "change_pct", "change_amount", "turnover_rate",
+    ]
+    rows_padded = [{c: r.get(c) for c in cols} for r in rows]
+    placeholders = ", ".join(f":{c}" for c in cols)
+    col_list = ", ".join(cols)
     with _lock:
         conn = _get_conn(STOCK_DB)
         conn.executemany(
-            """INSERT OR REPLACE INTO stock_kline
-               (symbol,date,open,high,low,close,volume,amount,amplitude,change_pct,change_amount,turnover_rate)
-               VALUES(:symbol,:date,:open,:high,:low,:close,:volume,:amount,:amplitude,:change_pct,:change_amount,:turnover_rate)""",
-            rows,
+            f"INSERT OR REPLACE INTO stock_kline ({col_list}) VALUES ({placeholders})",
+            rows_padded,
         )
         conn.commit()
         conn.close()
 
 
 def save_stock_spot(rows: list[dict]):
+    cols = [
+        "symbol", "name", "latest_price", "change_pct", "change_amount",
+        "volume", "amount", "amplitude", "high", "low", "open", "pre_close",
+        "volume_ratio", "turnover_rate", "pe_dynamic", "pb",
+        "total_market_cap", "float_market_cap", "speed", "sixty_day_change",
+        "ytd_change", "updated_date",
+    ]
+    rows_padded = [{c: r.get(c) for c in cols} for r in rows]
+    placeholders = ", ".join(f":{c}" for c in cols)
+    col_list = ", ".join(cols)
     with _lock:
         conn = _get_conn(STOCK_DB)
         conn.executemany(
-            """INSERT OR REPLACE INTO stock_spot
-               (symbol,name,latest_price,change_pct,change_amount,volume,amount,amplitude,
-                high,low,open,pre_close,volume_ratio,turnover_rate,pe_dynamic,pb,
-                total_market_cap,float_market_cap,speed,sixty_day_change,ytd_change,updated_date)
-               VALUES(:symbol,:name,:latest_price,:change_pct,:change_amount,:volume,:amount,:amplitude,
-                      :high,:low,:open,:pre_close,:volume_ratio,:turnover_rate,:pe_dynamic,:pb,
-                      :total_market_cap,:float_market_cap,:speed,:sixty_day_change,:ytd_change,:updated_date)""",
-            rows,
+            f"INSERT OR REPLACE INTO stock_spot ({col_list}) VALUES ({placeholders})",
+            rows_padded,
         )
         conn.commit()
         conn.close()
 
 
 def save_stock_rank(rows: list[dict]):
+    cols = [
+        "symbol", "name", "rank_date", "latest_price", "change_pct",
+        "volume_ratio", "high", "low", "pre_close",
+        "volume", "amount", "turnover_rate", "popularity_rank",
+    ]
+    rows_padded = [{c: r.get(c) for c in cols} for r in rows]
+    placeholders = ", ".join(f":{c}" for c in cols)
+    col_list = ", ".join(cols)
     with _lock:
         conn = _get_conn(STOCK_DB)
         conn.executemany(
-            """INSERT OR REPLACE INTO stock_rank
-               (symbol,name,rank_date,latest_price,change_pct,volume_ratio,high,low,pre_close,
-                volume,amount,turnover_rate,popularity_rank)
-               VALUES(:symbol,:name,:rank_date,:latest_price,:change_pct,:volume_ratio,:high,:low,:pre_close,
-                      :volume,:amount,:turnover_rate,:popularity_rank)""",
-            rows,
+            f"INSERT OR REPLACE INTO stock_rank ({col_list}) VALUES ({placeholders})",
+            rows_padded,
         )
         conn.commit()
         conn.close()
@@ -319,45 +332,59 @@ def set_meta_stock(key: str, value: str):
 # ════════════════════════════════════════
 
 def save_sector_basic(rows: list[dict]):
+    cols = [
+        "sector_code", "sector_name", "sector_type", "latest_index", "change_pct",
+        "main_net_inflow", "main_net_pct",
+        "super_large_net", "super_large_pct", "large_net", "large_pct",
+        "medium_net", "medium_pct", "small_net", "small_pct",
+        "lead_stock_name", "lead_stock_code", "updated_date",
+    ]
+    rows_padded = [{c: r.get(c) for c in cols} for r in rows]
+    placeholders = ", ".join(f":{c}" for c in cols)
+    col_list = ", ".join(cols)
     with _lock:
         conn = _get_conn(SECTOR_DB)
         conn.executemany(
-            """INSERT OR REPLACE INTO sector_basic
-               (sector_code,sector_name,sector_type,latest_index,change_pct,main_net_inflow,main_net_pct,
-                super_large_net,super_large_pct,large_net,large_pct,medium_net,medium_pct,
-                small_net,small_pct,lead_stock_name,lead_stock_code,updated_date)
-               VALUES(:sector_code,:sector_name,:sector_type,:latest_index,:change_pct,:main_net_inflow,:main_net_pct,
-                      :super_large_net,:super_large_pct,:large_net,:large_pct,:medium_net,:medium_pct,
-                      :small_net,:small_pct,:lead_stock_name,:lead_stock_code,:updated_date)""",
-            rows,
+            f"INSERT OR REPLACE INTO sector_basic ({col_list}) VALUES ({placeholders})",
+            rows_padded,
         )
         conn.commit()
         conn.close()
 
 
 def save_sector_kline(rows: list[dict]):
+    cols = [
+        "sector_code", "trade_date", "open", "close", "high", "low",
+        "volume", "turnover", "amplitude", "change_pct", "change_amount", "turnover_rate",
+    ]
+    rows_padded = [{c: r.get(c) for c in cols} for r in rows]
+    placeholders = ", ".join(f":{c}" for c in cols)
+    col_list = ", ".join(cols)
     with _lock:
         conn = _get_conn(SECTOR_DB)
         conn.executemany(
-            """INSERT OR REPLACE INTO sector_kline
-               (sector_code,trade_date,open,close,high,low,volume,turnover,amplitude,change_pct,change_amount,turnover_rate)
-               VALUES(:sector_code,:trade_date,:open,:close,:high,:low,:volume,:turnover,:amplitude,:change_pct,:change_amount,:turnover_rate)""",
-            rows,
+            f"INSERT OR REPLACE INTO sector_kline ({col_list}) VALUES ({placeholders})",
+            rows_padded,
         )
         conn.commit()
         conn.close()
 
 
 def save_sector_member(rows: list[dict]):
+    cols = [
+        "sector_code", "stock_code", "stock_name",
+        "latest_price", "change_pct", "change_amount",
+        "volume", "turnover", "amplitude", "turnover_rate", "volume_ratio",
+        "high", "low", "open_today", "close_yesterday", "pb", "pe_dynamic", "updated_date",
+    ]
+    rows_padded = [{c: r.get(c) for c in cols} for r in rows]
+    placeholders = ", ".join(f":{c}" for c in cols)
+    col_list = ", ".join(cols)
     with _lock:
         conn = _get_conn(SECTOR_DB)
         conn.executemany(
-            """INSERT OR REPLACE INTO sector_member
-               (sector_code,stock_code,stock_name,latest_price,change_pct,change_amount,volume,turnover,
-                amplitude,turnover_rate,volume_ratio,high,low,open_today,close_yesterday,pb,pe_dynamic,updated_date)
-               VALUES(:sector_code,:stock_code,:stock_name,:latest_price,:change_pct,:change_amount,:volume,:turnover,
-                      :amplitude,:turnover_rate,:volume_ratio,:high,:low,:open_today,:close_yesterday,:pb,:pe_dynamic,:updated_date)""",
-            rows,
+            f"INSERT OR REPLACE INTO sector_member ({col_list}) VALUES ({placeholders})",
+            rows_padded,
         )
         conn.commit()
         conn.close()
