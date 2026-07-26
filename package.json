@@ -1,7 +1,7 @@
 {
   "name": "eastmoney-quant-mcp",
   "version": "0.1.0",
-  "description": "东方财富量化 MCP 服务 — AI 驱动的股票数据、人气榜单、板块分析、形态选股助手",
+  "description": "A-share quantitative analysis MCP server — Eastmoney data, stock screening, sector analysis, technical reports",
   "type": "module",
   "main": "index.js",
   "bin": {
@@ -11,8 +11,12 @@
     "index.js",
     "install-skill.js",
     "src/",
+    ".claude-plugin/",
+    ".mcp.json",
     "pyproject.toml",
     "README.md",
+    "AGENTS.md",
+    "CLAUDE.md",
     "LICENSE"
   ],
   "scripts": {
