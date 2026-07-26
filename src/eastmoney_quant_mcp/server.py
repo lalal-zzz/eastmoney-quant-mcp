@@ -53,6 +53,24 @@ from .tools.sector_screen import (
     screen_sector_by_capital_flow,
     get_full_sector_analysis,
 )
+from .tools.data_manager import (
+    init_full_data,
+    update_daily_data,
+    get_data_status,
+    search_stock_full,
+    get_kline_local_or_net,
+    get_rank_history,
+    get_rank_trend_data,
+    batch_download_kline,
+    download_top_klines,
+    search_sector_full,
+    get_sector_kline,
+    get_top_sectors_rank,
+    get_stock_belong_sectors,
+    get_sector_members_flow,
+    screen_stocks,
+)
+from .tools.analysis import generate_stock_report
 
 server = Server("eastmoney-quant-mcp")
 
@@ -299,6 +317,232 @@ async def _screen_sector_with_leaders(sector_type: str = "concept", top_n: int =
 })
 async def _get_full_sector_analysis(sector_code: str, member_limit: int = 30) -> dict:
     return await get_full_sector_analysis(sector_code, member_limit)
+
+
+# ════════════════════════════════════════
+# 数据管理工具(本地存储 + 同步)
+# ════════════════════════════════════════
+
+@register("init_full_data", "一次性全量下载股票+板块数据到本地数据库(首次使用必调)", {
+    "type": "object",
+    "properties": {
+        "include_sector_members": {"type": "boolean", "description": "是否下载板块成分股(耗时较长但完整),默认true"},
+    },
+    "required": [],
+})
+async def _init_full_data(include_sector_members: bool = True) -> dict:
+    return await init_full_data(include_sector_members)
+
+
+@register("update_daily_data", "增量每日更新股票+板块数据(建议每日运行)", {
+    "type": "object",
+    "properties": {
+        "include_sector_members": {"type": "boolean", "description": "是否更新板块成分股,默认true"},
+    },
+    "required": [],
+})
+async def _update_daily_data(include_sector_members: bool = True) -> dict:
+    return await update_daily_data(include_sector_members)
+
+
+@register("get_data_status", "查看本地数据库状态(数据量/更新时间/存储路径)", {
+    "type": "object",
+    "properties": {},
+    "required": [],
+})
+async def _get_data_status() -> dict:
+    return await get_data_status()
+
+
+# ════════════════════════════════════════
+# 股票本地搜索 + K线管理
+# ════════════════════════════════════════
+
+@register("search_stock_full", "搜索股票(本地优先,无结果回退网络)", {
+    "type": "object",
+    "properties": {
+        "keyword": {"type": "string", "description": "搜索关键词(代码或名称)"},
+        "limit": {"type": "integer", "description": "返回数量,默认50"},
+    },
+    "required": ["keyword"],
+})
+async def _search_stock_full(keyword: str, limit: int = 50) -> list[dict]:
+    return await search_stock_full(keyword, limit)
+
+
+@register("get_kline_local_or_net", "获取股票K线(本地优先,无数据自动从网络下载)", {
+    "type": "object",
+    "properties": {
+        "symbol": {"type": "string", "description": "股票代码"},
+        "days": {"type": "integer", "description": "最近天数,默认250"},
+        "adjust": {"type": "string", "description": "复权方式: qfq/hfq/空,默认qfq"},
+    },
+    "required": ["symbol"],
+})
+async def _get_kline_local_or_net(symbol: str, days: int = 250, adjust: str = "qfq") -> list[dict]:
+    return await get_kline_local_or_net(symbol, days, adjust)
+
+
+@register("get_rank_history", "获取历史人气排名数据", {
+    "type": "object",
+    "properties": {
+        "symbol": {"type": "string", "description": "可选,指定股票代码;不填则返回全部"},
+        "limit": {"type": "integer", "description": "返回条数,默认100"},
+    },
+    "required": [],
+})
+async def _get_rank_history(symbol: str = None, limit: int = 100) -> list[dict]:
+    return await get_rank_history(symbol, limit)
+
+
+@register("get_rank_trend_data", "获取单只股票人气排名趋势(近N天)", {
+    "type": "object",
+    "properties": {
+        "symbol": {"type": "string", "description": "股票代码"},
+        "days": {"type": "integer", "description": "天数,默认30"},
+    },
+    "required": ["symbol"],
+})
+async def _get_rank_trend_data(symbol: str, days: int = 30) -> list[dict]:
+    return await get_rank_trend_data(symbol, days)
+
+
+@register("batch_download_kline", "批量下载多只股票K线到本地", {
+    "type": "object",
+    "properties": {
+        "symbols": {"type": "string", "description": "股票代码,逗号分隔,如 '000001,600000,000858'"},
+        "days": {"type": "integer", "description": "下载天数,默认365"},
+        "adjust": {"type": "string", "description": "复权方式: qfq/hfq/空,默认qfq"},
+    },
+    "required": ["symbols"],
+})
+async def _batch_download_kline(symbols: str, days: int = 365, adjust: str = "qfq") -> dict:
+    return await batch_download_kline(symbols, days, adjust)
+
+
+@register("download_top_klines", "批量下载人气前N只股票的K线", {
+    "type": "object",
+    "properties": {
+        "top_n": {"type": "integer", "description": "下载数量,默认200"},
+    },
+    "required": [],
+})
+async def _download_top_klines(top_n: int = 200) -> dict:
+    return await download_top_klines(top_n)
+
+
+# ════════════════════════════════════════
+# 板块本地搜索 + 板块↔股票流程
+# ════════════════════════════════════════
+
+@register("search_sector_full", "搜索板块(本地数据库)", {
+    "type": "object",
+    "properties": {
+        "keyword": {"type": "string", "description": "关键词(板块名称或代码)"},
+        "limit": {"type": "integer", "description": "返回数量,默认50"},
+    },
+    "required": ["keyword"],
+})
+async def _search_sector_full(keyword: str, limit: int = 50) -> list[dict]:
+    return await search_sector_full(keyword, limit)
+
+
+@register("get_sector_kline_local", "获取板块K线(本地数据库,需先初始化)", {
+    "type": "object",
+    "properties": {
+        "sector_code": {"type": "string", "description": "板块代码,如 BK1090"},
+        "limit": {"type": "integer", "description": "K线条数,默认250"},
+    },
+    "required": ["sector_code"],
+})
+async def _get_sector_kline_local(sector_code: str, limit: int = 250) -> list[dict]:
+    return await get_sector_kline(sector_code, limit)
+
+
+@register("get_top_sectors_rank", "本地排行: 涨幅最强/资金流入最多的板块", {
+    "type": "object",
+    "properties": {
+        "sort_by": {"type": "string", "description": "排序字段: change_pct/main_net_inflow/large_net,默认change_pct"},
+        "sector_type": {"type": "string", "description": "板块类型: concept/industry,为空则两者都查"},
+        "limit": {"type": "integer", "description": "返回数量,默认20"},
+    },
+    "required": [],
+})
+async def _get_top_sectors_rank(sort_by: str = "change_pct", sector_type: str = None, limit: int = 20) -> list[dict]:
+    return await get_top_sectors_rank(sort_by, sector_type, limit)
+
+
+@register("get_stock_belong_sectors", "查询某只股票属于哪些板块", {
+    "type": "object",
+    "properties": {
+        "stock_code": {"type": "string", "description": "股票代码,如 000001"},
+    },
+    "required": ["stock_code"],
+})
+async def _get_stock_belong_sectors(stock_code: str) -> list[dict]:
+    return await get_stock_belong_sectors(stock_code)
+
+
+@register("get_sector_members_flow", "板块→股票: 获取板块成分股行情/资金流向/人气排名", {
+    "type": "object",
+    "properties": {
+        "sector_code": {"type": "string", "description": "板块代码,如 BK1090"},
+        "member_limit": {"type": "integer", "description": "成分股数量,默认50"},
+        "sort_by": {"type": "string", "description": "排序: change_pct/turnover_rate/volume_ratio/volume,默认change_pct"},
+    },
+    "required": ["sector_code"],
+})
+async def _get_sector_members_flow(sector_code: str, member_limit: int = 50, sort_by: str = "change_pct") -> dict:
+    return await get_sector_members_flow(sector_code, member_limit, sort_by)
+
+
+# ════════════════════════════════════════
+# 多条件选股(本地数据库)
+# ════════════════════════════════════════
+
+@register("screen_stocks", "多条件本地选股(价格/涨跌幅/PE/PB/市值/量比/换手/板块等组合筛选)", {
+    "type": "object",
+    "properties": {
+        "conditions": {
+            "type": "object",
+            "description": (
+                "筛选条件JSON对象。支持的键: min_price,max_price(价格区间), "
+                "min_change_pct,max_change_pct(涨跌幅区间), "
+                "min_volume_ratio(最小量比), "
+                "min_turnover_rate,max_turnover_rate(换手率区间), "
+                "min_pe,max_pe(市盈率区间), min_pb,max_pb(市净率区间), "
+                "min_market_cap,max_market_cap(总市值区间/亿), "
+                "min_float_market_cap(最小流通市值/亿), "
+                "min_sixty_day_change(最小60日涨幅), min_ytd_change(最小年初至今涨幅), "
+                "min_amplitude,max_amplitude(振幅区间)。"
+                "示例: {\"min_change_pct\":3,\"max_pe\":30,\"min_volume_ratio\":1.5}"
+            ),
+        },
+        "top_n": {"type": "integer", "description": "返回数量,默认50"},
+        "sort_by": {"type": "string", "description": "排序字段: change_pct/volume_ratio/turnover_rate/pe_dynamic/pb/total_market_cap/popularity_rank等,默认change_pct"},
+        "sector_code": {"type": "string", "description": "可选,限定板块代码如BK1090"},
+        "name_keyword": {"type": "string", "description": "可选,股票名称关键词"},
+    },
+    "required": [],
+})
+async def _screen_stocks(conditions: dict = None, top_n: int = 50, sort_by: str = "change_pct",
+                         sector_code: str = None, name_keyword: str = None) -> list[dict]:
+    return await screen_stocks(conditions, top_n, sort_by, sector_code, name_keyword)
+
+
+# ════════════════════════════════════════
+# 综合分析报告
+# ════════════════════════════════════════
+
+@register("generate_stock_report", "生成个股综合分析报告(趋势/支撑阻力/风险/仓位管理)", {
+    "type": "object",
+    "properties": {
+        "symbol": {"type": "string", "description": "股票代码,如 000001"},
+    },
+    "required": ["symbol"],
+})
+async def _generate_stock_report(symbol: str) -> dict:
+    return await generate_stock_report(symbol)
 
 
 # ════════════════════════════════════════

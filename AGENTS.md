@@ -7,12 +7,17 @@
 - **Source layout**:
   - `data/network.py` — HTTP client (curl_cffi) + symbol normalization helpers
   - `data/indicators.py` — technical indicator calcs (MA/RSI/MACD/BOLL/KDJ/ATR)
+  - `data/storage.py` — SQLite storage engine (stock database + sector database)
+  - `data/sync.py` — full init download + incremental daily update coordinator
+  - `data/search.py` — local DB queries with fallback to network APIs
   - `tools/stock_data.py` — stock list, history, indicators, search
   - `tools/stock_rank.py` — popularity rankings (gainers/volume/turnover)
   - `tools/sector_data.py` — sector list, members, K-line
   - `tools/pattern_scan.py` — technical pattern screening
   - `tools/sector_screen.py` — sector screening + capital flow analysis
-  - `skill/SKILL.md` — Claude/OpenCode skill file copied by `install-skill.js`
+  - `tools/data_manager.py` — local data management MCP tools (init/update/search/sector→stocks)
+  - `tools/analysis.py` — individual stock technical analysis reports (support/resistance/risk/position)
+  - `skill/SKILL.md` — main skill index; sub-skills: `data-init/`, `stock-screening/`, `report-generation/`
 - **Data source**: [akshare](https://github.com/akfamily/akshare) for all Eastmoney APIs.
 
 ## Commands
@@ -57,8 +62,18 @@ Use `normalize_symbol()` / `to_prefixed_symbol()` / `normalize_sector_code()` fr
 | Variable | Purpose | Default |
 |----------|---------|---------|
 | `EASTMONEY_PYTHON` | Override Python interpreter path | `python` |
+| `EASTMONEY_STOCK_DATA_DIR` | Stock SQLite DB directory | `~/Desktop/股票信息` |
+| `EASTMONEY_SECTOR_DATA_DIR` | Sector SQLite DB directory | `~/Desktop/分析板块` |
 
 The Node shim sets `PYTHONPATH` to include `src/` automatically.
+
+## Local data workflow
+
+First-time use requires `init_full_data` to download everything into local SQLite databases. Then use `update_daily_data` for incremental daily refresh. After initialization, most queries (search, K-line, rankings, sector members) work from local DB without network calls.
+
+Key local tools: `init_full_data` → `update_daily_data` → `search_stock_full` / `get_kline_local_or_net` / `get_sector_members_flow` (sector→stocks workflow) / `get_stock_belong_sectors` (stock→sectors reverse lookup) / `get_rank_trend_data` (historical popularity trend).
+
+`get_sector_kline` fetches from network; `get_sector_kline_local` reads from local DB after init.
 
 ## Project config
 
