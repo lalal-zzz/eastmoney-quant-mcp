@@ -3,13 +3,18 @@
 
 - 使用 curl_cffi 绕过 TLS 指纹检测
 - 强制 IPv4 避免 IPv6 连接超时
+- 自动从 Edge 浏览器提取 Cookies 提升请求成功率
 """
 
 import json
 import os
 import re
+import shutil
 import socket
+import sqlite3
+import tempfile
 import time
+from pathlib import Path
 from urllib.parse import urlencode
 
 # ── 强制 IPv4 ──
@@ -44,17 +49,84 @@ DEFAULT_HEADERS = {
     ),
 }
 
+# ── Cookie 管理 ──
+
+_edge_cookies: str | None = None
+_edge_cookies_loaded: bool = False
+
+
+def _get_edge_cookie_paths() -> list[str]:
+    """Edge 浏览器 Cookie 数据库可能路径"""
+    localappdata = os.environ.get("LOCALAPPDATA", "")
+    base = Path(localappdata) / "Microsoft" / "Edge" / "User Data"
+    candidates = [
+        base / "Default" / "Network" / "Cookies",
+        base / "Default" / "Cookies",
+        base / "Profile 1" / "Network" / "Cookies",
+    ]
+    return [str(p) for p in candidates if p.exists()]
+
+
+def _extract_cookies_from_edge() -> str | None:
+    """从 Edge 浏览器提取东方财富相关 Cookies"""
+    env_cookie = os.environ.get("EASTMONEY_COOKIE")
+    if env_cookie:
+        return env_cookie
+
+    for cookie_path in _get_edge_cookie_paths():
+        try:
+            tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+            tmp.close()
+            shutil.copy2(cookie_path, tmp.name)
+            conn = sqlite3.connect(tmp.name)
+            rows = conn.execute(
+                "SELECT name, encrypted_value FROM cookies "
+                "WHERE host_key LIKE '%eastmoney%' OR host_key LIKE '%dfcf%'"
+            ).fetchall()
+            conn.close()
+            os.unlink(tmp.name)
+            if rows:
+                # Edge 新版可能已不加密, 直接拼接 name=value 格式
+                # 若加密则回退到明文环境变量
+                pairs = []
+                for name, val in rows:
+                    try:
+                        decoded = val.decode("utf-8", errors="replace")
+                        if len(decoded) > 2 and not any(c in decoded[:10] for c in ["\x00", "\x01", "\x10"]):
+                            pairs.append(f"{name}={decoded}")
+                    except Exception:
+                        pass
+                if pairs:
+                    return "; ".join(pairs)
+        except Exception:
+            pass
+
+    return None
+
+
+def _load_cookies() -> str | None:
+    global _edge_cookies, _edge_cookies_loaded
+    if _edge_cookies_loaded:
+        return _edge_cookies
+    _edge_cookies_loaded = True
+    _edge_cookies = _extract_cookies_from_edge()
+    return _edge_cookies
+
 
 def http_get(url: str, params: dict = None, retries: int = 3, timeout: int = 20) -> dict | None:
     """使用 curl_cffi 发起 GET 请求，返回 JSON dict 或 None"""
     full_url = f"{url}?{urlencode(params)}" if params else url
+    headers = dict(DEFAULT_HEADERS)
+    cookies = _load_cookies()
+    if cookies:
+        headers["Cookie"] = cookies
     last_error = None
 
     for attempt in range(1, retries + 1):
         try:
             resp = requests.get(
                 full_url,
-                headers=DEFAULT_HEADERS,
+                headers=headers,
                 impersonate="edge",
                 http_version="v1",
                 verify=False,
@@ -75,12 +147,16 @@ def http_get(url: str, params: dict = None, retries: int = 3, timeout: int = 20)
 def http_get_text(url: str, params: dict = None, retries: int = 3, timeout: int = 20) -> str | None:
     """使用 curl_cffi 发起 GET 请求，返回原始文本"""
     full_url = f"{url}?{urlencode(params)}" if params else url
+    headers = dict(DEFAULT_HEADERS)
+    cookies = _load_cookies()
+    if cookies:
+        headers["Cookie"] = cookies
 
     for attempt in range(1, retries + 1):
         try:
             resp = requests.get(
                 full_url,
-                headers=DEFAULT_HEADERS,
+                headers=headers,
                 impersonate="edge",
                 http_version="v1",
                 verify=False,
