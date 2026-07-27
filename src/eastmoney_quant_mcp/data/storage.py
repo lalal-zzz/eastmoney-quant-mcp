@@ -26,12 +26,22 @@ SECTOR_DB = os.path.join(SECTOR_DIR, "sector_data.db")
 
 _lock = threading.Lock()
 
+# 已完成建表的库路径(进程内只建一次; DDL 全部 IF NOT EXISTS, 重复执行也安全)
+_schema_ready: set = set()
+
 
 def _get_conn(db_path: str) -> sqlite3.Connection:
     conn = sqlite3.connect(db_path)
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA synchronous=NORMAL")
     conn.row_factory = sqlite3.Row
+    # 首次连接时幂等建表, 避免 init_full_data 之前调用只读工具时
+    # 抛出 "no such table" (如新库上直接调 get_data_status/screen_stocks)
+    if db_path not in _schema_ready:
+        ddl = STOCK_DDL if db_path == STOCK_DB else SECTOR_DDL
+        conn.executescript(ddl)
+        conn.commit()
+        _schema_ready.add(db_path)
     return conn
 
 
