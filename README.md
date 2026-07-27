@@ -1,3 +1,251 @@
+[中文版](#中文版)
+
+# Eastmoney Quant MCP Server
+
+[![npm version](https://img.shields.io/npm/v/eastmoney-quant-mcp.svg)](https://www.npmjs.com/package/eastmoney-quant-mcp)
+[![Python](https://img.shields.io/pypi/pyversions/eastmoney-quant-mcp.svg)](https://pypi.org/project/eastmoney-quant-mcp/)
+[![License](https://img.shields.io/github/license/lalal-zzz/eastmoney-quant-mcp)](LICENSE)
+
+A-share quantitative analysis MCP server powered by **Eastmoney** (eastmoney.com) public APIs. Provides professional stock data analysis for Claude Desktop / Claude Code / Codex / opencode.
+
+## Core Capabilities
+
+| Capability | Details |
+|------------|---------|
+| Market Data | 5530+ A-shares real-time: price / change% / PE / PB / market cap / volume ratio / turnover |
+| K-lines | Daily OHLCV with forward/backward/no adjustment |
+| Indicators | MA(5~200) / RSI(6/14/24) / MACD / BOLL / KDJ / ATR / VOL_MA |
+| Popularity | Eastmoney real-time sentiment rankings + historical trends |
+| Sectors | ~400 concepts + ~80 industries with capital flow (super-large/large/medium/small net) |
+| Screening | 18 composable conditions: price range / PE / PB / cap / change% / volume / turnover / sector filter |
+| Reports | Full technical analysis: trend / support & resistance / risk assessment / stop-loss & position advice |
+
+All data sourced from **Eastmoney** (eastmoney.com) public APIs.
+
+---
+
+## Quick Install
+
+```bash
+# Claude Code (recommended)
+claude mcp add eastmoney-quant -- npx eastmoney-quant-mcp
+
+# or npm global
+npm install -g eastmoney-quant-mcp
+
+# or pip
+pip install eastmoney-quant-mcp
+```
+
+**Requirements**: Python >= 3.10 | Node.js >= 18
+
+---
+
+## Data Details
+
+### Stock Market Data
+
+| Category | Fields |
+|----------|--------|
+| Basics | Latest price, open, previous close, high, low |
+| Change | Change%, change amount, amplitude, velocity |
+| Volume | Volume, turnover amount |
+| Activity | Volume ratio, turnover rate |
+| Valuation | Dynamic PE, PB, TTM PE |
+| Market Cap | Total market cap, circulating market cap |
+| Trend | 60-day change%, YTD change% |
+| Fund Flow | Net major capital inflow |
+
+### K-line Data
+
+| Category | Details |
+|----------|---------|
+| Daily K-line | Open, high, low, close, volume, amount |
+| Adjustment | Forward (qfq) / backward (hfq) / none |
+| Extra Fields | Change%, turnover rate, amplitude |
+
+### Technical Indicators (auto-calculated)
+
+| Category | Indicators |
+|----------|------------|
+| Moving Avg | MA5, MA10, MA20, MA30, MA60, MA100, MA200 |
+| RSI | RSI6, RSI14, RSI24 |
+| MACD | DIF, DEA, MACD histogram |
+| Bollinger | Upper, middle, lower bands |
+| KDJ | K, D, J values |
+| Volatility | ATR14 |
+| Volume | VOL_MA5, VOL_MA10 |
+
+### Popularity Rankings
+
+| Category | Details |
+|----------|---------|
+| Rankings | Eastmoney real-time popularity list (rank / price / change% / volume ratio / turnover) |
+| Trends | Historical ranking trend for any stock over N days |
+
+### Sector Data
+
+| Category | Details |
+|----------|---------|
+| Sector List | ~400 concept sectors + ~80 industry sectors |
+| Sector Quotes | Sector index, change% |
+| Capital Flow | Major net inflow, super-large/large/medium/small net inflow (with % share) |
+| Leading Stocks | Top stocks in each sector |
+| Sector K-line | Historical sector index trends |
+| Sector Members | Individual stock quotes / turnover / volume ratio / PE / PB |
+
+### Analysis Reports
+
+| Module | Content |
+|--------|---------|
+| Basics | Price, change%, PE, PB, market cap, volume ratio, turnover |
+| Trend | MA alignment, 5/10/20/60-day change%, direction assessment |
+| Indicators | RSI state, MACD golden/death cross, KDJ overbought/oversold, BOLL position, ATR volatility |
+| Support/Resistance | MA support/resistance + BOLL bands, sorted by strength |
+| Risk | Overbought/oversold, volatility, valuation, liquidity, trend breakdown risks |
+| Position | Stop-loss, take-profit, risk/reward ratio, position sizing advice |
+
+---
+
+## MCP Tools (9)
+
+| Tool | Purpose |
+|------|---------|
+| `init_full_data` | One-time full download: stocks + sectors to local SQLite |
+| `update_daily_data` | Daily incremental refresh (quotes / rankings / sectors) |
+| `get_data_status` | View local DB status (record count / last update / storage path) |
+| `screen_stocks` | Universal multi-condition screening (18 conditions + sector filter + name search + sort) |
+| `get_kline_local_or_net` | K-line with auto-cached technical indicators (local first, network fallback) |
+| `get_rank_trend_data` | Historical popularity ranking trend for any stock |
+| `get_sector_list` | Browse concept/industry sectors with capital flow data |
+| `get_stock_belong_sectors` | Reverse lookup: which sectors a stock belongs to |
+| `generate_stock_report` | Full analysis report: trend / support-resistance / risk / position |
+
+Plus 3 Claude Skills that teach the AI how to compose these tools for complex workflows.
+
+---
+
+## Local Database
+
+Data is stored in local SQLite databases. After initial setup, queries are extremely fast with no network needed:
+
+| Database | Default Path | Content |
+|----------|-------------|---------|
+| Stock DB | `~/Desktop/stock_data/stock_data.db` | 5530 stocks: quotes + K-lines + rankings + indicators |
+| Sector DB | `~/Desktop/sector_data/sector_data.db` | 480+ sectors: quotes + capital flow + K-lines + members |
+
+Customize paths via `EASTMONEY_STOCK_DATA_DIR` and `EASTMONEY_SECTOR_DATA_DIR` env vars.
+
+---
+
+## Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `EASTMONEY_PYTHON` | `python` | Python interpreter path |
+| `EASTMONEY_STOCK_DATA_DIR` | `~/Desktop/股票信息` | Stock database directory |
+| `EASTMONEY_SECTOR_DATA_DIR` | `~/Desktop/分析板块` | Sector database directory |
+| `EASTMONEY_COOKIE` | Auto-extract from Edge | Eastmoney API cookies (improves request success rate) |
+
+---
+
+## Client Configuration
+
+### Claude Desktop / Claude Code
+
+```bash
+claude mcp add eastmoney-quant -- npx eastmoney-quant-mcp
+```
+
+Or manually edit `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "eastmoney-quant": {
+      "command": "npx",
+      "args": ["eastmoney-quant-mcp"]
+    }
+  }
+}
+```
+
+### Codex / opencode
+
+```json
+{
+  "mcpServers": {
+    "eastmoney-quant": {
+      "command": "npx",
+      "args": ["eastmoney-quant-mcp"]
+    }
+  }
+}
+```
+
+### Direct Python
+
+```json
+{
+  "mcpServers": {
+    "eastmoney-quant": {
+      "command": "python",
+      "args": ["-m", "eastmoney_quant_mcp.server"]
+    }
+  }
+}
+```
+
+---
+
+## Usage Examples
+
+```python
+# 1. First-time init (~10 min, one-time only)
+init_full_data(include_sector_members=True)
+
+# 2. Daily update after market close (~2 min)
+update_daily_data()
+
+# 3. Screen: stocks with change% >3%, PE<30, volume ratio >1.5
+screen_stocks({"min_change_pct":3, "max_pe":30, "min_volume_ratio":1.5})
+
+# 4. Screen: semiconductor sector, PE<50, sorted by popularity
+screen_stocks({"max_pe":50}, sector_code="BK1090", sort_by="popularity_rank")
+
+# 5. Screen: search stocks with "bank" in name
+screen_stocks(name_keyword="bank")
+
+# 6. Get Ping An Bank K-line with cached indicators
+get_kline_local_or_net("000001", days=250)
+
+# 7. Ping An Bank 30-day popularity trend
+get_rank_trend_data("000001", days=30)
+
+# 8. Generate full analysis report
+generate_stock_report("000001")
+# Returns: trend / support-resistance / risk level / position advice
+```
+
+---
+
+## Development
+
+```bash
+git clone https://github.com/lalal-zzz/eastmoney-quant-mcp.git
+cd eastmoney-quant-mcp
+pip install -e ".[dev]"
+pytest
+```
+
+## License
+
+MIT License
+
+---
+
+# 中文版
+
 # 东方财富量化 MCP 服务
 
 [![npm version](https://img.shields.io/npm/v/eastmoney-quant-mcp.svg)](https://www.npmjs.com/package/eastmoney-quant-mcp)
@@ -10,19 +258,19 @@
 
 | 能力 | 说明 |
 |------|------|
-| 📊 **全市场行情** | 5530+ 只 A 股实时价格 / 涨跌幅 / PE / PB / 市值 / 量比 / 换手率 |
-| 📈 **历史 K 线** | 日线数据（开高低收量额），支持前复权/后复权/不复权 |
-| 🔧 **技术指标** | MA(5~200) / RSI(6/14/24) / MACD / BOLL / KDJ / ATR / VOL_MA |
-| 🔥 **人气排名** | 东方财富人气榜单 + 历史排名趋势追踪 |
-| 🏢 **板块分析** | 概念板块(~400个) + 行业板块(~80个)，含主力资金流向(超大单/大单/中单/小单) |
-| 🔍 **多条件选股** | 18 种条件自由组合：价格区间 / PE / PB / 市值 / 涨跌幅 / 量比 / 换手 / 振幅 / 板块限定 |
-| 📝 **分析报告** | 综合技术分析：趋势判断 / 支撑位与阻力位 / 风险等级评估 / 止损止盈与仓位建议 |
+| 全市场行情 | 5530+ 只 A 股实时价格 / 涨跌幅 / PE / PB / 市值 / 量比 / 换手率 |
+| 历史 K 线 | 日线数据（开高低收量额），支持前复权/后复权/不复权 |
+| 技术指标 | MA(5~200) / RSI(6/14/24) / MACD / BOLL / KDJ / ATR / VOL_MA |
+| 人气排名 | 东方财富人气榜单 + 历史排名趋势追踪 |
+| 板块分析 | 概念板块(~400个) + 行业板块(~80个)，含主力资金流向(超大单/大单/中单/小单) |
+| 多条件选股 | 18 种条件自由组合：价格区间 / PE / PB / 市值 / 涨跌幅 / 量比 / 换手 / 振幅 / 板块限定 |
+| 分析报告 | 综合技术分析：趋势判断 / 支撑位与阻力位 / 风险等级评估 / 止损止盈与仓位建议 |
 
 所有数据来源于 **东方财富网** (eastmoney.com) 公开 API。
 
 ---
 
-## ⚡ 快速安装
+## 快速安装
 
 ```bash
 # Claude Code 一键安装（推荐）
@@ -39,7 +287,7 @@ pip install eastmoney-quant-mcp
 
 ---
 
-## 📦 数据详情
+## 数据详情
 
 ### 股票行情数据
 
@@ -105,7 +353,7 @@ pip install eastmoney-quant-mcp
 
 ---
 
-## 🤖 MCP 工具 (9 个)
+## MCP 工具 (9 个)
 
 | 工具 | 功能 |
 |------|------|
@@ -123,7 +371,7 @@ pip install eastmoney-quant-mcp
 
 ---
 
-## 🗄️ 本地数据库
+## 本地数据库
 
 数据存储在本地 SQLite 数据库中，首次初始化后查询速度极快，无需联网：
 
@@ -136,7 +384,7 @@ pip install eastmoney-quant-mcp
 
 ---
 
-## 🔧 环境变量
+## 环境变量
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
@@ -147,7 +395,7 @@ pip install eastmoney-quant-mcp
 
 ---
 
-## 🛠️ 客户端配置
+## 客户端配置
 
 ### Claude Desktop / Claude Code
 
@@ -196,7 +444,7 @@ claude mcp add eastmoney-quant -- npx eastmoney-quant-mcp
 
 ---
 
-## 📖 使用示例
+## 使用示例
 
 ```python
 # 1. 首次初始化数据库（约 10 分钟，只需一次）
@@ -227,7 +475,7 @@ generate_stock_report("000001")
 
 ---
 
-## 🏗️ 开发
+## 开发
 
 ```bash
 git clone https://github.com/lalal-zzz/eastmoney-quant-mcp.git
@@ -236,65 +484,6 @@ pip install -e ".[dev]"
 pytest
 ```
 
-## 📄 许可证
+## 许可证
 
 MIT License
-
----
-
-# Eastmoney Quant MCP Server
-
-A-share quantitative analysis MCP server powered by **Eastmoney** (eastmoney.com) public APIs. Provides professional stock data analysis for Claude Desktop / Claude Code / Codex / opencode.
-
-## Core Capabilities
-
-| Capability | Details |
-|------------|---------|
-| 📊 **Market Data** | 5530+ A-shares real-time: price / change% / PE / PB / market cap / volume ratio / turnover |
-| 📈 **K-lines** | Daily OHLCV with forward/backward/no adjustment |
-| 🔧 **Indicators** | MA(5~200) / RSI(6/14/24) / MACD / BOLL / KDJ / ATR / VOL_MA |
-| 🔥 **Popularity** | Eastmoney real-time sentiment rankings + historical trends |
-| 🏢 **Sectors** | ~400 concepts + ~80 industries with capital flow (super-large/large/medium/small net) |
-| 🔍 **Screening** | 18 composable conditions: price range / PE / PB / cap / change% / volume / turnover / sector filter |
-| 📝 **Reports** | Full technical analysis: trend / support & resistance / risk assessment / stop-loss & position advice |
-
-All data sourced from **Eastmoney** (eastmoney.com) public APIs.
-
-## ⚡ Quick Install
-
-```bash
-claude mcp add eastmoney-quant -- npx eastmoney-quant-mcp
-```
-
-Requirements: Python >= 3.10 | Node.js >= 18
-
-## 🤖 MCP Tools (9)
-
-| Tool | Purpose |
-|------|---------|
-| `init_full_data` | One-time full download to local SQLite |
-| `update_daily_data` | Daily incremental refresh |
-| `get_data_status` | Database integrity check |
-| `screen_stocks` | Universal multi-condition screening (18 conditions + sector + name search) |
-| `get_kline_local_or_net` | K-line with auto-cached technical indicators |
-| `get_rank_trend_data` | Historical popularity ranking trend |
-| `get_sector_list` | Browse concept/industry sectors with capital flow data |
-| `get_stock_belong_sectors` | Reverse lookup: stock → its sectors |
-| `generate_stock_report` | Full analysis: trend / support-resistance / risk / position |
-
-Plus 3 Claude Skills that teach the AI how to compose these tools for complex workflows.
-
-## Quick Start
-
-```python
-init_full_data(include_sector_members=True)         # first time only
-update_daily_data()                                  # daily after market
-
-screen_stocks({"min_change_pct":3, "max_pe":30})    # find breakout stocks
-get_kline_local_or_net("000001")                     # download K-line
-generate_stock_report("000001")                      # full analysis
-```
-
-## License
-
-MIT
