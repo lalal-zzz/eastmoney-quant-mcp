@@ -1,4 +1,8 @@
-"""快速冒烟测试 - 验证 9 个工具链路"""
+"""快速冒烟测试 - 验证 9 个工具链路
+
+手动运行: python tests/test_smoke.py
+(会发起真实网络请求, 不随 pytest 自动执行)
+"""
 import asyncio
 
 async def smoke():
@@ -38,4 +42,6 @@ async def smoke():
 
     print("\nALL SMOKE TESTS PASSED")
 
-asyncio.run(smoke())
+
+if __name__ == "__main__":
+    asyncio.run(smoke())

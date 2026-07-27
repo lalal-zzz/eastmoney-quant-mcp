@@ -8,9 +8,8 @@
  */
 
 import { spawn } from "node:child_process"
-import { dirname, join } from "node:path"
+import { delimiter, dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
-import { createInterface } from "node:readline"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -18,7 +17,11 @@ const PYTHON = process.env.EASTMONEY_PYTHON || "python"
 const SERVER_MODULE = "eastmoney_quant_mcp.server"
 
 const pySrc = join(__dirname, "src")
-const env = { ...process.env, PYTHONPATH: `${pySrc}${process.env.PYTHONPATH ? ":" + process.env.PYTHONPATH : ""}` }
+// 使用平台对应的路径分隔符(Windows 为 ";", POSIX 为 ":")
+const env = {
+  ...process.env,
+  PYTHONPATH: process.env.PYTHONPATH ? `${pySrc}${delimiter}${process.env.PYTHONPATH}` : pySrc,
+}
 
 const proc = spawn(PYTHON, ["-m", SERVER_MODULE], {
   env,

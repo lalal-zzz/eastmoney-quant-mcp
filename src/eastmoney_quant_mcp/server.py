@@ -21,7 +21,6 @@ from .tools.data_manager import (
 )
 from .tools.analysis import generate_stock_report
 from .tools.sector_data import get_sector_list
-from .tools.stock_data import get_stock_history
 
 server = Server("eastmoney-quant-mcp")
 
@@ -108,8 +107,8 @@ async def _screen(conditions=None, top_n=50, sort_by="change_pct",
     "type": "object",
     "properties": {
         "symbol": {"type": "string", "description": "股票代码"},
-        "days": {"type": "integer", "description": "默认250个交易日"},
-        "adjust": {"type": "string", "description": "qfq/hfq/不复权,默认qfq"},
+        "days": {"type": "integer", "minimum": 1, "description": "默认250个交易日"},
+        "adjust": {"type": "string", "enum": ["qfq", "hfq", ""], "description": "复权方式: qfq前复权/hfq后复权/空字符串不复权, 默认qfq"},
     },
     "required": ["symbol"],
 })
@@ -132,7 +131,7 @@ async def _rank_trend(symbol, days=30) -> list[dict]:
 @register("get_sector_list", "行业/概念板块列表及行情(涨跌幅/资金流向),可按字段自行排序", {
     "type": "object",
     "properties": {
-        "sector_type": {"type": "string", "description": "concept(概念)/industry(行业),默认concept"},
+        "sector_type": {"type": "string", "enum": ["concept", "industry"], "description": "concept(概念)/industry(行业),默认concept"},
     },
     "required": [],
 })

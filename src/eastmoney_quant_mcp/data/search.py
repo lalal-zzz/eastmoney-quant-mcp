@@ -4,8 +4,6 @@
 优先从本地 SQLite 查询，数据不足时回退到网络 API。
 """
 
-from datetime import date
-
 from .storage import (
     query_stock_db,
     query_sector_db,
@@ -13,8 +11,6 @@ from .storage import (
     get_meta_sector,
     get_db_paths,
 )
-
-_TODAY = date.today().isoformat()
 
 
 # ════════════════════════════════════════
@@ -190,16 +186,16 @@ async def get_sector_to_stocks_flow(
         members.sort(key=lambda x: x.get(sort_key) or -9999, reverse=True)
     top_members = members[:member_limit]
 
-    # 获取每只成分股的人气排名
+    # 获取每只成分股的人气排名(取库内最新一期, 避免假定"今天"有数据)
     stock_codes = [m.get("stock_code", "") for m in top_members if m.get("stock_code")]
     rank_map = {}
     if stock_codes:
         placeholders = ",".join("?" for _ in stock_codes)
         rank_rows = query_stock_db(
             f"""SELECT symbol, popularity_rank FROM stock_rank
-                WHERE symbol IN ({placeholders}) AND rank_date=?
-                GROUP BY symbol""",
-            tuple(stock_codes + [_TODAY]),
+                WHERE symbol IN ({placeholders})
+                  AND rank_date = (SELECT MAX(rank_date) FROM stock_rank)""",
+            tuple(stock_codes),
         )
         rank_map = {r["symbol"]: r["popularity_rank"] for r in rank_rows}
 
@@ -338,11 +334,10 @@ def screen_stocks_local(
 
     sort_col = sort_by if sort_by in _VALID_SORT_COLS else "change_pct"
     if sort_col == "popularity_rank":
-        order = "ASC"
-        order_col = "r.popularity_rank"
+        # NULL(未上榜)置底, 否则 SQLite 升序时 NULL 行会排在最前面
+        order_clause = "r.popularity_rank IS NULL, r.popularity_rank ASC"
     else:
-        order = "DESC"
-        order_col = f"s.{sort_col}"
+        order_clause = f"s.{sort_col} DESC"
 
     sql = f"""
         SELECT s.symbol, s.name,
@@ -353,12 +348,13 @@ def screen_stocks_local(
                s.sixty_day_change, s.ytd_change,
                r.popularity_rank
         FROM stock_spot s
-        LEFT JOIN stock_rank r ON s.symbol = r.symbol AND r.rank_date = ?
+        LEFT JOIN stock_rank r ON s.symbol = r.symbol
+             AND r.rank_date = (SELECT MAX(rank_date) FROM stock_rank)
         WHERE {where_sql}
-        ORDER BY {order_col} {order}
+        ORDER BY {order_clause}
         LIMIT ?
     """
-    all_params = [_TODAY] + params + [top_n]
+    all_params = params + [top_n]
 
     return query_stock_db(sql, tuple(all_params))
 

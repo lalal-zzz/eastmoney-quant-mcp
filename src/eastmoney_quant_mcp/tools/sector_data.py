@@ -21,9 +21,7 @@ KLINE_HOSTS = [
 SECTOR_FS_MAP = {"concept": "m:90+t:3", "industry": "m:90+s:4"}
 SECTOR_FIELDS = "f12,f14,f2,f3,f62,f184,f66,f69,f72,f75,f78,f81,f84,f87,f204,f205"
 
-MEMBER_FIELDS = "f12,f14,f2,f3,f4,f5,f6,f7,f8,f10,f15,f16,f17,f18,f23"
-
-DIVIDE_100_MEMBER = {"f2", "f3", "f4", "f7", "f8", "f9", "f10", "f15", "f16", "f17", "f18", "f23"}
+MEMBER_FIELDS = "f12,f14,f2,f3,f4,f5,f6,f7,f8,f9,f10,f15,f16,f17,f18,f23"
 
 
 def _try_push2(params: dict, timeout: int = 15) -> dict | None:
@@ -60,6 +58,7 @@ async def get_sector_list(sector_type: str = "concept") -> list[dict]:
     all_records = []
     page = 1
     psz = 100
+    total = 0
 
     while True:
         params = {
@@ -82,7 +81,7 @@ async def get_sector_list(sector_type: str = "concept") -> list[dict]:
 
         if page == 1:
             total = data.get("total", 0)
-        if page * psz >= (total if page == 1 else len(all_records)):
+        if page * psz >= total:
             break
         page += 1
         time.sleep(0.3)
@@ -144,6 +143,7 @@ async def get_sector_members(sector_code: str) -> list[dict]:
             item["stock_code"] = rec.get("f12", "")
             item["stock_name"] = rec.get("f14", "")
 
+            # fltt=2 时接口返回的已是真实量纲的浮点数, 无需除以 100
             for api_f, db_c in [
                 ("f2", "latest_price"), ("f3", "change_pct"), ("f4", "change_amount"),
                 ("f5", "volume"), ("f6", "turnover"), ("f7", "amplitude"),
@@ -151,19 +151,9 @@ async def get_sector_members(sector_code: str) -> list[dict]:
                 ("f15", "high"), ("f16", "low"), ("f17", "open_today"),
                 ("f18", "close_yesterday"), ("f23", "pb"),
             ]:
-                val = rec.get(api_f)
-                if api_f in DIVIDE_100_MEMBER and val is not None:
-                    item[db_c] = _safe_float(val)
-                    if item[db_c] is not None:
-                        item[db_c] = round(item[db_c] / 100.0, 4)
-                else:
-                    item[db_c] = _safe_float(val)
+                item[db_c] = _safe_float(rec.get(api_f))
 
-            pe_val = rec.get("f9")
-            if pe_val is not None and pe_val not in ("-", ""):
-                item["pe_dynamic"] = round(_safe_float(pe_val) or 0 / 100.0, 4) if pe_val else None
-            else:
-                item["pe_dynamic"] = None
+            item["pe_dynamic"] = _safe_float(rec.get("f9"))
 
             all_records.append(item)
 
@@ -186,7 +176,12 @@ async def get_sector_kline(sector_code: str, limit: int = 120) -> list[dict]:
             return local
     except Exception:
         pass
-    # 回退网络
+    return await get_sector_kline_net(code, limit)
+
+
+async def get_sector_kline_net(sector_code: str, limit: int = 120) -> list[dict]:
+    """获取板块历史 K 线(纯网络, 供数据同步使用, 避免同步时读到本地旧数据)"""
+    code = normalize_sector_code(sector_code)
     params = {
         "secid": f"90.{code}",
         "ut": "fa5fd1943c7b386f172d6893dbfba10b",
