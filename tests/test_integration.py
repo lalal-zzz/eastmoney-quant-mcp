@@ -1,9 +1,14 @@
 """
 集成测试: 逐一验证 9 个 MCP 工具的链路是否正常。
-运行: python tests/test_integration.py
+会发起真实网络请求并写入本地数据库, 默认不随 pytest 执行。
+运行: python tests/test_integration.py 或 pytest -m integration
 """
 import asyncio
 import traceback
+
+import pytest
+
+pytestmark = pytest.mark.integration
 
 async def test_all():
     results = {}

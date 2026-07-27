@@ -2,6 +2,8 @@
 数据管理工具: 本地初始化、增量更新、本地搜索、板块↔股票流程
 """
 
+from datetime import date, timedelta
+
 from ..data.sync import (
     init_all_data,
     update_daily_all,
@@ -44,8 +46,13 @@ async def search_stock_full(keyword: str, limit: int = 50) -> list[dict]:
 
 async def get_kline_local_or_net(symbol: str, days: int = 250, adjust: str = "qfq") -> list[dict]:
     klines = get_stock_kline_local(symbol, days)
-    if klines and len(klines) >= 10:
-        return klines
+    if klines:
+        # 数据量达到请求的 8 成且最后一条在 7 天内才算可用, 否则重新下载
+        enough = len(klines) >= min(days, 200) * 0.8
+        last_date = str(klines[-1].get("date", ""))[:10]
+        fresh = last_date >= (date.today() - timedelta(days=7)).isoformat()
+        if enough and fresh:
+            return klines
     await sync_download_stock_kline(symbol, days=days, adjust=adjust)
     return get_stock_kline_local(symbol, days)
 

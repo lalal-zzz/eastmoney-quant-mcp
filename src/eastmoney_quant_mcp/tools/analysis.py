@@ -14,13 +14,22 @@ import numpy as np
 from ..data.storage import query_stock_db, query_sector_db
 from ..data.sync import download_stock_kline
 
-_TODAY = date.today().isoformat()
+
+def _today() -> str:
+    """当前日期(每次调用时求值, 避免长驻进程跨天后日期固化)"""
+    return date.today().isoformat()
+
 
 # 通用: 将 None 转为安全字符串输出
 def _na(val, fmt=".2f"):
     if val is None or (isinstance(val, float) and np.isnan(val)):
         return None
     return round(float(val), 2) if isinstance(val, (int, float)) else val
+
+
+def _r(val, ndigits=2):
+    """None 安全的 round; 0 是合法值不会被丢弃"""
+    return round(float(val), ndigits) if val is not None else None
 
 
 def _pct(val, sign=True):
@@ -41,9 +50,12 @@ def _get_kline_data(symbol: str, days: int = 250):
 
 
 def _get_indicator_data(symbol: str, limit: int = 250):
-    """获取最近N条技术指标"""
+    """获取最近N条技术指标(JOIN K线补充 close/high/low, 指标表本身不存价格)"""
     rows = query_stock_db(
-        "SELECT * FROM stock_indicators WHERE symbol=? ORDER BY date DESC LIMIT ?",
+        """SELECT i.*, k.close, k.high, k.low
+           FROM stock_indicators i
+           JOIN stock_kline k ON i.symbol = k.symbol AND i.date = k.date
+           WHERE i.symbol=? ORDER BY i.date DESC LIMIT ?""",
         (symbol, limit),
     )
     return list(reversed(rows))
@@ -70,12 +82,12 @@ def _find_support_resistance(ind_rows: list[dict], latest_close: float, latest_a
     supports = []
     resistances = []
 
-    # 均线
-    for key, label in [("MA20", "MA20"), ("MA60", "MA60"), ("MA120", "MA120"), ("MA200", "MA200")]:
+    # 均线(强度用显式映射, 避免字符串包含判断把 MA200 误判为"强")
+    for key, strength in [("MA20", "强"), ("MA60", "中"), ("MA100", "参考"), ("MA200", "参考")]:
         v = last.get(key)
-        if v and v > 0:
+        if v is not None and v > 0:
             (supports if v < latest_close else resistances).append(
-                {"level": round(v, 2), "type": label, "strength": "中" if "60" in label else "强" if "20" in label else "参考"}
+                {"level": round(v, 2), "type": key, "strength": strength}
             )
 
     # BOLL
@@ -118,11 +130,11 @@ def _analyze_trend(ind_rows: list[dict], latest_close: float) -> dict:
     else:
         arrangement = "均线缠绕(震荡)"
 
-    # 近期涨跌幅
+    # 近期涨跌幅(基于真实收盘价, 由 _get_indicator_data JOIN K线提供)
     changes = {}
     for offset, label in [(5, "5日"), (10, "10日"), (20, "20日"), (60, "60日")]:
         if len(ind_rows) > offset:
-            past_close = ind_rows[-offset - 1].get("close", ind_rows[-offset - 1].get("MA5"))
+            past_close = ind_rows[-offset - 1].get("close")
             if past_close and past_close > 0:
                 pct = (latest_close - past_close) / past_close * 100
                 changes[label] = f"{'+' if pct > 0 else ''}{pct:.1f}%"
@@ -149,10 +161,10 @@ def _analyze_trend(ind_rows: list[dict], latest_close: float) -> dict:
         "arrangement": arrangement,
         "recent_changes": changes,
         "ma_status": {
-            "MA5": round(ma5, 2) if ma5 else None,
-            "MA10": round(ma10, 2) if ma10 else None,
-            "MA20": round(ma20, 2) if ma20 else None,
-            "MA60": round(ma60, 2) if ma60 else None,
+            "MA5": _r(ma5),
+            "MA10": _r(ma10),
+            "MA20": _r(ma20),
+            "MA60": _r(ma60),
         },
     }
 
@@ -250,24 +262,24 @@ def _analyze_indicators(ind_rows: list[dict]) -> dict:
         atr_pct = None
 
     return {
-        "RSI": {"value": round(rsi14, 2) if rsi14 else None, "status": rsi_status},
+        "RSI": {"value": _r(rsi14), "status": rsi_status},
         "MACD": {
-            "DIF": round(dif, 4) if dif else None,
-            "DEA": round(dea, 4) if dea else None,
-            "MACD_hist": round(macd_hist, 4) if macd_hist else None,
+            "DIF": _r(dif, 4),
+            "DEA": _r(dea, 4),
+            "MACD_hist": _r(macd_hist, 4),
             "signal": macd_signal,
         },
         "KDJ": {
-            "K": round(k, 2) if k else None, "D": round(d, 2) if d else None, "J": round(j, 2) if j else None,
+            "K": _r(k), "D": _r(d), "J": _r(j),
             "status": kdj_status,
         },
         "BOLL": {
-            "upper": round(boll_upper, 2) if boll_upper else None,
-            "middle": round(boll_mid, 2) if boll_mid else None,
-            "lower": round(boll_lower, 2) if boll_lower else None,
+            "upper": _r(boll_upper),
+            "middle": _r(boll_mid),
+            "lower": _r(boll_lower),
             "position": boll_pos,
         },
-        "ATR": {"value14": round(atr14, 4) if atr14 else None, "pct": round(atr_pct, 2) if atr_pct else None},
+        "ATR": {"value14": _r(atr14, 4), "pct": _r(atr_pct)},
     }
 
 
@@ -466,7 +478,7 @@ async def generate_stock_report(symbol: str) -> dict:
         "name": name,
         "latest_price": round(latest_close, 2) if latest_close else None,
         "change_pct": _pct(latest.get("change_pct")) if latest else None,
-        "date": latest.get("date") if latest else _TODAY,
+        "date": latest.get("date") if latest else _today(),
     }
     if spot:
         basic.update({
@@ -497,7 +509,7 @@ async def generate_stock_report(symbol: str) -> dict:
 
     return {
         "report_title": f"{name}({symbol}) 技术分析报告",
-        "report_date": _TODAY,
+        "report_date": _today(),
         "disclaimer": "本报告基于技术指标自动生成, 仅供学习参考, 不构成任何投资建议。投资有风险, 入市需谨慎。",
         "basic_info": basic,
         "trend_analysis": trend,

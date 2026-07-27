@@ -51,3 +51,7 @@ packages = ["src/eastmoney_quant_mcp"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+markers = [
+    "integration: 真实网络+写库的集成测试, 需显式 pytest -m integration 运行",
+]
+addopts = "-m 'not integration'"

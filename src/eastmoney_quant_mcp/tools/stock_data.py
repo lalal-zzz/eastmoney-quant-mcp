@@ -228,23 +228,15 @@ def _safe_float(val):
 
 async def get_stock_indicators(symbol: str, days: int = 120) -> list[dict]:
     """获取股票 K 线 + 全部技术指标"""
+    from datetime import timedelta
+
+    end = pd.Timestamp.now()
+    start = end - timedelta(days=days + 30)
     kline = await get_stock_history(
         symbol,
-        start_date=pd.Timestamp.now().strftime("%Y%m%d"),
-        end_date=pd.Timestamp.now().strftime("%Y%m%d"),
+        start_date=start.strftime("%Y%m%d"),
+        end_date=end.strftime("%Y%m%d"),
     )
-
-    if not kline:
-        # 尝试拉取更长历史
-        from datetime import timedelta
-
-        end = pd.Timestamp.now()
-        start = end - timedelta(days=days + 30)
-        kline = await get_stock_history(
-            symbol,
-            start_date=start.strftime("%Y%m%d"),
-            end_date=end.strftime("%Y%m%d"),
-        )
 
     if not kline:
         return []
