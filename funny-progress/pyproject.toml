@@ -1,0 +1,37 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "funny-progress"
+version = "0.1.0"
+description = " tqdm 进度条 + 沙雕动画(坤坤打篮球/跑步/火箭), 让漫长的等待不那么无聊"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.9"
+authors = [
+    { name = "lalal-zzz", email = "lalal-zzz@users.noreply.github.com" }
+]
+keywords = ["tqdm", "progress-bar", "animation", "cli", "fun"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Utilities",
+]
+
+dependencies = [
+    "tqdm>=4.60.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/funny_progress"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
