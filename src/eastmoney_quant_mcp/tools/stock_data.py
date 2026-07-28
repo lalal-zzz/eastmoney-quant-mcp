@@ -1,6 +1,12 @@
 """
 股票数据工具: 列表、K线、实时行情、技术指标
+
+网络请求为同步实现(akshare/curl_cffi), 对外 async 接口统一用 asyncio.to_thread
+包装, 使 asyncio.gather 能真正并发(sync.py 的批量下载依赖这一点)。
 """
+
+import asyncio
+import math
 
 import pandas as pd
 import akshare as ak
@@ -14,6 +20,11 @@ from ..data.indicators import compute_all_indicators
 
 async def get_stock_list() -> list[dict]:
     """获取 A 股股票基本信息列表"""
+    return await asyncio.to_thread(_stock_list_sync)
+
+
+def _stock_list_sync() -> list[dict]:
+    """股票列表同步实现(供 to_thread 调用)"""
     try:
         df = ak.stock_zh_a_spot_em()
         result = []
@@ -48,6 +59,16 @@ async def get_stock_history(
     adjust: str = "qfq",
 ) -> list[dict]:
     """获取单只股票历史 K 线数据"""
+    return await asyncio.to_thread(_stock_history_sync, symbol, start_date, end_date, adjust)
+
+
+def _stock_history_sync(
+    symbol: str,
+    start_date: str,
+    end_date: str,
+    adjust: str = "qfq",
+) -> list[dict]:
+    """个股 K 线同步实现(供 to_thread 调用)"""
     symbol = normalize_symbol(symbol)
     prefixed = to_prefixed_symbol(symbol)
     start = start_date.replace("-", "")
@@ -134,49 +155,64 @@ FIELD_MAP = {
 }
 
 
-async def get_latest_indicators() -> list[dict]:
-    """获取全市场最新行情(直连东财API, curl_cffi 多host重试)"""
+_SPOT_PAGE_SIZE = 100  # push2 clist 接口单页上限, pz>100 会被截断为 100
+_SPOT_PAGE_CONCURRENCY = 16
+
+
+def _spot_page_sync(host_url: str, page: int) -> dict | None:
+    """全市场行情单页请求(同步, 供 to_thread 调用)"""
     from ..data.network import http_get
 
+    params = {
+        "fid": "f3", "po": "1", "pz": str(_SPOT_PAGE_SIZE), "pn": str(page),
+        "np": "1", "fltt": "2", "invt": "2",
+        "ut": "8dec03ba335b81bf4ebdf7b29ec27d15",
+        "fs": SPOT_FS, "fields": SPOT_FIELDS,
+    }
+    return http_get(host_url, params=params, retries=2, timeout=30)
+
+
+async def _spot_all_rows(host_url: str) -> list[dict] | None:
+    """在指定 host 上拉取全部行情: 第1页拿 total, 剩余页并发"""
+    first = await asyncio.to_thread(_spot_page_sync, host_url, 1)
+    if not first:
+        return None
+    data = first.get("data")
+    if not data or not data.get("diff"):
+        return None
+
+    rows = list(data["diff"])
+    total = data.get("total", 0) or len(rows)
+    pages = math.ceil(total / _SPOT_PAGE_SIZE)
+    if pages <= 1:
+        return rows
+
+    sem = asyncio.Semaphore(_SPOT_PAGE_CONCURRENCY)
+
+    async def _page(pn: int) -> list:
+        async with sem:
+            r = await asyncio.to_thread(_spot_page_sync, host_url, pn)
+            d = (r or {}).get("data") or {}
+            return list(d.get("diff") or [])
+
+    chunks = await asyncio.gather(*(_page(p) for p in range(2, pages + 1)))
+    for chunk in chunks:
+        rows.extend(chunk)
+    return rows
+
+
+async def get_latest_indicators() -> list[dict]:
+    """获取全市场最新行情(直连东财API, 分页并发, 多host重试)"""
     all_rows = None
     for host_url in SPOT_HOSTS:
-        page = 1
-        psz = 100
-        temp_rows = []
-        failed = False
-        while True:
-            params = {
-                "fid": "f3", "po": "1", "pz": str(psz), "pn": str(page),
-                "np": "1", "fltt": "2", "invt": "2",
-                "ut": "8dec03ba335b81bf4ebdf7b29ec27d15",
-                "fs": SPOT_FS, "fields": SPOT_FIELDS,
-            }
-            payload = http_get(host_url, params=params, retries=2, timeout=30)
-            if not payload:
-                failed = True
-                break
-            data = payload.get("data")
-            if not data:
-                failed = True
-                break
-            diff = data.get("diff")
-            if not diff:
-                failed = True
-                break
-            temp_rows.extend(diff)
-            total = data.get("total", 0)
-            if page * psz >= total:
-                break
-            page += 1
-        if not failed and temp_rows:
-            all_rows = temp_rows
+        all_rows = await _spot_all_rows(host_url)
+        if all_rows:
             break
 
     if not all_rows:
         # fallback: 旧版 akshare API (字段少)
-        import akshare as ak
         try:
-            df = ak.stock_zh_a_spot()
+            df = await asyncio.to_thread(ak.stock_zh_a_spot)
         except Exception:
             return []
         result = []
@@ -270,3 +306,81 @@ async def search_stock(keyword: str) -> list[dict]:
         if len(results) >= 20:
             break
     return results
+
+
+# ── 多周期 K 线(分钟/日/周/月, 纯网络) ──
+
+_KLT_CHOICES = {"1", "5", "15", "30", "60", "101", "102", "103"}
+_FQT_MAP = {"qfq": "1", "hfq": "2", "": "0"}
+
+
+def _normalize_klt(period) -> str:
+    """周期归一化为东财 klt 字符串: 1/5/15/30/60(分钟) 101(日) 102(周) 103(月)"""
+    p = str(period).strip()
+    if p not in _KLT_CHOICES:
+        raise ValueError(f"不支持的周期: {period}, 可选: {sorted(_KLT_CHOICES, key=int)}")
+    return p
+
+
+def _stock_kline_period_sync(symbol: str, period: str, limit: int, adjust: str) -> list[dict]:
+    """多周期 K 线同步实现(供 to_thread 调用)"""
+    from ..data.network import try_kline_hosts
+
+    symbol = normalize_symbol(symbol)
+    klt = _normalize_klt(period)
+    # secid 规则与 akshare 一致: 沪市 1.xxxxxx, 深/北市 0.xxxxxx
+    secid = ("1." if symbol.startswith("6") else "0.") + symbol
+    params = {
+        "secid": secid,
+        "ut": "fa5fd1943c7b386f172d6893dbfba10b",
+        "fields1": "f1,f2,f3,f4,f5,f6",
+        "fields2": "f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61",
+        "klt": klt, "fqt": _FQT_MAP.get(adjust, "1"),
+        "end": "20500101", "lmt": str(limit),
+    }
+
+    result = try_kline_hosts(params, timeout=15)
+    if not result:
+        return []
+
+    box = result.get("data") or {}
+    klines_list = box.get("klines")
+    if not klines_list:
+        return []
+
+    # 分钟级带时分秒, 用 datetime 键; 日/周/月只有日期, 保持 date 键
+    time_key = "date" if int(klt) >= 101 else "datetime"
+    cols = ["open", "close", "high", "low", "volume", "amount",
+            "amplitude", "change_pct", "change_amount", "turnover_rate"]
+
+    items = []
+    for row_str in klines_list:
+        parts = row_str.split(",")
+        if len(parts) < len(cols) + 1:
+            continue
+        item = {"symbol": symbol, time_key: parts[0].strip()}
+        for i, c in enumerate(cols, start=1):
+            v = parts[i].strip()
+            try:
+                item[c] = float(v) if v not in ("-", "") else None
+            except ValueError:
+                item[c] = v
+        items.append(item)
+
+    return items
+
+
+async def get_stock_kline_period(
+    symbol: str,
+    period: str = "60",
+    limit: int = 240,
+    adjust: str = "qfq",
+) -> list[dict]:
+    """
+    个股多周期 K 线(纯网络实时, 不写本地库)。
+
+    period: "1"/"5"/"15"/"30"/"60"(分钟), "101"(日线), "102"(周线), "103"(月线)
+    limit:  返回条数, 默认 240
+    adjust: "qfq"前复权 / "hfq"后复权 / ""不复权
+    """
+    return await asyncio.to_thread(_stock_kline_period_sync, symbol, period, limit, adjust)

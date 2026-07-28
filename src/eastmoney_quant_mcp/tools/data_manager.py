@@ -14,6 +14,7 @@ from ..data.search import (
     get_stock_kline_local,
     get_rank_trend,
     get_sectors_by_stock,
+    get_sector_members_local,
     get_sector_to_stocks_flow,
     get_db_status as _get_db_status,
     screen_stocks_local,
@@ -23,8 +24,8 @@ from ..tools.stock_data import search_stock
 
 # ═══════════════════ 数据管理 ═══════════════════
 
-async def init_full_data(include_sector_members: bool = True) -> dict:
-    return await init_all_data(include_sector_members=include_sector_members)
+async def init_full_data(include_sector_members: bool = True, quick: bool = False) -> dict:
+    return await init_all_data(include_sector_members=include_sector_members, quick=quick)
 
 
 async def update_daily_data(include_sector_members: bool = True) -> dict:
@@ -80,7 +81,37 @@ async def screen_stocks(
     sector_code: str = None,
     name_keyword: str = None,
 ) -> list[dict]:
+    if sector_code:
+        sector_code = await _ensure_sector_members(sector_code)
     return screen_stocks_local(
         conditions=conditions, top_n=top_n, sort_by=sort_by,
         sector_code=sector_code, name_keyword=name_keyword,
     )
+
+
+async def _ensure_sector_members(sector_code: str) -> str:
+    """
+    本地无成分股数据时从网络下载并缓存(quick 初始化后的懒加载)。
+    返回标准化后的板块代码(BKxxxx), 查询失败时原样返回, 由本地查询兜底。
+    """
+    from ..data.network import normalize_sector_code
+    from ..data.storage import save_sector_member
+    from ..tools.sector_data import get_sector_members as fetch_members
+
+    try:
+        code = normalize_sector_code(sector_code)
+    except ValueError:
+        return sector_code
+    if get_sector_members_local(code):
+        return code
+    try:
+        members = await fetch_members(code)
+    except Exception:
+        return code
+    if members:
+        today = date.today().isoformat()
+        for m in members:
+            m["updated_date"] = today
+            m.setdefault("sector_code", code)
+        save_sector_member(members)
+    return code

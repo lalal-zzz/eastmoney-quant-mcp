@@ -107,15 +107,16 @@ pip install eastmoney-quant-mcp
 
 ---
 
-## MCP Tools (9)
+## MCP Tools (10)
 
 | Tool | Purpose |
 |------|---------|
-| `init_full_data` | One-time full download: stocks + sectors to local SQLite |
+| `init_full_data` | One-time download to local SQLite (`quick=true`: ~15s stocks/quotes/ranks only, sectors lazy-load; `quick=false`: full, ~3-4 min) |
 | `update_daily_data` | Daily incremental refresh (quotes / rankings / sectors) |
 | `get_data_status` | View local DB status (record count / last update / storage path) |
 | `screen_stocks` | Universal multi-condition screening (18 conditions + sector filter + name search + sort) |
 | `get_kline_local_or_net` | K-line with auto-cached technical indicators (local first, network fallback) |
+| `get_stock_kline_period` | Multi-period K-line: 1/5/15/30/60-min, daily/weekly/monthly (real-time network) |
 | `get_rank_trend_data` | Historical popularity ranking trend for any stock |
 | `get_sector_list` | Browse concept/industry sectors with capital flow data |
 | `get_stock_belong_sectors` | Reverse lookup: which sectors a stock belongs to |
@@ -201,10 +202,13 @@ Or manually edit `claude_desktop_config.json`:
 ## Usage Examples
 
 ```python
-# 1. First-time init (~10 min, one-time only)
+# 1a. Quick init (~15s, stocks + quotes + ranks; sector data lazy-loads on first use)
+init_full_data(quick=True)
+
+# 1b. Or full init (~3-4 min, includes all sector K-lines + members)
 init_full_data(include_sector_members=True)
 
-# 2. Daily update after market close (~2 min)
+# 2. Daily update after market close (~30s)
 update_daily_data()
 
 # 3. Screen: stocks with change% >3%, PE<30, volume ratio >1.5
@@ -353,15 +357,16 @@ pip install eastmoney-quant-mcp
 
 ---
 
-## MCP 工具 (9 个)
+## MCP 工具 (10 个)
 
 | 工具 | 功能 |
 |------|------|
-| `init_full_data` | 首次全量下载股票+板块数据到本地 SQLite 数据库 |
+| `init_full_data` | 首次下载数据到本地 SQLite（`quick=true` 约 15 秒仅股票+行情+排名，板块数据懒加载；`quick=false` 完整版约 3-4 分钟） |
 | `update_daily_data` | 增量每日刷新（行情/排名/板块） |
 | `get_data_status` | 查看本地数据库状态（数据量/更新时间/存储路径） |
 | `screen_stocks` | 万能多条件选股：18 种条件自由组合(价格/PE/PB/市值/涨跌幅/量比/换手/振幅)，支持板块限定、名称搜索、多字段排序 |
 | `get_kline_local_or_net` | 获取个股历史 K 线（本地优先，不足自动下载并缓存技术指标） |
+| `get_stock_kline_period` | 个股多周期 K 线：1/5/15/30/60 分钟线 + 日/周/月线（纯网络实时） |
 | `get_rank_trend_data` | 查询个股 N 天内的人气排名历史走势 |
 | `get_sector_list` | 获取概念/行业板块列表及其行情数据 |
 | `get_stock_belong_sectors` | 反向查询：某只股票属于哪些板块 |
@@ -447,10 +452,13 @@ claude mcp add eastmoney-quant -- npx eastmoney-quant-mcp
 ## 使用示例
 
 ```python
-# 1. 首次初始化数据库（约 10 分钟，只需一次）
+# 1a. 快速初始化（约 15 秒：股票列表+行情+排名，板块数据首次使用时自动下载）
+init_full_data(quick=True)
+
+# 1b. 或完整初始化（约 3-4 分钟，含全部板块 K 线+成分股）
 init_full_data(include_sector_members=True)
 
-# 2. 每日收盘后更新（约 2 分钟）
+# 2. 每日收盘后更新（约 30 秒）
 update_daily_data()
 
 # 3. 选股：找涨幅>3%、PE<30、量比>1.5 的放量突破股

@@ -21,6 +21,7 @@ from .tools.data_manager import (
 )
 from .tools.analysis import generate_stock_report
 from .tools.sector_data import get_sector_list
+from .tools.stock_data import get_stock_kline_period
 
 server = Server("eastmoney-quant-mcp")
 
@@ -36,15 +37,19 @@ def register(name, description, input_schema):
 
 # ═══════════════════ 数据管理 (3) ═══════════════════
 
-@register("init_full_data", "一次性全量下载股票+板块数据到本地SQLite(首次必调)", {
+@register("init_full_data", (
+    "一次性下载数据到本地SQLite(首次必调)。quick=true为快速模式(秒级): 仅股票列表+实时行情+人气排名, "
+    "板块成分股在首次使用时自动下载缓存; quick=false为完整模式(含全部板块K线+成分股, 约1-2分钟)"
+), {
     "type": "object",
     "properties": {
-        "include_sector_members": {"type": "boolean", "description": "是否下载板块成分股(耗时但完整),默认true"},
+        "include_sector_members": {"type": "boolean", "description": "是否下载板块成分股(完整模式下耗时但完整),默认true"},
+        "quick": {"type": "boolean", "description": "快速初始化模式(秒级可用),默认false"},
     },
     "required": [],
 })
-async def _init(include_sector_members=True) -> dict:
-    return await init_full_data(include_sector_members)
+async def _init(include_sector_members=True, quick=False) -> dict:
+    return await init_full_data(include_sector_members, quick)
 
 
 @register("update_daily_data", "增量每日更新(建议收盘后运行)", {
@@ -114,6 +119,24 @@ async def _screen(conditions=None, top_n=50, sort_by="change_pct",
 })
 async def _kline(symbol, days=250, adjust="qfq") -> list[dict]:
     return await get_kline_local_or_net(symbol, days, adjust)
+
+
+@register("get_stock_kline_period", (
+    "个股多周期K线(纯网络实时): 1/5/15/30/60分钟线, 101日线, 102周线, 103月线。"
+    "与 get_kline_local_or_net(仅日线+本地缓存)互补, 适合盘中看分时结构"
+), {
+    "type": "object",
+    "properties": {
+        "symbol": {"type": "string", "description": "股票代码"},
+        "period": {"type": "string", "enum": ["1", "5", "15", "30", "60", "101", "102", "103"],
+                   "description": "周期: 1/5/15/30/60(分钟) 101(日) 102(周) 103(月), 默认60"},
+        "limit": {"type": "integer", "minimum": 1, "description": "返回条数,默认240"},
+        "adjust": {"type": "string", "enum": ["qfq", "hfq", ""], "description": "复权方式, 默认qfq"},
+    },
+    "required": ["symbol"],
+})
+async def _kline_period(symbol, period="60", limit=240, adjust="qfq") -> list[dict]:
+    return await get_stock_kline_period(symbol, period, limit, adjust)
 
 
 @register("get_rank_trend_data", "个股人气排名历史趋势(近N天排行变化)", {

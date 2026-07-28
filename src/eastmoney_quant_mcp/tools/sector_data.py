@@ -1,21 +1,22 @@
 """
 板块数据工具: 行业/概念板块列表、行情、成分股、K 线
+
+网络请求为同步实现(curl_cffi), 对外 async 接口统一用 asyncio.to_thread 包装,
+使 asyncio.gather 能真正并发(sync.py 的批量下载依赖这一点)。
+
+push2 clist 接口单页上限 100 条(pz>100 会被截断), 分页采用
+"第1页拿 total → 剩余页并发拉取"策略。
 """
 
-import time
+import asyncio
+import math
 
-from ..data.network import http_get, normalize_sector_code
+from ..data.network import http_get, normalize_sector_code, rotated, try_kline_hosts
 
 PUSH2_HOSTS = [
     "https://push2.eastmoney.com/webguest/api/qt/clist/get",
     "https://82.push2.eastmoney.com/webguest/api/qt/clist/get",
     "https://73.push2.eastmoney.com/webguest/api/qt/clist/get",
-]
-
-KLINE_HOSTS = [
-    "https://push2his.eastmoney.com/api/qt/stock/kline/get",
-    "https://82.push2his.eastmoney.com/api/qt/stock/kline/get",
-    "https://73.push2his.eastmoney.com/api/qt/stock/kline/get",
 ]
 
 SECTOR_FS_MAP = {"concept": "m:90+t:3", "industry": "m:90+s:4"}
@@ -25,15 +26,7 @@ MEMBER_FIELDS = "f12,f14,f2,f3,f4,f5,f6,f7,f8,f9,f10,f15,f16,f17,f18,f23"
 
 
 def _try_push2(params: dict, timeout: int = 15) -> dict | None:
-    for host in PUSH2_HOSTS:
-        r = http_get(host, params=params, retries=2, timeout=timeout)
-        if r and "data" in r:
-            return r
-    return None
-
-
-def _try_kline(params: dict, timeout: int = 15) -> dict | None:
-    for host in KLINE_HOSTS:
+    for host in rotated(PUSH2_HOSTS):
         r = http_get(host, params=params, retries=2, timeout=timeout)
         if r and "data" in r:
             return r
@@ -49,42 +42,60 @@ def _safe_float(val) -> float | None:
         return None
 
 
+# ── clist 并发分页 ──
+
+_PAGE_SIZE = 100  # push2 clist 接口单页上限, pz>100 会被截断为 100
+_PAGE_CONCURRENCY = 8  # 成分股场景外层还有一层并发, 避免嵌套并发乘积过大
+
+
+def _extract_diff(payload: dict | None) -> tuple[list, int]:
+    """从 clist 响应提取记录列表和总条数"""
+    if not payload or "data" not in payload:
+        return [], 0
+    data = payload["data"] or {}
+    diff = data.get("diff") or []
+    recs = list(diff) if isinstance(diff, list) else list(diff.values())
+    return recs, data.get("total", 0) or len(recs)
+
+
+async def _fetch_all_pages(base_params: dict) -> list[dict]:
+    """先取第 1 页拿 total, 再并发拉取剩余页(单页请求各自含多 host 重试)"""
+    params = {**base_params, "pz": str(_PAGE_SIZE)}
+    first = await asyncio.to_thread(_try_push2, {**params, "pn": "1"})
+    recs, total = _extract_diff(first)
+    if not recs:
+        return []
+
+    pages = math.ceil(total / _PAGE_SIZE)
+    if pages <= 1:
+        return recs
+
+    sem = asyncio.Semaphore(_PAGE_CONCURRENCY)
+
+    async def _page(pn: int) -> list:
+        async with sem:
+            r = await asyncio.to_thread(_try_push2, {**params, "pn": str(pn)})
+            page_recs, _ = _extract_diff(r)
+            return page_recs
+
+    chunks = await asyncio.gather(*(_page(p) for p in range(2, pages + 1)))
+    for chunk in chunks:
+        recs.extend(chunk)
+    return recs
+
+
 # ── 板块列表 + 行情 ──
 
 
 async def get_sector_list(sector_type: str = "concept") -> list[dict]:
     """获取概念/行业板块列表及其当日行情"""
     fs = SECTOR_FS_MAP.get(sector_type, SECTOR_FS_MAP["concept"])
-    all_records = []
-    page = 1
-    psz = 100
-    total = 0
-
-    while True:
-        params = {
-            "fid": "f62", "po": "1", "pz": str(psz), "pn": str(page),
-            "np": "1", "fltt": "2", "invt": "2",
-            "ut": "8dec03ba335b81bf4ebdf7b29ec27d15",
-            "fs": fs, "fields": SECTOR_FIELDS,
-        }
-        result = _try_push2(params)
-        if not result:
-            break
-
-        data = result["data"]
-        diff = data.get("diff")
-        if not diff:
-            break
-
-        recs = list(diff) if isinstance(diff, list) else list(diff.values())
-        all_records.extend(recs)
-
-        if page == 1:
-            total = data.get("total", 0)
-        if page * psz >= total:
-            break
-        page += 1
-        time.sleep(0.3)
+    all_records = await _fetch_all_pages({
+        "fid": "f62", "po": "1",
+        "np": "1", "fltt": "2", "invt": "2",
+        "ut": "8dec03ba335b81bf4ebdf7b29ec27d15",
+        "fs": fs, "fields": SECTOR_FIELDS,
+    })
 
     items = []
     for r in all_records:
@@ -114,55 +125,33 @@ async def get_sector_list(sector_type: str = "concept") -> list[dict]:
 async def get_sector_members(sector_code: str) -> list[dict]:
     """获取板块成分股列表"""
     code = normalize_sector_code(sector_code)
-    all_records = []
-    page = 1
-    psz = 100
-    total = 0
+    all_records = await _fetch_all_pages({
+        "fid": "f3", "po": "1",
+        "np": "1", "fltt": "2", "invt": "2",
+        "ut": "8dec03ba335b81bf4ebdf7b29ec27d15",
+        "fs": f"b:{code}", "fields": MEMBER_FIELDS,
+    })
 
-    while True:
-        params = {
-            "fid": "f3", "po": "1", "pz": str(psz), "pn": str(page),
-            "np": "1", "fltt": "2", "invt": "2",
-            "ut": "8dec03ba335b81bf4ebdf7b29ec27d15",
-            "fs": f"b:{code}", "fields": MEMBER_FIELDS,
-        }
-        result = _try_push2(params)
-        if not result:
-            break
+    items = []
+    for rec in all_records:
+        item = {"sector_code": code}
+        item["stock_code"] = rec.get("f12", "")
+        item["stock_name"] = rec.get("f14", "")
 
-        data = result["data"]
-        diff = data.get("diff")
-        if not diff:
-            break
+        # fltt=2 时接口返回的已是真实量纲的浮点数, 无需除以 100
+        for api_f, db_c in [
+            ("f2", "latest_price"), ("f3", "change_pct"), ("f4", "change_amount"),
+            ("f5", "volume"), ("f6", "turnover"), ("f7", "amplitude"),
+            ("f8", "turnover_rate"), ("f10", "volume_ratio"),
+            ("f15", "high"), ("f16", "low"), ("f17", "open_today"),
+            ("f18", "close_yesterday"), ("f23", "pb"),
+        ]:
+            item[db_c] = _safe_float(rec.get(api_f))
 
-        if page == 1:
-            total = data.get("total", 0)
+        item["pe_dynamic"] = _safe_float(rec.get("f9"))
+        items.append(item)
 
-        for rec in diff:
-            item = {"sector_code": code}
-            item["stock_code"] = rec.get("f12", "")
-            item["stock_name"] = rec.get("f14", "")
-
-            # fltt=2 时接口返回的已是真实量纲的浮点数, 无需除以 100
-            for api_f, db_c in [
-                ("f2", "latest_price"), ("f3", "change_pct"), ("f4", "change_amount"),
-                ("f5", "volume"), ("f6", "turnover"), ("f7", "amplitude"),
-                ("f8", "turnover_rate"), ("f10", "volume_ratio"),
-                ("f15", "high"), ("f16", "low"), ("f17", "open_today"),
-                ("f18", "close_yesterday"), ("f23", "pb"),
-            ]:
-                item[db_c] = _safe_float(rec.get(api_f))
-
-            item["pe_dynamic"] = _safe_float(rec.get("f9"))
-
-            all_records.append(item)
-
-        if page * psz >= total:
-            break
-        page += 1
-        time.sleep(0.3)
-
-    return all_records
+    return items
 
 
 async def get_sector_kline(sector_code: str, limit: int = 120) -> list[dict]:
@@ -179,18 +168,26 @@ async def get_sector_kline(sector_code: str, limit: int = 120) -> list[dict]:
     return await get_sector_kline_net(code, limit)
 
 
-async def get_sector_kline_net(sector_code: str, limit: int = 120) -> list[dict]:
-    """获取板块历史 K 线(纯网络, 供数据同步使用, 避免同步时读到本地旧数据)"""
+async def get_sector_kline_net(sector_code: str, limit: int = 120, klt: int = 101) -> list[dict]:
+    """获取板块历史 K 线(纯网络, 供数据同步使用, 避免同步时读到本地旧数据)
+
+    klt: 1/5/15/30/60(分钟), 101(日), 102(周), 103(月)
+    """
+    return await asyncio.to_thread(_sector_kline_net_sync, sector_code, limit, klt)
+
+
+def _sector_kline_net_sync(sector_code: str, limit: int = 120, klt: int = 101) -> list[dict]:
+    """板块 K 线网络下载同步实现(供 to_thread 调用)"""
     code = normalize_sector_code(sector_code)
     params = {
         "secid": f"90.{code}",
         "ut": "fa5fd1943c7b386f172d6893dbfba10b",
         "fields1": "f1,f2,f3,f4,f5,f6",
         "fields2": "f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61",
-        "klt": "101", "fqt": "1", "end": "20500101", "lmt": str(limit),
+        "klt": str(klt), "fqt": "1", "end": "20500101", "lmt": str(limit),
     }
 
-    result = _try_kline(params, timeout=15)
+    result = try_kline_hosts(params, timeout=15)
     if not result:
         return []
 

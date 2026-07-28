@@ -6,6 +6,7 @@
 - 自动从 Edge 浏览器提取 Cookies 提升请求成功率
 """
 
+import itertools
 import json
 import os
 import re
@@ -28,8 +29,12 @@ def _patched_getaddrinfo(host, port, family=0, type=0, proto=0, flags=0):
 socket.getaddrinfo = _patched_getaddrinfo
 
 # ── 清除代理 ──
+# 清空代理环境变量; 同时设 NO_PROXY=* 覆盖 Windows 注册表系统代理,
+# 否则 requests/akshare 会绕过环境变量直接读注册表, 走不稳定的系统代理
 for _key in ("http_proxy", "https_proxy", "all_proxy", "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY"):
     os.environ[_key] = ""
+os.environ["NO_PROXY"] = "*"
+os.environ["no_proxy"] = "*"
 
 from curl_cffi import requests
 import urllib3
@@ -170,6 +175,34 @@ def http_get_text(url: str, params: dict = None, retries: int = 3, timeout: int 
         if attempt < retries:
             time.sleep(1.5 * attempt)
 
+    return None
+
+
+# ── K 线接口 host 轮转 ──
+
+KLINE_HOSTS = [
+    "https://push2his.eastmoney.com/api/qt/stock/kline/get",
+    "https://82.push2his.eastmoney.com/api/qt/stock/kline/get",
+    "https://73.push2his.eastmoney.com/api/qt/stock/kline/get",
+]
+
+# 入口 host 轮转计数器: 并发批量下载时把请求均匀分散到各镜像 host,
+# 避免单 host 触发限流(限流会放大重试退避耗时)
+_rr_counter = itertools.count()
+
+
+def rotated(hosts: list) -> list:
+    """按全局计数器轮转 host 列表入口"""
+    start = next(_rr_counter) % len(hosts)
+    return hosts[start:] + hosts[:start]
+
+
+def try_kline_hosts(params: dict, timeout: int = 15) -> dict | None:
+    """K 线接口多 host 轮转重试, 成功返回 payload(data 非空), 全失败返回 None"""
+    for host in rotated(KLINE_HOSTS):
+        r = http_get(host, params=params, retries=2, timeout=timeout)
+        if r and r.get("data"):  # 偶发空 data(null) 时继续尝试下一个 host
+            return r
     return None
 
 

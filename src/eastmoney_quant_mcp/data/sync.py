@@ -1,11 +1,13 @@
 """
 数据同步模块: 全量初始化 + 增量每日更新
 
-使用 asyncio.Semaphore 并发下载(默认 8 并发), 大幅加速批量数据获取。
+网络层(tools/*)已用 asyncio.to_thread 包装同步请求, 此处的 asyncio.gather
+为真并发(默认 16 并发), 大幅加速批量数据获取。
 增量更新只拉取变化数据, 不做全量重复下载。
 """
 
 import asyncio
+import time
 from datetime import date, timedelta
 
 from .storage import (
@@ -24,14 +26,15 @@ from .storage import (
     get_db_paths,
 )
 
-from ..tools.stock_data import get_stock_list, get_stock_history, get_latest_indicators
+from ..tools.stock_data import get_stock_history, get_latest_indicators
 from ..tools.stock_rank import _fetch_all_rankings, _format_rank_item
 from ..tools.sector_data import get_sector_list, get_sector_kline_net, get_sector_members
 from .indicators import compute_all_indicators
+from .progress import make_progress
 
 import pandas as pd
 
-_CONCURRENCY = 8
+_CONCURRENCY = 16
 
 
 def _today() -> str:
@@ -50,20 +53,46 @@ def _format_rank_items(items: list[dict]) -> list[dict]:
     return result
 
 
+def _stocks_from_spot(spots: list[dict]) -> list[dict]:
+    """从全市场行情提取股票基础信息(代码/名称), 避免 akshare 50+ 页串行拉列表"""
+    return [
+        {"symbol": s["symbol"], "name": s.get("name") or "", "raw_symbol": s.get("raw_code") or s["symbol"]}
+        for s in spots if s.get("symbol")
+    ]
+
+
 # ── 并发控制 ──
 
 
 async def _concurrent_map(items, async_fn, desc="", batch_size=30):
-    """对 items 并发执行 async_fn, 每 batch_size 个等待一小段"""
-    total = len(items)
-    results = []
-    for i in range(0, total, _CONCURRENCY):
-        batch = items[i:i + _CONCURRENCY]
-        batch_results = await asyncio.gather(*[async_fn(item) for item in batch], return_exceptions=True)
-        results.extend(batch_results)
-        if (i + _CONCURRENCY) % (batch_size * _CONCURRENCY) == 0:
-            await asyncio.sleep(0.3)  # 批次间小歇, 降低 API 压力
-    return results
+    """
+    信号量流水线: 任意时刻最多 _CONCURRENCY 个任务在飞, 一个完成立即补一个。
+    desc 非空且任务数>=20 时自动显示动画进度条(仅 TTY, 写 stderr)。
+    batch_size 为历史遗留参数, 已不生效。
+    """
+    sem = asyncio.Semaphore(_CONCURRENCY)
+    show_bar = bool(desc) and len(items) >= 20
+    progress = make_progress(total=len(items), desc=desc) if show_bar else None
+
+    async def _task(item):
+        async with sem:
+            try:
+                return await async_fn(item)
+            finally:
+                if progress is not None:
+                    progress.update(1)
+
+    try:
+        return await asyncio.gather(*(_task(i) for i in items), return_exceptions=True)
+    finally:
+        if progress is not None:
+            progress.close()
+
+
+async def _with_spinner(desc: str, coro):
+    """给单次异步调用套上不确定模式进度条(动画+耗时)"""
+    with make_progress(None, desc, animation="spinner"):
+        return await coro
 
 
 async def _fetch_kline(item):
@@ -83,12 +112,17 @@ async def _fetch_members(code):
 
 # ═══════════════════ 全量初始化 ═══════════════════
 
-async def init_all_data(include_sector_members: bool = True) -> dict:
-    """一次性全量下载(并发加速)"""
+async def init_all_data(include_sector_members: bool = True, quick: bool = False) -> dict:
+    """
+    一次性全量下载(并发加速)
+
+    quick=True: 快速模式, 仅股票列表+实时行情+人气排名(秒级完成),
+    板块数据在首次使用时自动从网络下载并缓存(懒加载)。
+    """
     init_dbs()
     log = []
     today = _today()
-    total_steps = 7 if include_sector_members else 5
+    total_steps = 3 if quick else (7 if include_sector_members else 5)
     step = 0
 
     def _step(msg):
@@ -96,25 +130,25 @@ async def init_all_data(include_sector_members: bool = True) -> dict:
         step += 1
         log.append(f"[{step}/{total_steps}] {msg}")
 
-    # 1. 股票列表(单次 API)
-    _step("下载股票列表...")
-    stocks = await get_stock_list()
-    save_stock_basic(stocks)
-    set_meta_stock("stock_count", str(len(stocks)))
-    log[-1] += f" {len(stocks)} 只"
-
-    # 2. 全市场实时行情(单次 API)
+    # 1. 全市场实时行情(分页并发)
     _step("下载全市场实时行情...")
-    spots = await get_latest_indicators()
+    spots = await _with_spinner("下载全市场实时行情...", get_latest_indicators())
     for s in spots:
         s["updated_date"] = today
     save_stock_spot(spots)
     set_meta_stock("spot_updated", today)
     log[-1] += f" {len(spots)} 只"
 
-    # 3. 人气排名(分页 API)
+    # 2. 股票列表(从行情数据提取)
+    _step("保存股票列表...")
+    stocks = _stocks_from_spot(spots)
+    save_stock_basic(stocks)
+    set_meta_stock("stock_count", str(len(stocks)))
+    log[-1] += f" {len(stocks)} 只"
+
+    # 3. 人气排名(分页并发)
     _step("下载人气排名...")
-    raw_rank = await _fetch_all_rankings()
+    raw_rank = await _with_spinner("下载人气排名...", _fetch_all_rankings())
     rank_rows = _format_rank_items(raw_rank)
     for r in rank_rows:
         r["rank_date"] = today
@@ -122,11 +156,15 @@ async def init_all_data(include_sector_members: bool = True) -> dict:
     set_meta_stock("rank_updated", today)
     log[-1] += f" {len(rank_rows)} 条"
 
+    if quick:
+        log.append("快速模式完成: 板块数据将在首次使用时自动下载")
+        return {"status": "ok", "mode": "quick", "log": log, "paths": get_db_paths()}
+
     # 4. 板块列表
     _step("下载概念板块...")
-    concept = await get_sector_list("concept")
+    concept = await _with_spinner("下载概念板块...", get_sector_list("concept"))
     _step("下载行业板块...")
-    industry = await get_sector_list("industry")
+    industry = await _with_spinner("下载行业板块...", get_sector_list("industry"))
     all_sectors = concept + industry
     for s in all_sectors:
         s["updated_date"] = today
@@ -139,6 +177,7 @@ async def init_all_data(include_sector_members: bool = True) -> dict:
     codes = [s.get("sector_code", "") for s in all_sectors if s.get("sector_code")]
     _step(f"并发下载 {len(codes)} 个板块 K 线...")
     tasks = [(code, 250) for code in codes]
+    t0 = time.perf_counter()
     all_klines = await _concurrent_map(tasks, _fetch_kline, desc="板块K线")
     kline_total = 0
     for kl in all_klines:
@@ -146,12 +185,13 @@ async def init_all_data(include_sector_members: bool = True) -> dict:
             save_sector_kline(kl)
             kline_total += len(kl)
     set_meta_sector("kline_updated", today)
-    log[-1] += f" {kline_total} 条"
+    log[-1] += f" {kline_total} 条(耗时 {time.perf_counter() - t0:.0f}s)"
 
     # 6-7. 板块成分股(可选, 并发下载)
     if include_sector_members:
         _step(f"并发下载 {len(codes)} 个板块成分股...")
-        member_results = await _concurrent_map(codes, _fetch_members, desc="成分股", batch_size=15)
+        t0 = time.perf_counter()
+        member_results = await _concurrent_map(codes, _fetch_members, desc="成分股")
         member_total = 0
         for code, members in member_results:
             if members:
@@ -163,7 +203,7 @@ async def init_all_data(include_sector_members: bool = True) -> dict:
                 member_total += len(members)
         set_meta_sector("member_updated", today)
         set_meta_sector("member_sector_count", str(len(codes)))
-        log[-1] += f" {member_total} 条"
+        log[-1] += f" {member_total} 条(耗时 {time.perf_counter() - t0:.0f}s)"
     else:
         _step("跳过成分股下载")
 
@@ -173,21 +213,26 @@ async def init_all_data(include_sector_members: bool = True) -> dict:
 # ═══════════════════ 增量每日更新 ═══════════════════
 
 async def update_daily_stocks() -> dict:
-    """增量更新股票: 行情+排名+列表(三项各一次 API)"""
+    """增量更新股票: 行情+排名+列表(三项并发执行)"""
     log = []
     today = _today()
-    for label, coro, on_ok in [
+    jobs = [
         ("实时行情", get_latest_indicators(),
          lambda r: (save_stock_spot([{**s, "updated_date": today} for s in r]),
-                    set_meta_stock("spot_updated", today), f"{len(r)} 只")),
+                    save_stock_basic(_stocks_from_spot(r)),
+                    set_meta_stock("spot_updated", today),
+                    set_meta_stock("stock_count", str(len(r))),
+                    f"{len(r)} 只(含列表)")),
         ("人气排名", _fetch_all_rankings(),
          lambda r: (save_stock_rank([{**x, "rank_date": today} for x in _format_rank_items(r)]),
                     set_meta_stock("rank_updated", today), f"{len(r)} 条")),
-        ("股票列表", get_stock_list(),
-         lambda r: (save_stock_basic(r), set_meta_stock("stock_count", str(len(r))), f"{len(r)} 只")),
-    ]:
+    ]
+    results = await asyncio.gather(*(coro for _, coro, _ in jobs), return_exceptions=True)
+    for (label, _, on_ok), result in zip(jobs, results):
+        if isinstance(result, Exception):
+            log.append(f"{label}: FAIL {result}")
+            continue
         try:
-            result = await coro
             ret = on_ok(result)  # 副作用只执行一次
             log.append(f"{label}: OK {ret[-1]}")
         except Exception as e:
@@ -232,7 +277,7 @@ async def update_daily_sectors(include_members: bool = True, top_n: int = 50) ->
     try:
         log.append(f"板块K线(Top{len(active_codes)}, 最近5条): 并发...")
         tasks = [(code, 5) for code in active_codes]
-        all_klines = await _concurrent_map(tasks, _fetch_kline)
+        all_klines = await _concurrent_map(tasks, _fetch_kline, desc="板块K线更新")
         kline_total = 0
         for kl in all_klines:
             if kl:
@@ -247,7 +292,7 @@ async def update_daily_sectors(include_members: bool = True, top_n: int = 50) ->
     if include_members and active_codes:
         try:
             log.append(f"成分股(Top{len(active_codes)}): 并发...")
-            member_results = await _concurrent_map(active_codes, _fetch_members)
+            member_results = await _concurrent_map(active_codes, _fetch_members, desc="成分股更新")
             member_total = 0
             for code, members in member_results:
                 if members:

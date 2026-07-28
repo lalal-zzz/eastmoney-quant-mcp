@@ -58,6 +58,7 @@
       "get_data_status",
       "screen_stocks",
       "get_kline_local_or_net",
+      "get_stock_kline_period",
       "get_rank_trend_data",
       "get_sector_list",
       "get_stock_belong_sectors",

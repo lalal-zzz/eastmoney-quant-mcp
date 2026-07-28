@@ -5,19 +5,21 @@
 - **Dual-runtime**: `index.js` (Node shim, ESM) spawns `python -m eastmoney_quant_mcp.server` via stdio and proxies I/O. The Python server is the real MCP implementation.
 - **Entrypoint**: `src/eastmoney_quant_mcp/server.py` — uses `mcp.server.stdio` and a `@register` decorator to wire tools to MCP handlers.
 - **Source layout**:
-  - `data/network.py` — HTTP client (curl_cffi) + Edge cookie extraction + symbol normalization
+  - `data/network.py` — HTTP client (curl_cffi) + Edge cookie extraction + symbol normalization + K-line host rotation (`try_kline_hosts`)
   - `data/indicators.py` — technical indicator calcs (MA/RSI/MACD/BOLL/KDJ/ATR)
   - `data/storage.py` — SQLite storage engine (stock database + sector database)
-  - `data/sync.py` — full init download + incremental daily update coordinator (async concurrency)
+  - `data/sync.py` — full init download + incremental daily update coordinator (semaphore-pipelined async concurrency, 16 in flight; `init_all_data(quick=True)` = fast mode)
   - `data/search.py` — local DB queries with fallback to network APIs
-  - `tools/stock_data.py` — stock list, history, indicators, search
+  - `data/progress.py` — progress-bar shim: funny-progress → plain tqdm → null (all stderr-only, auto-silent on non-TTY)
+  - `tools/stock_data.py` — stock list, history, indicators, search, multi-period K-line (`get_stock_kline_period`: klt 1/5/15/30/60/101/102/103)
   - `tools/stock_rank.py` — popularity rankings (gainers/volume/turnover)
-  - `tools/sector_data.py` — sector list, members, K-line
+  - `tools/sector_data.py` — sector list, members, K-line (`get_sector_kline_net` accepts `klt`)
   - `tools/pattern_scan.py` — technical pattern screening
   - `tools/sector_screen.py` — sector screening + capital flow analysis
   - `tools/data_manager.py` — local data management MCP tools (init/update/search/sector→stocks)
   - `tools/analysis.py` — individual stock technical analysis reports (support/resistance/risk/position)
   - `skill/SKILL.md` — main skill index; sub-skills: `data-init/`, `stock-screening/`, `report-generation/`
+- **Sibling package**: `funny-progress/` — standalone animated progress-bar package (tqdm + mascot animations, stderr-only). Reusable in other projects; install with `pip install -e ./funny-progress`. Not yet on PyPI — `data/progress.py` degrades gracefully without it.
 - **Data source**: [akshare](https://github.com/akfamily/akshare) for all Eastmoney APIs.
 
 ## Commands
@@ -45,7 +47,11 @@ There is **no linter, formatter, or typechecker** configured in this repo.
 
 ## Network quirk
 
-`data/network.py` patches `socket.getaddrinfo` to force IPv4 and clears all proxy env vars (`http_proxy`, `https_proxy`, `HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`) at import time. HTTP requests use `curl_cffi` with Edge impersonation to bypass TLS fingerprinting. If you add a new API call, use `http_get`/`http_get_text` from this module, **not** `requests` or `httpx` directly.
+`data/network.py` patches `socket.getaddrinfo` to force IPv4 and clears all proxy env vars (`http_proxy`, `https_proxy`, `HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`) at import time. It also sets `NO_PROXY=*` because `requests`/akshare would otherwise read the Windows registry system proxy directly (bypassing env clearing). HTTP requests use `curl_cffi` with Edge impersonation to bypass TLS fingerprinting. If you add a new API call, use `http_get`/`http_get_text` from this module, **not** `requests` or `httpx` directly.
+
+### Rate limiting (learned the hard way)
+
+`push2his.eastmoney.com` (K-line API) will **IP-ban after sustained heavy use** (~thousands of requests/hour, e.g. running full init repeatedly). Symptom: `curl: (56) Connection closed abruptly` on ALL kline hosts while `push2` (clist) keeps working. The ban is temporary — wait it out (minutes to hours). `try_kline_hosts` treats empty `data: null` as failure and rotates to the next host. Normal usage (one full init + daily updates) is well below the threshold.
 
 ### Cookie adaptation
 
@@ -84,7 +90,7 @@ The Node shim sets `PYTHONPATH` to include `src/` automatically.
 
 ## Local data workflow
 
-First-time use requires `init_full_data` to download everything into local SQLite databases. Then use `update_daily_data` for incremental daily refresh. After initialization, most queries (search, K-line, rankings, sector members) work from local DB without network calls.
+First-time use requires `init_full_data` — `quick=True` (~15s, stocks+quotes+ranks only, sector data lazy-loads on first use via `_ensure_sector_members`) or `quick=False` (full, ~3-4 min). Then use `update_daily_data` for incremental daily refresh. After initialization, most queries (search, K-line, rankings, sector members) work from local DB without network calls.
 
 Key local tools: `init_full_data` → `update_daily_data` → `screen_stocks` / `get_kline_local_or_net` / `get_sector_members_flow` (sector→stocks workflow) / `get_stock_belong_sectors` (stock→sectors reverse lookup) / `get_rank_trend_data` (historical popularity trend).
 

@@ -28,3 +28,15 @@ def test_pattern_list():
     assert len(PATTERNS) == len(PATTERN_DESCRIPTIONS)
     for name in PATTERNS:
         assert name in PATTERN_DESCRIPTIONS
+
+
+def test_normalize_klt():
+    from eastmoney_quant_mcp.tools.stock_data import _normalize_klt
+
+    assert _normalize_klt("60") == "60"
+    assert _normalize_klt(101) == "101"  # int 入参也可
+    assert _normalize_klt(" 5 ") == "5"  # 容忍空白
+    with pytest.raises(ValueError):
+        _normalize_klt("7")
+    with pytest.raises(ValueError):
+        _normalize_klt("abc")

@@ -1,7 +1,11 @@
 """
 人气榜单工具: 东方财富人气排名(早盘/尾盘)
+
+网络请求为同步实现(curl_cffi), 对外 async 接口用 asyncio.to_thread 包装,
+使 asyncio.gather 能真正并发。
 """
 
+import asyncio
 from urllib.parse import urlencode
 
 from ..data.network import http_get, normalize_symbol
@@ -16,7 +20,10 @@ FIELDS = [
 ]
 
 
-def _build_url(page: int, page_size: int = 100) -> str:
+_PAGE_SIZE = 500
+
+
+def _build_url(page: int, page_size: int = _PAGE_SIZE) -> str:
     params = {
         "st": "CHANGE_RATE",
         "sr": "-1",
@@ -31,27 +38,54 @@ def _build_url(page: int, page_size: int = 100) -> str:
     return f"{BASE_URL}?{urlencode(params)}"
 
 
+def _rank_page_sync(page: int) -> dict | None:
+    """人气排名单页请求(同步, 供 to_thread 调用)"""
+    return http_get(_build_url(page), retries=3, timeout=20)
+
+
+def _extract_rank(payload: dict | None) -> tuple[list, int]:
+    """提取排名记录列表和总条数(count 缺失时为 0)"""
+    if not payload:
+        return [], 0
+    result = payload.get("result") or {}
+    data = result.get("data") or payload.get("data")
+    if not isinstance(data, list) or not data:
+        return [], 0
+    return data, result.get("count", 0) or 0
+
+
 async def _fetch_all_rankings() -> list[dict]:
-    """分页拉取全部人气排名数据"""
-    all_rows = []
-    page = 1
-    while True:
-        url = _build_url(page, 100)
-        payload = http_get(url, retries=3, timeout=20)
-        if not payload:
-            break
+    """分页拉取全部人气排名: 第1页拿 count, 剩余页并发; count 缺失时回退串行"""
+    rows, count = _extract_rank(await asyncio.to_thread(_rank_page_sync, 1))
+    if not rows:
+        return []
 
-        result = payload.get("result") or {}
-        data = result.get("data") or payload.get("data")
-        if not isinstance(data, list) or not data:
-            break
+    if count > len(rows):
+        import math
+        pages = math.ceil(count / _PAGE_SIZE)
+        sem = asyncio.Semaphore(16)
 
-        all_rows.extend(data)
-        if len(data) < 100:
+        async def _page(p: int) -> list:
+            async with sem:
+                chunk, _ = _extract_rank(await asyncio.to_thread(_rank_page_sync, p))
+                return chunk
+
+        for chunk in await asyncio.gather(*(_page(p) for p in range(2, pages + 1))):
+            rows.extend(chunk)
+        return rows
+
+    # count 缺失: 串行翻页直至短页
+    page = 2
+    while len(rows) % _PAGE_SIZE == 0:
+        chunk, _ = _extract_rank(await asyncio.to_thread(_rank_page_sync, page))
+        if not chunk:
+            break
+        rows.extend(chunk)
+        if len(chunk) < _PAGE_SIZE:
             break
         page += 1
 
-    return all_rows
+    return rows
 
 
 def _format_rank_item(item: dict) -> dict:
