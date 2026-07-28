@@ -18,7 +18,7 @@ Local-first A-share (Chinese stock market) quantitative analysis MCP server. Dow
   - `data/sync.py` — full init + incremental daily update (async, 16 concurrent)
   - `tools/` — MCP tool implementations (data_manager, stock_data, sector_data, analysis, ...)
   - `skill/` — main `SKILL.md` + sub-skills `data-init/`, `stock-screening/`, `report-generation/`
-- `funny-progress/` — standalone optional progress-bar package (`pip install -e ./funny-progress`); `data/progress.py` degrades gracefully without it.
+- `funny-tqdm` — standalone optional progress-bar package on PyPI (`pip install funny-tqdm`); `data/progress.py` degrades gracefully without it.
 
 ## Commands
 

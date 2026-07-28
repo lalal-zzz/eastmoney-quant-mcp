@@ -13,7 +13,7 @@
   - `data/storage.py` — SQLite storage engine (stock database + sector database)
   - `data/sync.py` — full init download + incremental daily update coordinator (semaphore-pipelined async concurrency, 16 in flight; `init_all_data(quick=True)` = fast mode)
   - `data/search.py` — local DB queries with fallback to network APIs
-  - `data/progress.py` — progress-bar shim: funny-progress → plain tqdm → null (all stderr-only, auto-silent on non-TTY)
+  - `data/progress.py` — progress-bar shim: funny-tqdm → plain tqdm → null (all stderr-only, auto-silent on non-TTY)
   - `tools/stock_data.py` — stock list, history, indicators, search, multi-period K-line (`get_stock_kline_period`: klt 1/5/15/30/60/101/102/103)
   - `tools/stock_rank.py` — popularity rankings (gainers/volume/turnover)
   - `tools/sector_data.py` — sector list, members, K-line (`get_sector_kline_net` accepts `klt`)
@@ -22,7 +22,7 @@
   - `tools/data_manager.py` — local data management MCP tools (init/update/search/sector→stocks)
   - `tools/analysis.py` — individual stock technical analysis reports (support/resistance/risk/position)
   - `skill/SKILL.md` — main skill index; sub-skills: `data-init/`, `stock-screening/`, `report-generation/`
-- **Sibling package**: `funny-progress/` — standalone animated progress-bar package (tqdm + mascot animations, stderr-only). Reusable in other projects; install with `pip install -e ./funny-progress`. Not yet on PyPI — `data/progress.py` degrades gracefully without it.
+- **Standalone package**: [`funny-tqdm`](https://pypi.org/project/funny-tqdm/) — animated progress-bar package (tqdm + mascot animations, stderr-only), published on PyPI. Install with `pip install funny-tqdm`. The `funny-progress/` subdirectory in this repo is the legacy source; the canonical repo is [github.com/lalal-zzz/funny-tqdm](https://github.com/lalal-zzz/funny-tqdm). `data/progress.py` degrades gracefully without it.
 - **Data source**: [akshare](https://github.com/akfamily/akshare) for all Eastmoney APIs.
 
 ## Commands
