@@ -6,7 +6,30 @@
 [![Python](https://img.shields.io/pypi/pyversions/eastmoney-quant-mcp.svg)](https://pypi.org/project/eastmoney-quant-mcp/)
 [![License](https://img.shields.io/github/license/lalal-zzz/eastmoney-quant-mcp)](LICENSE)
 
-A-share quantitative analysis MCP server powered by **Eastmoney** (eastmoney.com) public APIs. Provides professional stock data analysis for Claude Desktop / Claude Code / Codex / opencode.
+Local-first A-share data and research center powered by **Eastmoney** public APIs. It keeps daily stock and sector data locally, then lets Agents compose screening and research workflows.
+
+## Agent setup (npm)
+
+```bash
+npm install -g eastmoney-quant-mcp
+eastmoney-quant install --agents auto   # auto-configure detected Agents + copy skills
+eastmoney-quant setup --data-root "D:/MarketData"   # choose where SQLite data lives
+eastmoney-quant doctor                  # verify runtime / config / agent status
+```
+
+**Supported Agents** (auto-detected and configured by `install --agents auto`):
+
+| Agent | Config written | Skills installed |
+|-------|----------------|------------------|
+| Claude Code | `~/.claude.json` | ✅ `~/.claude/skills/` |
+| Codex | `~/.codex/config.toml` | ✅ `~/.codex/skills/` |
+| Cursor | `~/.cursor/mcp.json` | — (tools are self-describing) |
+| VS Code Copilot | VS Code user `mcp.json` | — |
+| Qoder | `~/.qoder/mcp.json` | ✅ `~/.qoder/skills/` |
+
+The installer manages an isolated Python environment with [`uv`](https://docs.astral.sh/uv/); install `uv` first if it is not already available. It asks before changing any Agent configuration and creates a backup (restorable via `eastmoney-quant uninstall`). For OpenCode and other MCP clients, a manual JSON template is printed by `eastmoney-quant install --agents auto --dry-run`.
+
+The data directory is user-owned and is never placed in the npm package directory. Settings resolve as **env var → `~/.eastmoney-quant/config.toml` → default**, so existing `EASTMONEY_STOCK_DATA_DIR`, `EASTMONEY_SECTOR_DATA_DIR`, and `EASTMONEY_PYTHON` environment variables keep working and override the config file.
 
 ## Core Capabilities
 
@@ -36,6 +59,8 @@ npm install -g eastmoney-quant-mcp
 # or pip
 pip install eastmoney-quant-mcp
 ```
+
+For a checked installation use the four-step setup above instead of relying on npm lifecycle scripts.
 
 **Requirements**: Python >= 3.10 | Node.js >= 18
 
@@ -122,7 +147,14 @@ pip install eastmoney-quant-mcp
 | `get_stock_belong_sectors` | Reverse lookup: which sectors a stock belongs to |
 | `generate_stock_report` | Full analysis report: trend / support-resistance / risk / position |
 
-Plus 3 Claude Skills that teach the AI how to compose these tools for complex workflows.
+Plus **4 Claude Skills** (installed automatically by `eastmoney-quant install`) that teach the AI how to compose these tools:
+
+| Skill | Purpose |
+|-------|---------|
+| `eastmoney-quant` | Main index — data-status-first research workflow |
+| `eastmoney-quant-data-init` | First-time initialization, daily updates, troubleshooting |
+| `eastmoney-quant-stock-screening` | Screening recipes and condition combinations |
+| `eastmoney-quant-report-generation` | Report formatting and interpretation guidelines |
 
 ---
 
@@ -130,22 +162,26 @@ Plus 3 Claude Skills that teach the AI how to compose these tools for complex wo
 
 Data is stored in local SQLite databases. After initial setup, queries are extremely fast with no network needed:
 
-| Database | Default Path | Content |
-|----------|-------------|---------|
-| Stock DB | `~/Desktop/stock_data/stock_data.db` | 5530 stocks: quotes + K-lines + rankings + indicators |
-| Sector DB | `~/Desktop/sector_data/sector_data.db` | 480+ sectors: quotes + capital flow + K-lines + members |
+| Database | Default Path (Windows) | Default Path (Linux/macOS) | Content |
+|----------|-----------------------|---------------------------|---------|
+| Stock DB | `~/Desktop/股票信息/stock_data.db` | `~/.eastmoney-quant/data/stocks/stock_data.db` | 5530+ stocks: quotes + K-lines + rankings + indicators |
+| Sector DB | `~/Desktop/分析板块/sector_data.db` | `~/.eastmoney-quant/data/sectors/sector_data.db` | 480+ sectors: quotes + capital flow + K-lines + members |
 
-Customize paths via `EASTMONEY_STOCK_DATA_DIR` and `EASTMONEY_SECTOR_DATA_DIR` env vars.
+Customize paths via `eastmoney-quant setup --data-root <dir>` (writes `~/.eastmoney-quant/config.toml`) or the `EASTMONEY_STOCK_DATA_DIR` / `EASTMONEY_SECTOR_DATA_DIR` env vars (env vars take precedence).
 
 ---
 
 ## Environment Variables
 
+Resolution order: **env var → `~/.eastmoney-quant/config.toml` → default**.
+
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `EASTMONEY_PYTHON` | `python` | Python interpreter path |
-| `EASTMONEY_STOCK_DATA_DIR` | `~/Desktop/股票信息` | Stock database directory |
-| `EASTMONEY_SECTOR_DATA_DIR` | `~/Desktop/分析板块` | Sector database directory |
+| `EASTMONEY_PYTHON` | managed runtime → `python` | Python interpreter path used by the Node shim |
+| `EASTMONEY_DATA_DIR` | Win: `~/Desktop`; Linux/macOS: `~/.eastmoney-quant/data` | Root directory for both databases |
+| `EASTMONEY_STOCK_DATA_DIR` | `<data_root>/股票信息` (or `stocks` on Linux/macOS default) | Stock database directory |
+| `EASTMONEY_SECTOR_DATA_DIR` | `<data_root>/分析板块` (or `sectors` on Linux/macOS default) | Sector database directory |
+| `EASTMONEY_CONFIG` | `~/.eastmoney-quant/config.toml` | Override config file path |
 | `EASTMONEY_COOKIE` | Auto-extract from Edge | Eastmoney API cookies (improves request success rate) |
 
 ---
@@ -171,7 +207,41 @@ Or manually edit `claude_desktop_config.json`:
 }
 ```
 
-### Codex / opencode
+### Codex
+
+Run `eastmoney-quant install --agents codex`, or add to `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.eastmoney-quant]
+command = "npx"
+args = ["eastmoney-quant-mcp"]
+```
+
+### Cursor
+
+Run `eastmoney-quant install --agents cursor`, or add the same JSON block to `~/.cursor/mcp.json`.
+
+### VS Code Copilot
+
+Run `eastmoney-quant install --agents copilot`, or add to your VS Code user `mcp.json` (`%APPDATA%\Code\User\mcp.json` on Windows, `~/.config/Code/User/mcp.json` on Linux):
+
+```json
+{
+  "servers": {
+    "eastmoney-quant": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["eastmoney-quant-mcp"]
+    }
+  }
+}
+```
+
+### Qoder
+
+Run `eastmoney-quant install --agents qoder`, or add the standard `mcpServers` block to `~/.qoder/mcp.json`.
+
+### OpenCode / other MCP clients
 
 ```json
 {
@@ -239,7 +309,9 @@ generate_stock_report("000001")
 git clone https://github.com/lalal-zzz/eastmoney-quant-mcp.git
 cd eastmoney-quant-mcp
 pip install -e ".[dev]"
-pytest
+pytest                    # Python unit tests
+npm run test:node         # Node installer tests
+pytest -m integration     # opt-in: real network + local DB writes
 ```
 
 ## License
@@ -256,7 +328,30 @@ MIT License
 [![Python](https://img.shields.io/pypi/pyversions/eastmoney-quant-mcp.svg)](https://pypi.org/project/eastmoney-quant-mcp/)
 [![License](https://img.shields.io/github/license/lalal-zzz/eastmoney-quant-mcp)](LICENSE)
 
-基于**东方财富网**公开数据的 A 股量化分析 MCP 服务，为 Claude Desktop / Claude Code / Codex / opencode 等 AI 客户端提供专业的股票数据分析能力。
+基于**东方财富网**公开数据的 A 股量化分析 MCP 服务，为 Claude Code / Codex / Cursor / VS Code Copilot / Qoder 等 AI 客户端提供专业的股票数据分析能力。
+
+## Agent 一键配置（npm）
+
+```bash
+npm install -g eastmoney-quant-mcp
+eastmoney-quant install --agents auto   # 自动检测并配置 Agent + 安装 Skill
+eastmoney-quant setup --data-root "D:/MarketData"   # 指定 SQLite 数据目录
+eastmoney-quant doctor                  # 检查运行时 / 配置 / Agent 状态
+```
+
+**支持的 Agent**（`install --agents auto` 自动检测并配置）：
+
+| Agent | 写入的配置 | Skill 安装 |
+|-------|-----------|-----------|
+| Claude Code | `~/.claude.json` | ✅ `~/.claude/skills/` |
+| Codex | `~/.codex/config.toml` | ✅ `~/.codex/skills/` |
+| Cursor | `~/.cursor/mcp.json` | —（工具描述自解释）|
+| VS Code Copilot | VS Code 用户级 `mcp.json` | — |
+| Qoder | `~/.qoder/mcp.json` | ✅ `~/.qoder/skills/` |
+
+安装器使用 [`uv`](https://docs.astral.sh/uv/) 管理隔离的 Python 环境（需先安装 `uv`）。修改任何 Agent 配置前都会询问并自动备份，可通过 `eastmoney-quant uninstall` 还原。OpenCode 等其他 MCP 客户端的手动配置模板可通过 `eastmoney-quant install --agents auto --dry-run` 打印。
+
+配置解析顺序为 **环境变量 → `~/.eastmoney-quant/config.toml` → 默认值**，已有的 `EASTMONEY_STOCK_DATA_DIR` 等环境变量继续生效并优先于配置文件。
 
 ## 核心能力
 
@@ -372,7 +467,14 @@ pip install eastmoney-quant-mcp
 | `get_stock_belong_sectors` | 反向查询：某只股票属于哪些板块 |
 | `generate_stock_report` | 生成个股综合分析报告（趋势/支撑阻力/风险等级/仓位建议） |
 
-附带 3 个 Claude Skill，教授 AI 如何组合使用这些工具完成复杂选股和报告工作流。
+附带 **4 个 Claude Skill**（由 `eastmoney-quant install` 自动安装），教授 AI 如何组合使用这些工具完成复杂选股和报告工作流：
+
+| Skill | 用途 |
+|-------|------|
+| `eastmoney-quant` | 主索引 — 先查数据状态再开展研究的工作流 |
+| `eastmoney-quant-data-init` | 首次初始化、每日更新、故障排查 |
+| `eastmoney-quant-stock-screening` | 选股条件组合与筛选套路 |
+| `eastmoney-quant-report-generation` | 报告格式化与解读指南 |
 
 ---
 
@@ -380,10 +482,10 @@ pip install eastmoney-quant-mcp
 
 数据存储在本地 SQLite 数据库中，首次初始化后查询速度极快，无需联网：
 
-| 数据库 | 默认路径 | 内容 |
-|--------|----------|------|
-| 股票数据库 | `~/Desktop/股票信息/stock_data.db` | 5530 只股票行情 + K 线 + 人气排名 + 技术指标 |
-| 板块数据库 | `~/Desktop/分析板块/sector_data.db` | 480+ 板块行情 + 资金流向 + K 线 + 成分股 |
+| 数据库 | 默认路径（Windows）| 默认路径（Linux/macOS）| 内容 |
+|--------|-------------------|----------------------|------|
+| 股票数据库 | `~/Desktop/股票信息/stock_data.db` | `~/.eastmoney-quant/data/stocks/stock_data.db` | 5530 只股票行情 + K 线 + 人气排名 + 技术指标 |
+| 板块数据库 | `~/Desktop/分析板块/sector_data.db` | `~/.eastmoney-quant/data/sectors/sector_data.db` | 480+ 板块行情 + 资金流向 + K 线 + 成分股 |
 
 可通过环境变量 `EASTMONEY_STOCK_DATA_DIR` 和 `EASTMONEY_SECTOR_DATA_DIR` 自定义路径。
 
@@ -391,11 +493,15 @@ pip install eastmoney-quant-mcp
 
 ## 环境变量
 
+解析顺序：**环境变量 → `~/.eastmoney-quant/config.toml` → 默认值**。
+
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
-| `EASTMONEY_PYTHON` | `python` | Python 解释器路径 |
-| `EASTMONEY_STOCK_DATA_DIR` | `~/Desktop/股票信息` | 股票数据库目录 |
-| `EASTMONEY_SECTOR_DATA_DIR` | `~/Desktop/分析板块` | 板块数据库目录 |
+| `EASTMONEY_PYTHON` | 托管运行时 → `python` | Node 入口使用的 Python 解释器路径 |
+| `EASTMONEY_DATA_DIR` | Win: `~/Desktop`；Linux/macOS: `~/.eastmoney-quant/data` | 两个数据库的根目录 |
+| `EASTMONEY_STOCK_DATA_DIR` | `<data_root>/股票信息`（Linux/macOS 默认为 `stocks`）| 股票数据库目录 |
+| `EASTMONEY_SECTOR_DATA_DIR` | `<data_root>/分析板块`（Linux/macOS 默认为 `sectors`）| 板块数据库目录 |
+| `EASTMONEY_CONFIG` | `~/.eastmoney-quant/config.toml` | 覆盖配置文件路径 |
 | `EASTMONEY_COOKIE` | 自动从 Edge 提取 | 东方财富 API Cookie（提升请求成功率） |
 
 ---
@@ -421,7 +527,41 @@ claude mcp add eastmoney-quant -- npx eastmoney-quant-mcp
 }
 ```
 
-### Codex / opencode
+### Codex
+
+运行 `eastmoney-quant install --agents codex`，或在 `~/.codex/config.toml` 中添加：
+
+```toml
+[mcp_servers.eastmoney-quant]
+command = "npx"
+args = ["eastmoney-quant-mcp"]
+```
+
+### Cursor
+
+运行 `eastmoney-quant install --agents cursor`，或将同样的 JSON 块加入 `~/.cursor/mcp.json`。
+
+### VS Code Copilot
+
+运行 `eastmoney-quant install --agents copilot`，或编辑 VS Code 用户级 `mcp.json`（Windows：`%APPDATA%\Code\User\mcp.json`，Linux：`~/.config/Code/User/mcp.json`）：
+
+```json
+{
+  "servers": {
+    "eastmoney-quant": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["eastmoney-quant-mcp"]
+    }
+  }
+}
+```
+
+### Qoder
+
+运行 `eastmoney-quant install --agents qoder`，或在 `~/.qoder/mcp.json` 中添加标准 `mcpServers` 配置块。
+
+### OpenCode / 其他 MCP 客户端
 
 ```json
 {
@@ -489,7 +629,9 @@ generate_stock_report("000001")
 git clone https://github.com/lalal-zzz/eastmoney-quant-mcp.git
 cd eastmoney-quant-mcp
 pip install -e ".[dev]"
-pytest
+pytest                    # Python 单元测试
+npm run test:node         # Node 安装器测试
+pytest -m integration     # 可选：真实网络 + 写本地库的集成测试
 ```
 
 ## 许可证

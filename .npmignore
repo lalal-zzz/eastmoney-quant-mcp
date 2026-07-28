@@ -1,0 +1,7 @@
+src/**/__pycache__/**
+src/**/*.pyc
+tests/
+node-tests/
+funny-progress/
+dist/
+.pytest_cache/

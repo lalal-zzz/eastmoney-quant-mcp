@@ -10,10 +10,11 @@
 import { spawn } from "node:child_process"
 import { delimiter, dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
+import { resolveRuntimePython } from "./lib/installer.js"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
-const PYTHON = process.env.EASTMONEY_PYTHON || "python"
+const PYTHON = resolveRuntimePython()
 const SERVER_MODULE = "eastmoney_quant_mcp.server"
 
 const pySrc = join(__dirname, "src")

@@ -11,15 +11,19 @@ import threading
 from datetime import date, datetime
 from pathlib import Path
 
-
-def _desktop_path(sub_dir: str) -> str:
-    desktop = Path.home() / "Desktop" / sub_dir
-    desktop.mkdir(parents=True, exist_ok=True)
-    return str(desktop)
+from ..core.config import get_settings
 
 
-STOCK_DIR = os.environ.get("EASTMONEY_STOCK_DATA_DIR", _desktop_path("股票信息"))
-SECTOR_DIR = os.environ.get("EASTMONEY_SECTOR_DATA_DIR", _desktop_path("分析板块"))
+def _configured_dir(kind: str) -> str:
+    settings = get_settings()
+    target = settings.stock_dir if kind == "stock" else settings.sector_dir
+    target.mkdir(parents=True, exist_ok=True)
+    return str(target)
+
+
+# Existing environment variables still override config.toml through get_settings().
+STOCK_DIR = _configured_dir("stock")
+SECTOR_DIR = _configured_dir("sector")
 
 STOCK_DB = os.path.join(STOCK_DIR, "stock_data.db")
 SECTOR_DB = os.path.join(SECTOR_DIR, "sector_data.db")

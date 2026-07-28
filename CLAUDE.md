@@ -1,24 +1,24 @@
-# AGENTS.md
+# CLAUDE.md
 
-## Architecture
+Guidance for Claude Code when working in this repository. Deep-dive details live in [AGENTS.md](AGENTS.md) and [ARCHITECTURE.md](ARCHITECTURE.md) — this file covers the essentials and the gotchas most likely to bite.
 
-- **Dual-runtime**: `index.js` (Node shim, ESM) spawns `python -m eastmoney_quant_mcp.server` via stdio and proxies I/O. The Python server is the real MCP implementation.
-- **Entrypoint**: `src/eastmoney_quant_mcp/server.py` — uses `mcp.server.stdio` and a `@register` decorator to wire tools to MCP handlers.
-- **Source layout**:
-  - `data/network.py` — HTTP client (curl_cffi) + Edge cookie extraction + symbol normalization
-  - `data/indicators.py` — technical indicator calcs (MA/RSI/MACD/BOLL/KDJ/ATR)
-  - `data/storage.py` — SQLite storage engine (stock database + sector database)
-  - `data/sync.py` — full init download + incremental daily update coordinator (async concurrency)
-  - `data/search.py` — local DB queries with fallback to network APIs
-  - `tools/stock_data.py` — stock list, history, indicators, search
-  - `tools/stock_rank.py` — popularity rankings (gainers/volume/turnover)
-  - `tools/sector_data.py` — sector list, members, K-line
-  - `tools/pattern_scan.py` — technical pattern screening
-  - `tools/sector_screen.py` — sector screening + capital flow analysis
-  - `tools/data_manager.py` — local data management MCP tools (init/update/search/sector→stocks)
-  - `tools/analysis.py` — individual stock technical analysis reports (support/resistance/risk/position)
-  - `skill/SKILL.md` — main skill index; sub-skills: `data-init/`, `stock-screening/`, `report-generation/`
-- **Data source**: [akshare](https://github.com/akfamily/akshare) for all Eastmoney APIs.
+## What this project is
+
+Local-first A-share (Chinese stock market) quantitative analysis MCP server. Downloads Eastmoney market data into local SQLite databases, then exposes **10 MCP tools** for screening, K-line queries, sector analysis, and technical reports. Ships 4 Claude Skills that teach agents how to compose the tools.
+
+## Architecture (dual-runtime)
+
+- `index.js` — Node shim (ESM): resolves a Python interpreter (`EASTMONEY_PYTHON` env → `~/.eastmoney-quant/runtime.json` → `python`), sets `PYTHONPATH` to `src/`, spawns `python -m eastmoney_quant_mcp.server` and proxies stdio. The Python server is the real MCP implementation.
+- `src/eastmoney_quant_mcp/server.py` — MCP entrypoint. Tools are wired with a local `@register(name, desc, schema)` decorator; results are wrapped in a `{data, meta, warnings, error}` envelope.
+- `bin/eastmoney-quant.js` + `lib/` — Node CLI installer (`install` / `setup` / `doctor` / `uninstall` / `config show`). Creates a `uv`-managed venv under `~/.eastmoney-quant/runtime/`, writes `~/.eastmoney-quant/config.toml`, auto-configures Claude Code / Codex / Cursor / VS Code Copilot / Qoder (with backups) and copies the 4 skills to skill-aware agents.
+- Key Python modules:
+  - `core/config.py` — settings resolution: env vars → `~/.eastmoney-quant/config.toml` → defaults
+  - `data/network.py` — curl_cffi HTTP client, Edge cookie extraction, symbol normalization, K-line host rotation
+  - `data/storage.py` — SQLite engine (stock DB + sector DB)
+  - `data/sync.py` — full init + incremental daily update (async, 16 concurrent)
+  - `tools/` — MCP tool implementations (data_manager, stock_data, sector_data, analysis, ...)
+  - `skill/` — main `SKILL.md` + sub-skills `data-init/`, `stock-screening/`, `report-generation/`
+- `funny-progress/` — standalone optional progress-bar package (`pip install -e ./funny-progress`); `data/progress.py` degrades gracefully without it.
 
 ## Commands
 
@@ -26,42 +26,41 @@
 # dev install (editable + dev deps)
 pip install -e ".[dev]"
 
-# run all tests (async via pytest-asyncio, no @pytest.mark.asyncio needed)
+# unit tests (pytest-asyncio auto mode; integration tests excluded by default)
 pytest
 
-# run a single test
+# single test
 pytest tests/test_core.py::test_normalize_symbol
+
+# integration tests (real network + writes local DBs — opt-in)
+pytest -m integration
+
+# manual smoke test (real network)
+python tests/test_smoke.py
+
+# Node installer/adapter tests
+npm run test:node
 ```
 
-`npm install` runs `pip install -e .` + `install-skill.js` automatically via `postinstall`. The skill copier silently tries `~/.claude/skills/` and `~/.agents/skills/`.
-
 There is **no linter, formatter, or typechecker** configured in this repo.
+
+`npm install` triggers `node bin/eastmoney-quant.js postinstall`, which only prompts interactively on a TTY (skipped in CI) before configuring agents. Nothing is modified without confirmation.
 
 ## Prerequisites
 
 - Python >= 3.10
-- Node.js >= 18 (for `npx` usage)
-- No external services needed — all data comes from public Eastmoney APIs.
+- Node.js >= 18 (for `npx` usage and the CLI)
+- `uv` (only needed for `eastmoney-quant install`'s managed Python runtime)
+- No external services — all data comes from public Eastmoney APIs.
 
-## Network quirk
+## Critical gotchas
 
-`data/network.py` patches `socket.getaddrinfo` to force IPv4 and clears all proxy env vars (`http_proxy`, `https_proxy`, `HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`) at import time. HTTP requests use `curl_cffi` with Edge impersonation to bypass TLS fingerprinting. If you add a new API call, use `http_get`/`http_get_text` from this module, **not** `requests` or `httpx` directly.
+1. **HTTP calls**: always use `http_get` / `http_get_text` from `data/network.py` — never `requests` or `httpx` directly. The module force-IPv4-patches `socket.getaddrinfo`, clears proxy env vars, sets `NO_PROXY=*`, and uses curl_cffi Edge impersonation to pass TLS fingerprinting.
+2. **Rate limiting**: `push2his.eastmoney.com` (K-line API) IP-bans after sustained heavy use (~thousands of requests/hour). Symptom: `curl: (56)` on all K-line hosts while clist keeps working. Temporary — wait it out. Don't run full init repeatedly.
+3. **Tool registration**: `server.py` registers exactly 10 tools via `@register`. Other functions in `tools/` (e.g. `pattern_scan`, `sector_screen`, `stock_rank`) are library code composed by Skills, intentionally not registered. When adding a tool, add both the import and the `@register` block; when removing, clean up both, and keep `package.json`'s `mcp.tools` list plus README in sync.
+4. **Cookies**: fallback order `EASTMONEY_COOKIE` env → Edge browser cookie DB (Windows) → none. Falls back silently if Edge is running (DB locked) or cookies are encrypted.
 
-### Cookie adaptation
-
-`network.py` auto-extracts Eastmoney cookies from Edge browser on Windows:
-
-1. Reads `%LOCALAPPDATA%\Microsoft\Edge\User Data\Default\Network\Cookies` (SQLite)
-2. Filters for domains containing `eastmoney` or `dfcf`
-3. Appends cookies to request headers
-
-Fallback order: `EASTMONEY_COOKIE` env var → Edge browser cookies → no cookies.
-
-- **Edge is running**: cookie DB is locked → falls back silently
-- **Edge cookies are encrypted**: newer Edge may encrypt cookie values → falls back to env var
-- Set `EASTMONEY_COOKIE` explicitly to skip auto-detection (e.g., `EASTMONEY_COOKIE="qgqp_b_id=xxx; st_pvi=yyy"`)
-
-## Symbol / code conventions
+## Symbol conventions
 
 | Format | Example |
 |--------|---------|
@@ -71,43 +70,26 @@ Fallback order: `EASTMONEY_COOKIE` env var → Edge browser cookies → no cooki
 
 Use `normalize_symbol()` / `to_prefixed_symbol()` / `normalize_sector_code()` from `data/network.py`. Prefix rules: `6` → sh, `8`/`9` → bj, others → sz.
 
-## Environment
+## Configuration
+
+Resolution order: **env var → `~/.eastmoney-quant/config.toml` → default** (see `core/config.py`).
 
 | Variable | Purpose | Default |
 |----------|---------|---------|
-| `EASTMONEY_PYTHON` | Override Python interpreter path | `python` |
-| `EASTMONEY_STOCK_DATA_DIR` | Stock SQLite DB directory | `~/Desktop/股票信息` |
-| `EASTMONEY_SECTOR_DATA_DIR` | Sector SQLite DB directory | `~/Desktop/分析板块` |
-| `EASTMONEY_COOKIE` | Manual cookie string for Eastmoney APIs | auto-extract from Edge |
-
-The Node shim sets `PYTHONPATH` to include `src/` automatically.
+| `EASTMONEY_PYTHON` | Python interpreter for the Node shim | managed runtime → `python` |
+| `EASTMONEY_DATA_DIR` | Root directory for both DBs | Win: `~/Desktop`; Linux/macOS: `~/.eastmoney-quant/data` |
+| `EASTMONEY_STOCK_DATA_DIR` | Stock SQLite DB directory | `<data_root>/股票信息` (Linux/macOS default: `stocks`) |
+| `EASTMONEY_SECTOR_DATA_DIR` | Sector SQLite DB directory | `<data_root>/分析板块` (Linux/macOS default: `sectors`) |
+| `EASTMONEY_CONFIG` | Override config.toml path | `~/.eastmoney-quant/config.toml` |
+| `EASTMONEY_COOKIE` | Manual Eastmoney cookie string | auto-extract from Edge |
+| `EASTMONEY_QUANT_HOME` | Override `~` for the Node CLI state | user home |
 
 ## Local data workflow
 
-First-time use requires `init_full_data` to download everything into local SQLite databases. Then use `update_daily_data` for incremental daily refresh. After initialization, most queries (search, K-line, rankings, sector members) work from local DB without network calls.
+First use requires `init_full_data` — `quick=True` (~15s: stocks + quotes + ranks; sector members lazy-load on first use) or `quick=False` (full, a few minutes). Then `update_daily_data` for incremental refresh. After init, most queries (screening, K-line, rankings, sector members) are served from local SQLite without network.
 
-Key local tools: `init_full_data` → `update_daily_data` → `screen_stocks` / `get_kline_local_or_net` / `get_sector_members_flow` (sector→stocks workflow) / `get_stock_belong_sectors` (stock→sectors reverse lookup) / `get_rank_trend_data` (historical popularity trend).
-
-`get_sector_kline` fetches from network; `get_sector_kline_local` reads from local DB after init.
-
-## Project config
-
-- **Build**: `hatchling` (Python), no transpilation (Node is plain ESM)
-- **Test**: `pytest` with `asyncio_mode = "auto"` — tests are pure unit tests (no network calls), test only normalization + pattern registry
-- **Package name**: `eastmoney-quant-mcp` (npm & PyPI)
-- **Optional deps**: `browser` extra installs `playwright` — not used by default tools
-
-## Tool registration gotcha
-
-Tools are wired via the `@register(name, desc, schema)` decorator in `server.py`. `screen_sector_by_capital_flow` is imported from `sector_screen` at the top of `server.py` but is **never registered** with `@register` — it's intentionally omitted (no user-facing tool for it yet). When adding new tools, make sure to add both the import and the `@register` block; when removing, clean up both.
+Tool flow: `init_full_data` → `update_daily_data` → `screen_stocks` / `get_kline_local_or_net` / `get_stock_kline_period` / `get_rank_trend_data` / `get_sector_list` / `get_stock_belong_sectors` / `generate_stock_report`.
 
 ## Skill format
 
-All 4 `SKILL.md` files use standard YAML frontmatter:
-```yaml
----
-name: skill-identifier
-description: What it does and when to trigger...
----
-```
-This matches the [official skill-creator format](https://github.com/anthropics/claude-plugins-official). The `install-skill.js` copies them to `~/.claude/skills/<name>/SKILL.md`.
+All 4 `SKILL.md` files use standard YAML frontmatter (`name` + `description`), matching the official skill-creator format. The installer (`lib/adapters.js`) copies them to `<agent>/skills/<name>/SKILL.md` for skill-aware agents: Claude Code (`~/.claude/skills/`), Codex (`~/.codex/skills/`), Qoder (`~/.qoder/skills/`). Cursor / VS Code Copilot only get the MCP server registration.

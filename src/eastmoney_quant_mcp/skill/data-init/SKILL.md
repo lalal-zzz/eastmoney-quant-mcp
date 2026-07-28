@@ -11,33 +11,43 @@ Tell the user this must be done before any screening or report generation.
 
 ## Storage paths
 
-Default locations (configurable via env vars):
+Resolution order: env var → `~/.eastmoney-quant/config.toml` (written by `eastmoney-quant setup`) → default.
 
 | Database | Default path | Env var |
 |----------|-------------|---------|
 | Stock | `~/Desktop/股票信息/stock_data.db` | `EASTMONEY_STOCK_DATA_DIR` |
 | Sector | `~/Desktop/分析板块/sector_data.db` | `EASTMONEY_SECTOR_DATA_DIR` |
 
-Ask the user if they want to change paths. If yes, guide them to set env vars before running init.
+Ask the user if they want to change paths. If yes, guide them to set env vars (or run `eastmoney-quant setup --data-root <dir>`) before running init.
 
 ## First-time setup
+
+Prefer quick mode — usable in seconds:
+
+```
+init_full_data(quick=True)
+```
+
+Downloads stock list + real-time quotes + popularity rankings only (~15s). Sector members lazy-load automatically on first sector query.
+
+Full mode (all sector K-lines + members up front, a few minutes):
 
 ```
 init_full_data(include_sector_members=True)
 ```
 
-Downloads and creates 8 tables:
+Tables created (8 data tables + `meta` in each DB):
 
 | Table | Content | Rows |
 |-------|---------|------|
 | `stock_basic` | Stock list | ~5500 |
 | `stock_spot` | Real-time snapshot (price/PE/PB/cap/volume_ratio/turnover_rate) | ~5500 |
-| `stock_rank` | Daily popularity ranking | ~5500 |
+| `stock_rank` | Daily popularity ranking | ~5500/day |
+| `stock_kline` | Per-stock daily K-line (downloaded on demand) | grows with use |
+| `stock_indicators` | Cached MA/RSI/MACD/BOLL/KDJ/ATR per stock | grows with use |
 | `sector_basic` | Concept + industry sectors | ~480 |
-| `sector_kline` | Sector K-line (250 days) | ~120K |
-| `sector_member` | Sector member stocks | ~15K (if included) |
-
-Time estimate: ~3min without members, ~15min with members.
+| `sector_kline` | Sector K-line (250 days) | ~120K (full mode) |
+| `sector_member` | Sector member stocks | ~15K (full mode / lazy) |
 
 ## Daily update
 

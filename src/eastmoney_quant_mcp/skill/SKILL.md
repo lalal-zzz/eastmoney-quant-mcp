@@ -1,87 +1,27 @@
 ---
 name: eastmoney-quant
-description: A-share stock quantitative analysis. Use when the user mentions Chinese A-share stocks (股票), stock screening (选股), sector analysis (板块分析), technical indicators (技术指标), popularity rankings (人气排名), or wants to analyze any stock with code like 000001/600000. Provides local database initialization, multi-condition stock screening, sector-to-stock workflows, and comprehensive technical analysis reports with support/resistance/risk/position advice.
+description: Local-first A-share data and research workflows. Use for Chinese stock data initialization, daily updates, screening, sector research, and evidence-based reports.
 ---
 
-# 东方财富量化 MCP
+# 东方财富数据研究中心
 
-9 MCP tools for A-share quantitative analysis. All screening and reporting use local SQLite data after `init_full_data`.
+先检查 `get_data_status`。数据未初始化时引导用户执行初始化；数据过期时说明日期并建议每日更新。不要假定实时数据已经可用。
 
-## Tool overview
+对研究任务使用“宽筛 → 个股/板块验证 → 报告”的顺序：先筛选候选，再获取需要的日线、排名和板块背景，最后生成可追溯结论。报告必须写明数据日期、数据缺失和风险，不能输出确定性的买卖或仓位指令。
 
-| Tool | Purpose |
-|------|---------|
-| `init_full_data` | First-time database setup |
-| `update_daily_data` | Daily incremental refresh |
-| `get_data_status` | Check database state |
-| `screen_stocks` | Universal multi-condition screening (replaces search/ranking/sector filtering) |
-| `get_kline_local_or_net` | Stock K-line + computed indicators |
-| `get_rank_trend_data` | Historical popularity ranking trend |
-| `get_sector_list` | Concept/industry sector browsing |
-| `get_stock_belong_sectors` | Reverse lookup: stock → its sectors |
-| `generate_stock_report` | Full analysis: trend/support-resistance/risk/position |
+## 工具速查（10 个）
 
-## Workflow
+| 工具 | 用途 |
+|------|------|
+| `init_full_data` | 首次初始化（优先 `quick=True`，秒级可用） |
+| `update_daily_data` | 每日增量更新（建议收盘后） |
+| `get_data_status` | 本地数据库状态（任何研究前先调用） |
+| `screen_stocks` | 万能选股：18 条件 + 板块限定 + 名称搜索 + 排序 |
+| `get_kline_local_or_net` | 个股日线（本地优先，自动缓存技术指标） |
+| `get_stock_kline_period` | 多周期 K 线：1/5/15/30/60 分钟 + 日/周/月（网络实时） |
+| `get_rank_trend_data` | 个股人气排名历史趋势 |
+| `get_sector_list` | 概念/行业板块列表及资金流向 |
+| `get_stock_belong_sectors` | 反查个股所属板块 |
+| `generate_stock_report` | 个股综合分析报告（趋势/支撑阻力/风险/仓位） |
 
-### Stock screening
-```
-screen_stocks(conditions, sort_by, sector_code, name_keyword)
-```
-18 condition keys: `min_price`, `max_price`, `min_change_pct`, `max_change_pct`, `min_volume_ratio`, `min_turnover_rate`, `max_turnover_rate`, `min_pe`, `max_pe`, `min_pb`, `max_pb`, `min_market_cap`, `max_market_cap`, `min_float_market_cap`, `min_sixty_day_change`, `min_ytd_change`, `min_amplitude`, `max_amplitude`.
-
-`sort_by`: `change_pct` | `volume_ratio` | `turnover_rate` | `pe_dynamic` | `pb` | `total_market_cap` | `popularity_rank`
-
-Common patterns (all via `screen_stocks`):
-- Search by name: `screen_stocks(name_keyword="银行")`
-- Search by code: `screen_stocks(name_keyword="000001")`
-- Volume breakout: `screen_stocks({"min_change_pct":3,"min_volume_ratio":2,"max_pe":50})`
-- Low PE + market cap: `screen_stocks({"max_pe":15,"min_market_cap":500,"max_pb":1.5})`
-- Sector members: `screen_stocks(sector_code="BK1090", sort_by="change_pct")`
-- Popularity ranking: `screen_stocks(sort_by="popularity_rank", top_n=100)`
-- Full market: `screen_stocks({})` or `screen_stocks(sort_by="change_pct")`
-
-### Sector → stocks
-```
-get_sector_list("concept") → pick top by change_pct → screen_stocks(sector_code="BKxxxx")
-```
-
-### Stock → report
-```
-get_kline_local_or_net(symbol)  →  download + cache K-line + indicators
-generate_stock_report(symbol)   →  full analysis
-get_rank_trend_data(symbol)     →  popularity trend
-get_stock_belong_sectors(symbol) →  sector context
-```
-
-Report output: basic_info / trend_analysis / technical_indicators / support_resistance / risk_assessment / position_advice
-
-## Database schema
-
-```
-stock_data.db:
-  stock_basic ── symbol, name
-  stock_spot  ── ★ screening core: 20+ fields (price/PE/PB/cap/ratio)
-  stock_rank  ── daily popularity history
-  stock_kline ── K-line (on demand)
-  stock_indicators ─ ★ report core: MA/RSI/MACD/BOLL/KDJ/ATR
-
-sector_data.db:
-  sector_basic ── 328 sectors + capital flow
-  sector_kline ── sector K-line history
-  sector_member ── ★ sector↔stock bridge
-```
-
-## Init & maintenance
-
-```
-init_full_data(include_sector_members=True)   # first time, ~10min
-update_daily_data(include_sector_members=True) # daily, ~2-5min
-get_data_status()                              # check integrity
-```
-
-## Sub-skills
-
-See detailed workflows in:
-- `eastmoney-quant-data-init` — database setup guide
-- `eastmoney-quant-stock-screening` — screening condition templates
-- `eastmoney-quant-report-generation` — report interpretation + formatting
+详细流程见子 Skill：`eastmoney-quant-data-init`、`eastmoney-quant-stock-screening`、`eastmoney-quant-report-generation`。

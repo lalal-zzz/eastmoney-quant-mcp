@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "eastmoney-quant-mcp"
-version = "0.1.0"
+version = "0.2.0"
 description = "东方财富量化 MCP 服务 - 股票数据下载、人气榜单、板块分析、形态选股 AI 助手"
 readme = "README.md"
 license = "MIT"

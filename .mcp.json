@@ -16,6 +16,7 @@
     {"name": "get_data_status", "description": "Database integrity check"},
     {"name": "screen_stocks", "description": "Universal multi-condition screening (price/PE/PB/cap/sector/name)"},
     {"name": "get_kline_local_or_net", "description": "Stock K-line with auto-cached indicators"},
+    {"name": "get_stock_kline_period", "description": "Multi-period K-line: 1/5/15/30/60-min, daily/weekly/monthly (network real-time)"},
     {"name": "get_rank_trend_data", "description": "Historical popularity ranking trend"},
     {"name": "get_sector_list", "description": "Concept/industry sector browser"},
     {"name": "get_stock_belong_sectors", "description": "Reverse: stock to its sectors"},

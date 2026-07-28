@@ -1,26 +1,31 @@
 {
   "name": "eastmoney-quant-mcp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A-share quantitative analysis MCP server — Eastmoney data, stock screening, sector analysis, technical reports",
   "type": "module",
   "main": "index.js",
   "bin": {
-    "eastmoney-quant-mcp": "./index.js"
+    "eastmoney-quant-mcp": "./index.js",
+    "eastmoney-quant": "./bin/eastmoney-quant.js"
   },
   "files": [
     "index.js",
-    "install-skill.js",
-    "src/",
+    "bin/",
+    "lib/",
+    "src/**/*.py",
+    "src/**/SKILL.md",
     ".claude-plugin/",
     ".mcp.json",
     "pyproject.toml",
     "README.md",
     "AGENTS.md",
+    "ARCHITECTURE.md",
     "CLAUDE.md",
     "LICENSE"
   ],
   "scripts": {
-    "postinstall": "python -m pip install -e . --quiet 2>/dev/null || pip install -e . --quiet 2>/dev/null || echo '[warn] Python deps install failed, make sure pip is available' && node install-skill.js",
+    "postinstall": "node bin/eastmoney-quant.js postinstall",
+    "test:node": "node --test node-tests/*.test.js",
     "start": "node index.js"
   },
   "keywords": [

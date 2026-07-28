@@ -1,10 +1,11 @@
 """
 东方财富量化 MCP Server — 精简入口
-只暴露 9 个核心数据工具，其余逻辑由 Skill 组合实现。
+只暴露 10 个核心数据工具，其余逻辑由 Skill 组合实现。
 """
 
 import asyncio
 import json
+from datetime import datetime, timezone
 
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
@@ -199,9 +200,19 @@ async def call_tool(name, arguments) -> list[TextContent]:
         return [TextContent(type="text", text=f"未知工具: {name}")]
     try:
         result = await info["func"](**arguments)
-        return [TextContent(type="text", text=json.dumps(result, ensure_ascii=False, default=str))]
+        envelope = {
+            "data": result,
+            "meta": {
+                "source": "eastmoney-quant",
+                "fetched_at": datetime.now(timezone.utc).isoformat(),
+                "cache_status": "unknown",
+            },
+            "warnings": [],
+            "error": None,
+        }
+        return [TextContent(type="text", text=json.dumps(envelope, ensure_ascii=False, default=str))]
     except Exception as e:
-        return [TextContent(type="text", text=json.dumps({"error": str(e)}, ensure_ascii=False))]
+        return [TextContent(type="text", text=json.dumps({"data": None, "meta": {}, "warnings": [], "error": {"code": "TOOL_ERROR", "message": str(e)}}, ensure_ascii=False))]
 
 
 def main():

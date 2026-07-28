@@ -96,7 +96,7 @@ When comparing multiple candidates (e.g., from screening results):
 2. For each: `generate_stock_report(symbol)`
 3. Sort by `risk_reward_ratio` descending
 4. Show comparison table: name | price | change% | PE | RR | risk | position
-5. Recommend top 2-3
+5. Highlight the 2-3 with the best risk/reward profile — present as data-backed observations with the disclaimer, never as definitive buy/sell instructions
 
 ## Risk disclaimer
 

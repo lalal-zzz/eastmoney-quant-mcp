@@ -70,6 +70,7 @@ For the top 5-10 results from any screen, do:
 2. `generate_stock_report(symbol)` — full analysis report
 3. `get_rank_trend_data(symbol)` — popularity trend
 4. `get_stock_belong_sectors(symbol)` — sector context
+5. `get_stock_kline_period(symbol, period="60")` — optional intraday structure check (1/5/15/30/60-min, network real-time)
 
 Sort final candidates by `risk_reward_ratio` from the report.
 
