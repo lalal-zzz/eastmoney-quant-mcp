@@ -18,7 +18,7 @@ src/eastmoney_quant_mcp/
 │   ├── search.py   # Local DB queries with network fallback
 │   ├── build.py    # Rebuild/backfill/daily-capture/cleanup workflows
 │   ├── indicators.py # Technical indicator calculations
-│   └── progress.py # Progress bar shim (funny-tqdm → tqdm → null)
+│   └── progress.py # Progress bar shim (tqdm → null)
 ├── tools/          # Business logic & MCP tool implementations
 │   ├── data_manager.py # Data management tools (init/update/status/screen)
 │   ├── stock_data.py   # Stock K-line & search tools

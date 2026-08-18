@@ -13,7 +13,7 @@
   - `data/storage.py` — SQLite storage engine (stock database + sector database)
   - `data/sync.py` — full init download + incremental daily update coordinator (semaphore-pipelined async concurrency, 16 in flight; `init_all_data(quick=True)` = fast mode)
   - `data/search.py` — local DB queries with fallback to network APIs
-  - `data/progress.py` — progress-bar shim: funny-tqdm → plain tqdm → null (all stderr-only, auto-silent on non-TTY)
+  - `data/progress.py` — progress-bar shim: tqdm → null (stderr-only, auto-silent on non-TTY)
   - `data/sources.py` — extended data sources (移植自旧“股票信息”项目): `fetch_full_spot` (push2 clist 三镜像分页), `fetch_kline_history` (腾讯 fqkline 日期分段翻页 + 全局限速, 回退 akshare/搜狐), `fetch_guba_rank_history` (股吧年文件 AES-CBC 解密, key=md5("getUtilsFromFile")), `fetch_xuangu_rankings` (dataapi/xuangu 分页), `is_trade_day`/`previous_trade_day` (新浪交易日历缓存)
   - `data/build.py` — 重建/回填/采集/清理: `rebuild_full_data` (步骤化全量重建 + rebuild_progress 断点续传 + `--dry-run` 预览不联网), `backfill_data` (缺口检测补齐), `daily_capture` (晚间采集: xuangu 排名 + spot 快照 + K 线增量 + 指标缓存, 跳过非交易日), `cleanup_database` (冗余表清理 + VACUUM), 板块全量 K 线下载 + 板块指标缓存
   - `tools/stock_data.py` — stock list, history, indicators, search, multi-period K-line (`get_stock_kline_period`: klt 1/5/15/30/60/101/102/103)
@@ -28,7 +28,7 @@
   - `strategies/pattern_optimize.py` — beam search 多因子规则搜索 + train/test 时间切分防过拟合, 尝试记录 markdown 输出
   - `cli.py` — 统一 CLI 入口 `python -m eastmoney_quant_mcp.cli`: rebuild / backfill / daily-capture / cleanup / pattern-scan / pattern-backtest / pattern-optimize, 通用 `--data-dir` (等价 EASTMONEY_DATA_DIR) 与 `--dry-run`
   - `skill/SKILL.md` — main skill index; sub-skills: `data-init/`, `stock-screening/`, `report-generation/`, `multi-timeframe-analysis/`, `strategy-backtest/`
-- **Standalone package**: [`funny-tqdm`](https://pypi.org/project/funny-tqdm/) — animated progress-bar package (tqdm + mascot animations, stderr-only), published on PyPI. Install with `pip install funny-tqdm`. The `funny-progress/` subdirectory in this repo is the legacy source; the canonical repo is [github.com/lalal-zzz/funny-tqdm](https://github.com/lalal-zzz/funny-tqdm). `data/progress.py` degrades gracefully without it.
+- **Standalone package**: [`funny-tqdm`](https://pypi.org/project/funny-tqdm/) — animated progress-bar package (tqdm + mascot animations, stderr-only), published on PyPI. The `funny-progress/` subdirectory in this repo is the legacy source; the canonical repo is [github.com/lalal-zzz/funny-tqdm](https://github.com/lalal-zzz/funny-tqdm). Note: the main project now uses standard `tqdm` directly; `funny-tqdm` is no longer a dependency.
 - **Data sources (multi-provider)**: [akshare](https://github.com/akfamily/akshare) for Eastmoney APIs, plus `data/providers/` (`tencent.py` / `sina.py` / `sohu.py` / `boardmap.py`). Degradation chains (local DB keys stay Eastmoney codes):
   - Stock K-line: Tencent `fqkline`/`mkline` (primary) → Eastmoney akshare → Sohu `hisHq` (unadjusted, last resort). This exists because `push2his` IP-bans are frequent; stock/multi-period K-lines keep working during a ban.
   - Sector members: Sina `getHQNodeData` (primary, name-mapped) → Eastmoney clist → Sohu HTML + Tencent quote batch.

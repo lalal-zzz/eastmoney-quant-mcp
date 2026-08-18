@@ -91,7 +91,7 @@ async def _concurrent_map(items, async_fn, desc="", batch_size=30):
 
 async def _with_spinner(desc: str, coro):
     """给单次异步调用套上不确定模式进度条(动画+耗时)"""
-    with make_progress(None, desc, animation="spinner"):
+    with make_progress(None, desc):
         return await coro
 
 

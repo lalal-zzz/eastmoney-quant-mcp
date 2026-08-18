@@ -32,6 +32,7 @@ dependencies = [
     "curl_cffi>=0.6.0",
     "urllib3>=2.0.0",
     "pycryptodome>=3.19.0",  # guba 年文件 AES-CBC 解密 (data/sources.py)
+    "tqdm>=4.60.0",
 ]
 
 [project.optional-dependencies]
