@@ -1,6 +1,6 @@
 {
   "name": "eastmoney-quant-mcp",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A-share quantitative analysis MCP server — Eastmoney data, stock screening, sector analysis, technical reports",
   "type": "module",
   "main": "index.js",
@@ -67,7 +67,11 @@
       "get_rank_trend_data",
       "get_sector_list",
       "get_stock_belong_sectors",
-      "generate_stock_report"
+      "generate_stock_report",
+      "scan_patterns",
+      "scan_sector_patterns",
+      "get_pattern_history",
+      "get_key_levels"
     ]
   },
   "publishConfig": {

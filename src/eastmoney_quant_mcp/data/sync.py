@@ -96,16 +96,20 @@ async def _with_spinner(desc: str, coro):
 
 
 async def _fetch_kline(item):
-    code, limit = item if isinstance(item, tuple) else (item, 250)
+    code, limit, name = item if isinstance(item, tuple) else (item, 250, None)
     try:
-        return await get_sector_kline_net(code, limit)
+        return await get_sector_kline_net(code, limit, sector_name=name)
     except Exception:
         return []
 
 
-async def _fetch_members(code):
+async def _fetch_members(item):
+    if isinstance(item, tuple):
+        code, name = item
+    else:
+        code, name = item, None
     try:
-        return code, await get_sector_members(code)
+        return code, await get_sector_members(code, sector_name=name)
     except Exception:
         return code, []
 
@@ -175,8 +179,9 @@ async def init_all_data(include_sector_members: bool = True, quick: bool = False
 
     # 5. 板块 K 线(并发下载, 限250条)
     codes = [s.get("sector_code", "") for s in all_sectors if s.get("sector_code")]
+    name_by_code = {s.get("sector_code", ""): s.get("sector_name") for s in all_sectors}
     _step(f"并发下载 {len(codes)} 个板块 K 线...")
-    tasks = [(code, 250) for code in codes]
+    tasks = [(code, 250, name_by_code.get(code)) for code in codes]
     t0 = time.perf_counter()
     all_klines = await _concurrent_map(tasks, _fetch_kline, desc="板块K线")
     kline_total = 0
@@ -191,7 +196,10 @@ async def init_all_data(include_sector_members: bool = True, quick: bool = False
     if include_sector_members:
         _step(f"并发下载 {len(codes)} 个板块成分股...")
         t0 = time.perf_counter()
-        member_results = await _concurrent_map(codes, _fetch_members, desc="成分股")
+        member_results = await _concurrent_map(
+            [(code, name_by_code.get(code)) for code in codes],
+            _fetch_members, desc="成分股",
+        )
         member_total = 0
         for code, members in member_results:
             if members:
@@ -276,7 +284,10 @@ async def update_daily_sectors(include_members: bool = True, top_n: int = 50) ->
     # K 线(仅活跃板块, 最近 5 条) → 并发
     try:
         log.append(f"板块K线(Top{len(active_codes)}, 最近5条): 并发...")
-        tasks = [(code, 5) for code in active_codes]
+        tasks = [
+            (s["sector_code"], 5, s.get("sector_name"))
+            for s in active if s.get("sector_code")
+        ]
         all_klines = await _concurrent_map(tasks, _fetch_kline, desc="板块K线更新")
         kline_total = 0
         for kl in all_klines:
@@ -292,7 +303,10 @@ async def update_daily_sectors(include_members: bool = True, top_n: int = 50) ->
     if include_members and active_codes:
         try:
             log.append(f"成分股(Top{len(active_codes)}): 并发...")
-            member_results = await _concurrent_map(active_codes, _fetch_members, desc="成分股更新")
+            member_results = await _concurrent_map(
+                [(s["sector_code"], s.get("sector_name")) for s in active],
+                _fetch_members, desc="成分股更新",
+            )
             member_total = 0
             for code, members in member_results:
                 if members:

@@ -11,7 +11,7 @@ push2 clist 接口单页上限 100 条(pz>100 会被截断), 分页采用
 import asyncio
 import math
 
-from ..data.network import http_get, normalize_sector_code, rotated, try_kline_hosts
+from ..data.network import http_get, normalize_sector_code, rotated
 
 PUSH2_HOSTS = [
     "https://push2.eastmoney.com/webguest/api/qt/clist/get",
@@ -122,8 +122,48 @@ async def get_sector_list(sector_type: str = "concept") -> list[dict]:
     return items
 
 
-async def get_sector_members(sector_code: str) -> list[dict]:
-    """获取板块成分股列表"""
+async def get_sector_members(sector_code: str, sector_name: str = None) -> list[dict]:
+    """获取板块成分股列表
+
+    降级链: 新浪 getHQNodeData(按板块名映射 node) → 东财 clist →
+    搜狐 HTML 名单+腾讯批量行情补充。主库键始终为东财 BK 代码。
+    """
+    from ..data.providers import boardmap, sina, sohu, tencent
+
+    code = normalize_sector_code(sector_code)
+
+    # 1. 新浪(字段全, 一次分页请求量小)
+    node, name = boardmap.resolve_sina_node(code, sector_name)
+    if node:
+        try:
+            items = sina.fetch_sector_members(node, sector_code=code)
+            if items:
+                return items
+        except Exception:
+            pass
+
+    # 2. 东财 clist(原有实现, 含四档相关字段)
+    try:
+        items = await _sector_members_em(code)
+        if items:
+            return items
+    except Exception:
+        pass
+
+    # 3. 搜狐 HTML 名单(仅代码+名称), 用腾讯批量行情补实时字段
+    bk = boardmap.resolve_sohu_bk(code, sector_name)
+    if bk:
+        try:
+            return sohu.fetch_sector_members(
+                bk, sector_code=code, quote_fetcher=tencent.fetch_quote_batch,
+            )
+        except Exception:
+            pass
+    return []
+
+
+async def _sector_members_em(sector_code: str) -> list[dict]:
+    """东财 clist 成分股(原实现)"""
     code = normalize_sector_code(sector_code)
     all_records = await _fetch_all_pages({
         "fid": "f3", "po": "1",
@@ -168,16 +208,31 @@ async def get_sector_kline(sector_code: str, limit: int = 120) -> list[dict]:
     return await get_sector_kline_net(code, limit)
 
 
-async def get_sector_kline_net(sector_code: str, limit: int = 120, klt: int = 101) -> list[dict]:
+async def get_sector_kline_net(sector_code: str, limit: int = 120, klt: int = 101,
+                               sector_name: str = None) -> list[dict]:
     """获取板块历史 K 线(纯网络, 供数据同步使用, 避免同步时读到本地旧数据)
 
     klt: 1/5/15/30/60(分钟), 101(日), 102(周), 103(月)
+    板块K线历史仅东财提供(腾讯只有当日1根且口径不同), 带熔断保护:
+    push2his 被封时快速返回 [] 由本地库兜底。
     """
-    return await asyncio.to_thread(_sector_kline_net_sync, sector_code, limit, klt)
+    return await asyncio.to_thread(
+        _sector_kline_net_sync, sector_code, limit, klt, sector_name,
+    )
 
 
-def _sector_kline_net_sync(sector_code: str, limit: int = 120, klt: int = 101) -> list[dict]:
-    """板块 K 线网络下载同步实现(供 to_thread 调用)"""
+def _sector_kline_net_sync(sector_code: str, limit: int = 120, klt: int = 101,
+                           sector_name: str = None) -> list[dict]:
+    """板块 K 线网络下载同步实现(供 to_thread 调用)
+
+    实测结论(2026-08): 腾讯 ifzq 全部形态对板块代码只返回最新 1 根
+    (count/日期区间均被忽略), 且其板块成分集合与东财不同导致聚合口径
+    有 ±20% 级差异 — 板块K线历史只有东财一个可靠来源, 跨源混写会引入
+    系统性断层。故本实现保持东财单源 + 熔断保护(fetch_em_kline):
+    push2his 被封时快速失败, 由调用方(sqlite 本地数据)兜底。
+    """
+    from ..data.network import fetch_em_kline
+
     code = normalize_sector_code(sector_code)
     params = {
         "secid": f"90.{code}",
@@ -187,7 +242,7 @@ def _sector_kline_net_sync(sector_code: str, limit: int = 120, klt: int = 101) -
         "klt": str(klt), "fqt": "1", "end": "20500101", "lmt": str(limit),
     }
 
-    result = try_kline_hosts(params, timeout=15)
+    result = fetch_em_kline(params, timeout=15)
     if not result:
         return []
 
@@ -203,7 +258,7 @@ def _sector_kline_net_sync(sector_code: str, limit: int = 120, klt: int = 101) -
     for row_str in klines_list:
         parts = row_str.split(",")
         if len(parts) >= len(cols):
-            item = {"sector_code": code, "sector_name": box.get("name", code)}
+            item = {"sector_code": code, "sector_name": sector_name or box.get("name", code)}
             for i, c in enumerate(cols):
                 v = parts[i].strip()
                 try:
@@ -213,3 +268,4 @@ def _sector_kline_net_sync(sector_code: str, limit: int = 120, klt: int = 101) -
             items.append(item)
 
     return items
+

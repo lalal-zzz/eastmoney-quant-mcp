@@ -68,14 +68,42 @@ def _stock_history_sync(
     end_date: str,
     adjust: str = "qfq",
 ) -> list[dict]:
-    """个股 K 线同步实现(供 to_thread 调用)"""
+    """个股 K 线同步实现(供 to_thread 调用)
+
+    降级链: 腾讯 fqkline(快, 带复权) → 东财 akshare → 搜狐 hisHq(不复权, 最后兜底)。
+    """
+    from ..data.providers import sohu, tencent
+
     symbol = normalize_symbol(symbol)
     prefixed = to_prefixed_symbol(symbol)
     start = start_date.replace("-", "")
     end = end_date.replace("-", "")
 
-    df = None
+    # 1. 腾讯主源(日K, qfq/hfq/不复权均支持)
+    rows = tencent.fetch_stock_kline(
+        symbol, limit=1000, klt="101", adjust=adjust,
+        start_date=start, end_date=end,
+    )
+    rows = _clip_kline_rows(rows, start, end)
+    if rows:
+        return rows
 
+    # 2. 东财(akshare 直连 push2his)
+    df = _akshare_history(symbol, prefixed, start, end, adjust)
+    if df is not None and not df.empty:
+        rows = _akshare_df_rows(df, symbol, start, end)
+        if rows:
+            return rows
+
+    # 3. 搜狐兜底(不复权, 仅有腾讯+东财都不可用时才会走到)
+    rows = sohu.fetch_stock_kline_daily(symbol, start_date=start, end_date=end)
+    rows = _clip_kline_rows(rows, start, end)
+    return rows
+
+
+def _akshare_history(symbol: str, prefixed: str, start: str, end: str, adjust: str):
+    """akshare 东财链(stock_zh_a_daily → stock_zh_a_hist_tx → stock_zh_a_hist)"""
+    df = None
     try:
         df = ak.stock_zh_a_daily(
             symbol=prefixed, start_date=start, end_date=end, adjust=adjust
@@ -98,11 +126,11 @@ def _stock_history_sync(
                 adjust=adjust, timeout=15
             )
         except Exception:
-            return []
+            return None
+    return df
 
-    if df is None or df.empty:
-        return []
 
+def _akshare_df_rows(df: pd.DataFrame, symbol: str, start: str, end: str) -> list[dict]:
     rename = {
         "日期": "date", "开盘": "open", "最高": "high", "最低": "low",
         "收盘": "close", "成交量": "volume", "成交额": "amount",
@@ -122,6 +150,20 @@ def _stock_history_sync(
             "amplitude", "change_pct", "change_amount", "turnover_rate"]
     result_cols = [c for c in cols if c in df.columns]
     return df[result_cols].to_dict(orient="records")
+
+
+def _clip_kline_rows(rows: list[dict], start: str, end: str) -> list[dict]:
+    """腾讯/搜狐行按请求区间裁剪并转为时间降序(与 akshare 路径一致)"""
+    if not rows:
+        return []
+    start_iso = f"{start[:4]}-{start[4:6]}-{start[6:8]}" if len(start) == 8 else start
+    end_iso = f"{end[:4]}-{end[4:6]}-{end[6:8]}" if len(end) == 8 else end
+    clipped = [
+        r for r in rows
+        if start_iso <= str(r.get("date", ""))[:10] <= end_iso
+    ]
+    clipped.sort(key=lambda r: str(r.get("date", "")), reverse=True)
+    return clipped
 
 
 # ── 实时行情(东财 spot, 直连API绕过akshare的requests) ──
@@ -323,11 +365,22 @@ def _normalize_klt(period) -> str:
 
 
 def _stock_kline_period_sync(symbol: str, period: str, limit: int, adjust: str) -> list[dict]:
-    """多周期 K 线同步实现(供 to_thread 调用)"""
-    from ..data.network import try_kline_hosts
+    """多周期 K 线同步实现(供 to_thread 调用)
+
+    降级链: 腾讯(fqkline/mkline) → 东财 push2his(带熔断, 被封时快速失败)。
+    """
+    from ..data.network import fetch_em_kline
+    from ..data.providers import tencent
 
     symbol = normalize_symbol(symbol)
     klt = _normalize_klt(period)
+
+    # 1. 腾讯主源: 分钟走 mkline, 日/周/月走 fqkline
+    rows = tencent.fetch_stock_kline(symbol, limit=limit, klt=klt, adjust=adjust)
+    if rows:
+        return rows
+
+    # 2. 东财降级(熔断保护: 被封时 fetch_em_kline 直接返回 None)
     # secid 规则与 akshare 一致: 沪市 1.xxxxxx, 深/北市 0.xxxxxx
     secid = ("1." if symbol.startswith("6") else "0.") + symbol
     params = {
@@ -339,7 +392,7 @@ def _stock_kline_period_sync(symbol: str, period: str, limit: int, adjust: str) 
         "end": "20500101", "lmt": str(limit),
     }
 
-    result = try_kline_hosts(params, timeout=15)
+    result = fetch_em_kline(params, timeout=15)
     if not result:
         return []
 

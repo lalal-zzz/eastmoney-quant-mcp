@@ -41,6 +41,7 @@ The data directory is user-owned and is never placed in the npm package director
 | Popularity | Eastmoney real-time sentiment rankings + historical trends |
 | Sectors | ~400 concepts + ~80 industries with capital flow (super-large/large/medium/small net) |
 | Screening | 18 composable conditions: price range / PE / PB / cap / change% / volume / turnover / sector filter |
+| Pattern Scanning | 5 chart patterns (trend pullback / MA rebound / W-bottom / M-neckline / box breakout) for stocks **and sectors**, with key levels (MA / Fibonacci / structure) |
 | Reports | Full technical analysis: trend / support & resistance / risk assessment / stop-loss & position advice |
 
 All data sourced from **Eastmoney** (eastmoney.com) public APIs.
@@ -132,7 +133,7 @@ For a checked installation use the four-step setup above instead of relying on n
 
 ---
 
-## MCP Tools (10)
+## MCP Tools (14)
 
 | Tool | Purpose |
 |------|---------|
@@ -146,8 +147,12 @@ For a checked installation use the four-step setup above instead of relying on n
 | `get_sector_list` | Browse concept/industry sectors with capital flow data |
 | `get_stock_belong_sectors` | Reverse lookup: which sectors a stock belongs to |
 | `generate_stock_report` | Full analysis report: trend / support-resistance / risk / position |
+| `scan_patterns` | Scan stocks for chart patterns on any date (normal / strict filter, full market or specific symbols) |
+| `scan_sector_patterns` | Scan concept/industry sectors for chart patterns |
+| `get_pattern_history` | Historical pattern signals for one symbol (stock or sector) |
+| `get_key_levels` | Current key levels for one symbol: MA system / Fibonacci retracement / structure levels |
 
-Plus **4 Claude Skills** (installed automatically by `eastmoney-quant install`) that teach the AI how to compose these tools:
+Plus **6 Claude Skills** (installed automatically by `eastmoney-quant install`) that teach the AI how to compose these tools:
 
 | Skill | Purpose |
 |-------|---------|
@@ -155,6 +160,8 @@ Plus **4 Claude Skills** (installed automatically by `eastmoney-quant install`) 
 | `eastmoney-quant-data-init` | First-time initialization, daily updates, troubleshooting |
 | `eastmoney-quant-stock-screening` | Screening recipes and condition combinations |
 | `eastmoney-quant-report-generation` | Report formatting and interpretation guidelines |
+| `eastmoney-quant-multi-timeframe` | Multi-period resonance analysis (weekly/daily/60-min) |
+| `eastmoney-quant-strategy-backtest` | Strategy backtesting and parameter tuning guide |
 
 ---
 
@@ -363,6 +370,7 @@ eastmoney-quant doctor                  # 检查运行时 / 配置 / Agent 状�
 | 人气排名 | 东方财富人气榜单 + 历史排名趋势追踪 |
 | 板块分析 | 概念板块(~400个) + 行业板块(~80个)，含主力资金流向(超大单/大单/中单/小单) |
 | 多条件选股 | 18 种条件自由组合：价格区间 / PE / PB / 市值 / 涨跌幅 / 量比 / 换手 / 振幅 / 板块限定 |
+| 形态扫描 | 5 大形态（趋势回踩 / 均线反弹 / W底 / M头颈线 / 箱体突破）股票 + 板块双宇宙扫描，含关键位（MA / 斐波那契 / 结构位） |
 | 分析报告 | 综合技术分析：趋势判断 / 支撑位与阻力位 / 风险等级评估 / 止损止盈与仓位建议 |
 
 所有数据来源于 **东方财富网** (eastmoney.com) 公开 API。
@@ -452,7 +460,7 @@ pip install eastmoney-quant-mcp
 
 ---
 
-## MCP 工具 (10 个)
+## MCP 工具 (14 个)
 
 | 工具 | 功能 |
 |------|------|
@@ -466,8 +474,12 @@ pip install eastmoney-quant-mcp
 | `get_sector_list` | 获取概念/行业板块列表及其行情数据 |
 | `get_stock_belong_sectors` | 反向查询：某只股票属于哪些板块 |
 | `generate_stock_report` | 生成个股综合分析报告（趋势/支撑阻力/风险等级/仓位建议） |
+| `scan_patterns` | 股票形态扫描：全市场或指定股票、指定日期，普通档 / strict 优中选优档 |
+| `scan_sector_patterns` | 板块形态扫描（concept / industry 或指定板块） |
+| `get_pattern_history` | 单标的（股票/板块）历史形态信号列表 |
+| `get_key_levels` | 单标的关键位：MA 体系 / 斐波那契回调位 / 结构位（颈线/前高/箱体） |
 
-附带 **4 个 Claude Skill**（由 `eastmoney-quant install` 自动安装），教授 AI 如何组合使用这些工具完成复杂选股和报告工作流：
+附带 **6 个 Claude Skill**（由 `eastmoney-quant install` 自动安装），教授 AI 如何组合使用这些工具完成复杂选股和报告工作流：
 
 | Skill | 用途 |
 |-------|------|
@@ -475,6 +487,8 @@ pip install eastmoney-quant-mcp
 | `eastmoney-quant-data-init` | 首次初始化、每日更新、故障排查 |
 | `eastmoney-quant-stock-screening` | 选股条件组合与筛选套路 |
 | `eastmoney-quant-report-generation` | 报告格式化与解读指南 |
+| `eastmoney-quant-multi-timeframe` | 多周期共振分析（周K/日K/60分钟） |
+| `eastmoney-quant-strategy-backtest` | 策略回测与参数调优指南 |
 
 ---
 

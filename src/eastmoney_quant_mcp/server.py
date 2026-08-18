@@ -1,6 +1,8 @@
 """
 东方财富量化 MCP Server — 精简入口
-只暴露 10 个核心数据工具，其余逻辑由 Skill 组合实现。
+暴露 14 个核心工具: 10 个数据/分析工具 + 4 个形态工具 (scan_patterns / scan_sector_patterns /
+get_pattern_history / get_key_levels, 同步函数经 asyncio.to_thread 包装)。
+其余逻辑由 Skill 组合实现。
 """
 
 import asyncio
@@ -23,6 +25,11 @@ from .tools.data_manager import (
 from .tools.analysis import generate_stock_report
 from .tools.sector_data import get_sector_list
 from .tools.stock_data import get_stock_kline_period
+from .strategies.patterns import (
+    scan_universe,
+    get_pattern_history,
+    get_key_levels,
+)
 
 server = Server("eastmoney-quant-mcp")
 
@@ -181,6 +188,103 @@ async def _belong(stock_code) -> list[dict]:
 })
 async def _report(symbol) -> dict:
     return await generate_stock_report(symbol)
+
+
+# ═══════════════════ 形态识别 (4) ═══════════════════
+
+_PATTERN_SCHEMA_COMMON = {
+    "date": {"type": "string", "description": "扫描日期(YYYY-MM-DD), 默认本地库最新交易日"},
+    "patterns": {
+        "type": "array", "items": {"type": "string"},
+        "description": "形态列表: trend_pullback/ma_rebound/w_bottom/m_neckline/box_breakout, 默认全部",
+    },
+    "min_score": {"type": "number", "minimum": 0, "maximum": 1, "description": "形态标准度阈值, 默认0.6"},
+    "workers": {"type": "integer", "minimum": 1, "description": "并发线程数, 默认8"},
+}
+
+
+@register("scan_patterns", (
+    "股票形态扫描: 全市场或指定股票, 识别五类上涨形态(趋势回调企稳/下跌均线反弹/W底/M形颈线/"
+    "平台放量突破), 输出信号含评分/关键点位/共振/因子; strict=true 只留优中选优档信号"
+), {
+    "type": "object",
+    "properties": {
+        **_PATTERN_SCHEMA_COMMON,
+        "strict": {"type": "boolean", "description": "只返回 strict 档(优中选优)信号, 默认false"},
+        "no_filter": {"type": "boolean", "description": "不过滤(返回全部原始信号), 默认false"},
+        "symbols": {
+            "type": "array", "items": {"type": "string"},
+            "description": "指定股票代码/名称列表(省略=全市场扫描)",
+        },
+    },
+    "required": [],
+})
+async def _scan_patterns(date=None, patterns=None, min_score=0.6, workers=8,
+                          strict=False, no_filter=False, symbols=None) -> list[dict]:
+    return await asyncio.to_thread(
+        scan_universe, "stocks", date=date, patterns=patterns,
+        strict=strict, no_filter=no_filter, workers=workers, symbols=symbols,
+        min_score=min_score)
+
+
+@register("scan_sector_patterns", (
+    "板块形态扫描: 概念/行业板块全量或指定板块, 识别与股票同一套五类形态(板块指数K线, "
+    "历史不足260根K线的板块自动跳过), 输出信号含评分/关键点位/共振/因子"
+), {
+    "type": "object",
+    "properties": {
+        **_PATTERN_SCHEMA_COMMON,
+        "sector_type": {"type": "string", "enum": ["concept", "industry"],
+                        "description": "板块类型: concept(概念)/industry(行业), 默认全部"},
+        "symbols": {
+            "type": "array", "items": {"type": "string"},
+            "description": "指定板块代码/名称列表(如 BK1090/1090/人工智能, 省略=全板块扫描)",
+        },
+    },
+    "required": [],
+})
+async def _scan_sector_patterns(date=None, patterns=None, min_score=0.6, workers=8,
+                                 sector_type=None, symbols=None) -> list[dict]:
+    return await asyncio.to_thread(
+        scan_universe, "sectors", date=date, patterns=patterns,
+        workers=workers, symbols=symbols, sector_type=sector_type,
+        min_score=min_score)
+
+
+@register("get_pattern_history", "单标的(股票/板块)历史形态信号列表, 按日期升序", {
+    "type": "object",
+    "properties": {
+        "universe": {"type": "string", "enum": ["stocks", "sectors"],
+                      "description": "标的宇宙: stocks(股票)/sectors(板块), 默认stocks"},
+        "symbol": {"type": "string", "description": "股票代码或板块代码(支持 BK1090/1090/名称)"},
+        "start": {"type": "string", "description": "起始日期, 默认2010-01-01"},
+        "end": {"type": "string", "description": "截止日期, 默认最新"},
+        "patterns": {
+            "type": "array", "items": {"type": "string"},
+            "description": "形态列表, 默认全部",
+        },
+        "min_score": {"type": "number", "minimum": 0, "maximum": 1, "description": "形态标准度阈值, 默认0.6"},
+    },
+    "required": ["symbol"],
+})
+async def _pattern_history(universe="stocks", symbol=None, start=None, end=None,
+                           patterns=None, min_score=0.6) -> list[dict]:
+    return await asyncio.to_thread(
+        get_pattern_history, universe, symbol, start=start, end=end,
+        patterns=patterns, min_score=min_score)
+
+
+@register("get_key_levels", "单标的(股票/板块)当前关键位: MA体系/斐波那契回调位/结构位(前高前低)+趋势判定", {
+    "type": "object",
+    "properties": {
+        "universe": {"type": "string", "enum": ["stocks", "sectors"],
+                      "description": "标的宇宙: stocks(股票)/sectors(板块), 默认stocks"},
+        "symbol": {"type": "string", "description": "股票代码或板块代码(支持 BK1090/1090/名称)"},
+    },
+    "required": ["symbol"],
+})
+async def _key_levels(universe="stocks", symbol=None) -> dict:
+    return await asyncio.to_thread(get_key_levels, universe, symbol)
 
 
 # ═══════════════════ MCP 生命周期 ═══════════════════

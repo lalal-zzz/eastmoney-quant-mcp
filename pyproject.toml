@@ -31,6 +31,7 @@ dependencies = [
     "numpy>=1.24.0",
     "curl_cffi>=0.6.0",
     "urllib3>=2.0.0",
+    "pycryptodome>=3.19.0",  # guba 年文件 AES-CBC 解密 (data/sources.py)
 ]
 
 [project.optional-dependencies]
@@ -44,6 +45,7 @@ browser = [
 
 [project.scripts]
 eastmoney-quant-mcp = "eastmoney_quant_mcp.server:main"
+eastmoney-quant-cli = "eastmoney_quant_mcp.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/eastmoney_quant_mcp"]

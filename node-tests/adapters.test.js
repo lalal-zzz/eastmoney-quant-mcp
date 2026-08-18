@@ -62,7 +62,7 @@ test("Qoder adapter installs mcp server and skills", () => {
   assert.equal(adapter.detect(), true)
   const command = { command: "node", args: ["server.js"] }
   const result = adapter.install(process.cwd(), command)
-  assert.equal(result.skills.length, 4)
+  assert.equal(result.skills.length, 6)
   assert.ok(existsSync(join(home, ".qoder", "skills", "eastmoney-quant", "SKILL.md")))
   const config = JSON.parse(readFileSync(adapter.configPath(), "utf8"))
   assert.deepEqual(config.mcpServers["eastmoney-quant"], command)
