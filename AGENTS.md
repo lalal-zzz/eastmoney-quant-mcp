@@ -10,7 +10,7 @@
   - `core/registry.py` — provider/feature registries reserved for future extensions
   - `data/network.py` — HTTP client (curl_cffi) + Edge cookie extraction + symbol normalization + K-line host rotation (`try_kline_hosts`)
   - `data/indicators.py` — technical indicator calcs (MA/RSI/MACD/BOLL/KDJ/ATR)
-  - `data/storage.py` — SQLite storage engine (stock database + sector database)
+  - `data/storage.py` — SQLite storage engine (stock database + sector database) with WAL mode, decoupled read-lock concurrency, and column padding defense
   - `data/sync.py` — full init download + incremental daily update coordinator (semaphore-pipelined async concurrency, 16 in flight; `init_all_data(quick=True)` = fast mode)
   - `data/search.py` — local DB queries with fallback to network APIs
   - `data/progress.py` — progress-bar shim: tqdm → null (stderr-only, auto-silent on non-TTY)
@@ -28,7 +28,7 @@
   - `strategies/pattern_optimize.py` — beam search 多因子规则搜索 + train/test 时间切分防过拟合, 尝试记录 markdown 输出
   - `cli.py` — 统一 CLI 入口 `python -m eastmoney_quant_mcp.cli`: rebuild / backfill / daily-capture / cleanup / pattern-scan / pattern-backtest / pattern-optimize, 通用 `--data-dir` (等价 EASTMONEY_DATA_DIR) 与 `--dry-run`
   - `skill/SKILL.md` — main skill index; sub-skills: `data-init/`, `stock-screening/`, `report-generation/`, `multi-timeframe-analysis/`, `strategy-backtest/`
-- **Standalone package**: [`funny-tqdm`](https://pypi.org/project/funny-tqdm/) — animated progress-bar package (tqdm + mascot animations, stderr-only), published on PyPI. The `funny-progress/` subdirectory in this repo is the legacy source; the canonical repo is [github.com/lalal-zzz/funny-tqdm](https://github.com/lalal-zzz/funny-tqdm). Note: the main project now uses standard `tqdm` directly; `funny-tqdm` is no longer a dependency.
+- **Progress display**: Uses standard `tqdm` directly for progress display across sync/cli operations (stderr-only, auto-silent on non-TTY).
 - **Data sources (multi-provider)**: [akshare](https://github.com/akfamily/akshare) for Eastmoney APIs, plus `data/providers/` (`tencent.py` / `sina.py` / `sohu.py` / `boardmap.py`). Degradation chains (local DB keys stay Eastmoney codes):
   - Stock K-line: Tencent `fqkline`/`mkline` (primary) → Eastmoney akshare → Sohu `hisHq` (unadjusted, last resort). This exists because `push2his` IP-bans are frequent; stock/multi-period K-lines keep working during a ban.
   - Sector members: Sina `getHQNodeData` (primary, name-mapped) → Eastmoney clist → Sohu HTML + Tencent quote batch.

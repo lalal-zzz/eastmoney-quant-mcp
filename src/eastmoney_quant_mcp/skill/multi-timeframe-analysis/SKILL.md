@@ -1,97 +1,120 @@
 ---
 name: eastmoney-quant-multi-timeframe
-description: "Multi-timeframe stock analysis with cross-period resonance. Use for short/medium/long-term combined analysis, intraday structure confirmation, weekly trend positioning. Triggers: 多周期, 共振, 短周期, 周线, 60分钟, 跨周期, 综合研判."
+description: "Comprehensive multi-timeframe A-share stock analysis across Monthly (月K), Weekly (周K), Daily (日K), Hourly/60m (小时K), and Minute (15/30m) charts. Use for cross-period resonance, trend hierarchy, intraday entry timing, and customized horizon trading strategies. Triggers: 多周期, 月线, 周线, 日线, 小时线, 60分钟, 分时, 周期共振, 级别联立, 综合研判."
 ---
 
-# 多周期共振分析
+# 多周期立体共振分析指南 (Multi-Timeframe Resonance)
 
-核心原则: **周K定方向, 日K定节奏, 分时定买卖点**。对候选标的拉取三档周期数据, 综合判定共振等级后给出操作建议。
+多周期分析的核心哲学在于 **“大周期管方向，中周期管形态，小周期管买卖”**。通过将不同时间维度的 K 线联合研判，能够有效滤除单一周期的假突破与杂波噪音，捕捉各级别资金合力共振的最优进出场点。
 
-## 三档周期
+---
 
-| 档位 | 工具调用 | 覆盖 | 核心用途 |
-|------|----------|------|----------|
-| 周K | `get_stock_kline_period(symbol, period="102", limit=104)` | ~2年 | 中期趋势方向 |
-| 日K | `generate_stock_report(symbol)` + `get_key_levels(symbol)` | ~1年 | 形态/关键位/风险/仓位 |
-| 60分钟 | `get_stock_kline_period(symbol, period="60", limit=120)` | ~30天 | 分时结构确认 |
+## 1. 周期层级与工具调用矩阵
 
-辅助: `scan_patterns`(形态宽筛), `get_pattern_history`(历史信号), `get_stock_belong_sectors`(板块归属)。
+东方财富量化 MCP 支持从 1 分钟到月线的全谱系周期。针对不同周期的核心定位如下：
 
-> `get_stock_kline_period` 纯网络实时, 不写本地库。分钟级时间键是 `datetime`, 日/周级是 `date`。短周期/周K无预计算指标, Agent 需从 K 线原始数据自行计算 MA/RSI/MACD。
+| 周期级别 | 代码参数 (`period`) | 调用方法 | 数据跨度 | 核心用途与关注指标 |
+| :--- | :--- | :--- | :--- | :--- |
+| **月K (宏观长周期)** | `103` | `get_stock_kline_period(sym, period="103", limit=60)` | ~5年 | **历史牛熊大底大顶、长线多空生命线** (月MA20/MA60、长期斐波那契) |
+| **周K (中长波段)** | `102` | `get_stock_kline_period(sym, period="102", limit=104)` | ~2年 | **中期趋势方向与主升浪识别** (周MA5/10/20多头、周MACD零轴上方金叉) |
+| **日K (主操作级别)** | `101` / 本地 | `generate_stock_report(sym)` + `get_key_levels(sym)` | ~1年 | **形态构建、关键支撑阻力、形态标准度、风险等级与仓位** |
+| **小时K (60分钟节奏)** | `60` | `get_stock_kline_period(sym, period="60", limit=120)` | ~30天 | **日内主波段节奏、回踩MA20企稳确认、小时级顶底背离** |
+| **短分时 (15/30分钟)** | `15` / `30` | `get_stock_kline_period(sym, period="15", limit=120)` | ~5-10天 | **精确入场点判定、盘口微观放量突破、极致止损位锚定** |
 
-## 工作流
+> **提示**：
+> - 日K优先走本地数据库查询与指标缓存（`get_kline_local_or_net` + `generate_stock_report`）；
+> - 月K/周K/小时K/分时K通过 `get_stock_kline_period` 纯网络实时获取，时间键在日/周/月级别为 `date`，在分钟级别为 `datetime`；
+> - Agent 对获取的多周期原始 OHLCV 数据，应通过标准算法推演对应的均线（MA5/10/20）、RSI 与 MACD。
 
-**阶段 1 — 宽筛候选** (用户未指定标的时):
-- `screen_stocks(conditions, top_n=50)` → 条件选股
-- `scan_patterns(min_score=0.6)` → 形态信号宽筛
-- 产出 5~15 只候选; 用户已指定则跳过
+---
 
-**阶段 2 — 日K标准分析** (每只候选):
-1. `get_kline_local_or_net(symbol, days=250)` — 确保缓存
-2. `generate_stock_report(symbol)` — 趋势/指标/支撑阻力/风险/仓位
-3. `get_pattern_history(symbol)` — 历史形态频率
-4. `get_key_levels(symbol)` — MA/斐波那契/结构位
-5. 按 `risk_reward_ratio` 排序, 截取 top 5~8 进入阶段 3
+## 2. 用户个性化交易周期的定制分析流
 
-**阶段 3 — 60分钟验证**: 拉 60 分钟 K 线, 计算 MA5/10/20、RSI14、MACD(DIF/DEA), 判定分时结构
+根据用户不同的操作风格与持仓偏好，采用对应的周期组合进行针对性分析：
 
-**阶段 4 — 周K定位**: 拉周 K 线, 计算周 MA5/10/20/60、周 RSI14, 判定中期趋势
+### 模式 A：长线战略投资 / 价值定投 (月K + 周K + 日K)
+- **分析侧重点**：
+  1. **月K大级别位置**：是否处于月线历史估值底部（结合 PB/PE）或月线 MA60 上方企稳；月线 RSI 不得处于 >80 的历史超买区；
+  2. **周K趋势确认**：周线站稳周 MA20 且周 MACD 在零轴附近或上方翻红；
+  3. **日K分批建仓**：在日线回踩关键支撑位（如 MA60、MA120 或斐波那契 0.5/0.618）时寻找分批介入时机。
 
-## 分时/周K快速判定表
+### 模式 B：中线波段趋势追踪 (周K + 日K + 60分钟) —— *默认推荐模式*
+- **分析侧重点**：
+  1. **周K定方向**：周收盘价 > 周 MA20，周 MA5 > MA10，中期处于上升通道；
+  2. **日K定形态**：日线出现五大经典形态之一（如 `trend_pullback` 趋势回踩、`w_bottom` W底右底、`box_breakout` 放量突破平台），形态评分 `score >= 0.6`；
+  3. **60分钟定买点**：60分钟级别出现缩量回踩不破 MA20 或 60分钟 MACD 形成金叉，作为触发下单信号。
 
-| 指标 | 多头信号 | 空头信号 |
-|------|----------|----------|
-| 均线排列 | MA5 > MA10 > MA20 | MA5 < MA10 < MA20 |
-| RSI14 | 50~70 (健康) | <30 (超卖) 或 >75 (超买) |
-| MACD | DIF > DEA 且 DIF 上行 | DIF < DEA 或顶背离 |
-| 关键确认 | 连续 3 根 close > MA20 | 跌破 MA20 不回收 |
+### 模式 C：短线/超短线强动量出击 (日K + 60分钟 + 15分钟)
+- **分析侧重点**：
+  1. **日K动能**：日线当日放量长阳（量比 > 1.5，换手率 5%~15%），突破近期平台；
+  2. **60分钟结构**：小时线均线呈完美多头排列，沿 MA5 强势推升；
+  3. **15分钟精准狙击**：在 15 分钟级别回踩 MA10/MA20 不破、出现反包阳线瞬间进场，止损直接设在 15 分钟起涨实体底部（控制单笔亏损 < 2%~3%）。
 
-周K额外关注: close vs 周 MA60 (半年线) — 跌破则中期偏弱, 不宜做多。
+---
 
-## 共振等级
+## 3. 各级别多空与结构判定基准表
 
-| 等级 | 周K | 日K | 分时 | 操作建议 |
-|------|-----|-----|------|----------|
-| **强** | 多头 (close>周MA20, MA5>MA10) | 企稳/上扬, RSI 30~70 | 金叉或站稳MA20 | 正常仓位, 参考日K仓位建议 |
-| **中** | 偏多 (close>周MA20, 均线未全多) | 有信号, 可参与 | 未确认 (缠绕/未金叉) | 小仓观察, 分时确认再加仓 |
-| **弱** | 方向不明 (均线缠绕) | 有形态信号 | — | 极小仓试探, 严格止损 |
-| **逆** | 空头 (close<周MA60) | 反弹信号 | — | **不参与**, 等大周期企稳 |
+| 考察维度 | 多头强势特征 (Bullish) | 空头/走弱特征 (Bearish) | 临界中性特征 (Neutral) |
+| :--- | :--- | :--- | :--- |
+| **均线排列** | MA5 > MA10 > MA20 发散上行 | MA5 < MA10 < MA20 压制下行 | 均线收敛粘合、反复缠绕 |
+| **价格与均线** | 收盘价运行于 MA20 上方，回踩不破 | 收盘价受压于 MA20 下方，反弹不克 | 围绕 MA20 震荡拉锯 |
+| **RSI(14)** | 55 ~ 70 强势多头区间 | < 40 弱势区，< 30 极度超卖 | 45 ~ 55 中轴徘徊 |
+| **MACD** | DIF > DEA 且柱状线持续放大 | DIF < DEA 且位于零轴下方 | 零轴附近反复钝化交叉 |
+| **形态结构** | 呈现 Higher Highs & Higher Lows (高低点不断抬高) | Lower Highs & Lower Lows (顶底逐级下移) | 箱体震荡、收敛三角形 |
 
-## 输出模板
+---
+
+## 4. 四级共振强度评估与操作纪律
+
+| 共振等级 | 月K / 周K (大周期) | 日K (主操作期) | 60分 / 15分 (微观分时) | 胜率预期 | 仓位与执行策略 |
+| :---: | :--- | :--- | :--- | :---: | :--- |
+| ⭐⭐⭐⭐ **强共振 (Level 4)** | 周K多头排列，收盘站上周MA20 | 出现经典形态且通过 strict 筛选，关键位共振 $\ge 2$ | 60分钟金叉企稳，分时放量突破 | **高 (58%~65%+)** | **积极配置**：按日K报告上限建仓 (20%~30%)，以分时起涨点或日线支撑设损。 |
+| ⭐⭐⭐ **中共振 (Level 3)** | 周K偏多 (收盘>MA20)，但均线尚未完全发散 | 日线出现有效形态，指标健康 | 60分钟处于调整末期，尚未完成二次金叉 | **中 (50%~55%)** | **分步介入**：底仓 10%~15%，待 60 分钟结构确认突破后再加仓。 |
+| ⭐⭐ **弱共振 (Level 2)** | 大周期震荡无序 (均线粘合缠绕) | 日线出现脉冲信号，但缺少共振支撑 | 分时剧烈波动，量能不持续 | **偏低 (45%~50%)** | **轻仓试探**：仓位 $\le 5\% \sim 10\%$，严格止损，快进快出。 |
+| ❌ **逆向冲突 (Level 0)** | 大周期处于明显空头 (周/月K破位下行) | 日线出现超跌反弹或单日大涨 | 分时诱多拉升 | **极差 (<40%)** | **严禁左侧盲目接飞刀**，大周期破位股即使日线涨停也不参与。 |
+
+---
+
+## 5. 多周期标准研报输出模板
 
 ```markdown
-# {name}({symbol}) 多周期共振分析
-**日期**: {date}
-> 仅供学习参考, 不构成投资建议。
+# {name}({symbol}) 全周期立体共振诊断报告
+**诊断日期**: {date} | **现价**: {price} ({change_pct}%)
+> ⚠️ 声明：本报告基于历史量化数据与跨周期算法生成，不构成投资建议。
 
-## 周K中期定位
-趋势: {weekly_dir} | 周MA20={w_ma20} 周MA60={w_ma60} | 偏离: {dev}%
-周RSI14: {w_rsi} | 中期判断: {weekly_conclusion}
+---
 
-## 日K标准分析
-趋势: {daily_dir} ({daily_arrangement})
-RSI14: {d_rsi} | MACD: {d_macd}
-形态: {patterns} (score={score}, resonance={res})
-支撑: {support} | 阻力: {resistance} | 风险: {risk_level}
+## 一、宏观与大周期定位 (月K & 周K)
+- **月K大局观**: 运行区间 [{monthly_range}] | 距离月MA60偏离度: {m_bias}% | 月线多空状态: {monthly_status}
+- **周K波段趋势**:
+  - 均线排列: 周MA5={w_ma5}, 周MA20={w_ma20}, 周MA60={w_ma60} ({weekly_arrangement})
+  - 周线指标: RSI(14)={w_rsi}, MACD={w_macd_status}
+  - 中期波段结论: **{weekly_conclusion}** (多头主升 / 震荡蓄势 / 空头防守)
 
-## 60分钟结构
-均线: MA5={i5} MA10={i10} MA20={i20} | RSI: {i_rsi}
-结构: {intraday_structure} (金叉/死叉/企稳/破位)
+---
 
-## 共振判定
-**等级**: {level} (强/中/弱/逆) — {explanation}
+## 二、日K主操作级别分析 (形态与技术位)
+- **趋势与指标**: 日线趋势 {daily_dir} | 均线状态: {daily_ma_status} | RSI(14)={d_rsi} | MACD={d_macd}
+- **识别形态**: `{pattern_name}` (标准度评分: {score} / 1.0, 关键位共振数: {resonance})
+- **关键技术点位**:
+  - 强支撑位: {support_levels}
+  - 关键阻力位: {resistance_levels}
+  - 结构止损参考: {stop_loss} (距离现价 {stop_loss_pct}%)
 
-## 操作建议
-进场: {entry} | 止损: {stop_loss}({sl_pct}%) | 止盈: {take_profit}({tp_pct}%)
-仓位: {position_pct} | 加仓条件: {add_cond}
+---
+
+## 三、微观分时结构验证 (60分钟 & 15分钟)
+- **60分钟节奏**: 均线 MA5/10/20={h_mas} | 状态: {hourly_status} (金叉回踩 / 顶部钝化 / 破位加速)
+- **15分钟买卖点**: {m15_entry_signal} (放量起涨 / 缩量底背离 / 观望中)
+
+---
+
+## 四、共振评级与投资决策建议
+- **共振评级**: **{resonance_level}** (强共振 / 中共振 / 弱共振 / 逆向冲突)
+- **综合研判逻辑**: {detailed_logic_summary}
+- **操作建议方案**:
+  - 🎯 **建议建仓区间**: {entry_range}
+  - 🛑 **严格止损位**: {stop_loss_price} (跌破果断离场)
+  - 🏁 **第一止盈目标**: {target_price_1} | **第二目标**: {target_price_2}
+  - ⚖️ **建议仓位上限**: {suggested_position_pct}% (当前风险收益比: {risk_reward_ratio})
 ```
-
-## 批量对比
-
-对多只候选做完三周期分析后, 汇总对比表:
-
-| 名称 | 周K方向 | 日K趋势 | 分时状态 | 共振 | 仓位建议 |
-|------|---------|---------|----------|------|----------|
-| ... | 多头 | 企稳 | 金叉 | 强 | 20% |
-
-优先推荐强共振标的, 中共振作为观察池。

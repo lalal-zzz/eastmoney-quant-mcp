@@ -130,3 +130,46 @@ def test_save_sector_indicators(dbs):
         "WHERE sector_code='BK1090' AND trade_date='2026-08-14'")
     assert got[0]["MA5"] == 100.0
     assert got[0]["KDJ_J"] == 60.0
+
+
+def test_save_stock_indicators_partial_keys(dbs):
+    # 模拟外部计算指标时缺少某些字段 (如无 VOL_MA5, ATR14)
+    rows = [
+        {"symbol": "000001", "date": "2026-08-14", "MA5": 10.5, "RSI6": 65.0},
+        {"symbol": "600000", "date": "2026-08-14", "MA20": 8.2, "MACD": 0.15},
+    ]
+    dbs.save_stock_indicators(rows)
+    got = dbs.query_stock_db(
+        "SELECT symbol, date, MA5, RSI6, VOL_MA5 FROM stock_indicators "
+        "WHERE date='2026-08-14' ORDER BY symbol")
+    assert len(got) == 2
+    assert got[0]["symbol"] == "000001"
+    assert got[0]["MA5"] == 10.5
+    assert got[0]["VOL_MA5"] is None  # 缺省字段自动为 NULL
+    assert got[1]["symbol"] == "600000"
+    assert got[1]["MA5"] is None
+
+
+def test_concurrent_read_queries(dbs):
+    from concurrent.futures import ThreadPoolExecutor
+
+    # 预先填充数据
+    dbs.save_stock_basic([
+        {"symbol": f"{i:06d}", "name": f"Stock_{i}", "raw_symbol": f"sz{i:06d}"}
+        for i in range(100)
+    ])
+
+    def _reader(worker_id: int):
+        results = []
+        for _ in range(20):
+            rows = dbs.query_stock_db("SELECT COUNT(*) AS cnt FROM stock_basic")
+            results.append(rows[0]["cnt"])
+        return results
+
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = [executor.submit(_reader, i) for i in range(10)]
+        for f in futures:
+            res = f.result()
+            assert len(res) == 20
+            assert all(cnt == 100 for cnt in res)
+

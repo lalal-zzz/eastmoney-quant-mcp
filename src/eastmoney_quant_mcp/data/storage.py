@@ -58,6 +58,7 @@ def __getattr__(name: str):
 
 
 _lock = threading.Lock()
+_init_lock = threading.Lock()
 
 # 已完成建表的库路径(进程内只建一次; DDL 全部 IF NOT EXISTS, 重复执行也安全)
 _schema_ready: set = set()
@@ -71,10 +72,12 @@ def _get_conn(db_path: str) -> sqlite3.Connection:
     # 首次连接时幂等建表, 避免 init_full_data 之前调用只读工具时
     # 抛出 "no such table" (如新库上直接调 get_data_status/screen_stocks)
     if db_path not in _schema_ready:
-        ddl = STOCK_DDL if db_path == STOCK_DB else SECTOR_DDL
-        conn.executescript(ddl)
-        conn.commit()
-        _schema_ready.add(db_path)
+        with _init_lock:
+            if db_path not in _schema_ready:
+                ddl = STOCK_DDL if db_path == STOCK_DB else SECTOR_DDL
+                conn.executescript(ddl)
+                conn.commit()
+                _schema_ready.add(db_path)
     return conn
 
 
@@ -420,13 +423,14 @@ def save_stock_indicators(rows: list[dict]):
         "VOL_MA5", "VOL_MA10",
         "ATR14",
     ]
+    rows_padded = [{c: r.get(c) for c in cols} for r in rows]
     placeholders = ", ".join(f":{c}" for c in cols)
     col_list = ", ".join(cols)
     with _lock:
         conn = _get_conn(STOCK_DB)
         conn.executemany(
             f"INSERT OR REPLACE INTO stock_indicators ({col_list}) VALUES ({placeholders})",
-            rows,
+            rows_padded,
         )
         conn.commit()
         conn.close()
@@ -739,21 +743,21 @@ def set_meta_sector(key: str, value: str):
 # ════════════════════════════════════════
 
 def query_stock_db(sql: str, params: tuple = ()) -> list[dict]:
-    with _lock:
-        conn = _get_conn(STOCK_DB)
+    conn = _get_conn(STOCK_DB)
+    try:
         cur = conn.execute(sql, params)
-        rows = [dict(r) for r in cur.fetchall()]
+        return [dict(r) for r in cur.fetchall()]
+    finally:
         conn.close()
-        return rows
 
 
 def query_sector_db(sql: str, params: tuple = ()) -> list[dict]:
-    with _lock:
-        conn = _get_conn(SECTOR_DB)
+    conn = _get_conn(SECTOR_DB)
+    try:
         cur = conn.execute(sql, params)
-        rows = [dict(r) for r in cur.fetchall()]
+        return [dict(r) for r in cur.fetchall()]
+    finally:
         conn.close()
-        return rows
 
 
 def get_meta_stock(key: str) -> str | None:

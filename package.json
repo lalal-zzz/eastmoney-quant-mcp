@@ -18,6 +18,7 @@
     ".mcp.json",
     "pyproject.toml",
     "README.md",
+    "README.zh-CN.md",
     "AGENTS.md",
     "ARCHITECTURE.md",
     "CLAUDE.md",

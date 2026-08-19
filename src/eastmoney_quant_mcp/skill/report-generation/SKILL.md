@@ -1,105 +1,124 @@
 ---
 name: eastmoney-quant-report-generation
-description: Generate comprehensive A-share stock technical analysis reports with support/resistance levels, risk assessment, and position management advice. Use when the user wants a detailed analysis of a specific stock, asks about support/resistance (支撑位/阻力位), risk level (风险), position sizing (仓位), stop-loss (止损), or wants a professional report for any 6-digit stock code. Also use after stock screening to analyze top candidates.
+description: "Generate deep institutional-grade technical analysis reports for Chinese A-share stocks. Integrates multi-timeframe trends (Monthly/Weekly/Daily/Hourly), support and resistance key levels (MA system, Fibonacci, structural pivots), 5 chart patterns, risk rating, and exact position/stop-loss management. Triggers: 股票分析, 诊断, 技术报告, 支撑位, 阻力位, 风险评估, 仓位, 止损, 研报, 深度分析."
 ---
 
-# Stock analysis report
+# 个股全维深度技术研报生成指南 (Report Generation)
 
-## The tool
+本 Skill 规范了单只股票深度分析研报的生成标准。报告必须整合**多周期趋势定位 (月/周/日/小时K)、形态结构、关键技术点位 (MA/斐波那契/结构位)、风险评估与动态仓位管理**，以机构级标准输出。
 
+---
+
+## 1. 数据装配流水线
+
+在为指定股票生成完整研报时，必须按序完成以下工具调用与数据装配：
+
+```python
+# 1. 基础技术指标与报告底稿 (日K)
+report_data = generate_stock_report(symbol)
+
+# 2. 关键点位体系 (MA均线/斐波那契/前高前低结构位)
+key_levels = get_key_levels("stocks", symbol)
+
+# 3. 历史形态信号与当前形态
+pattern_history = get_pattern_history("stocks", symbol)
+
+# 4. 所属板块背景与资金流
+sectors = get_stock_belong_sectors(symbol)
+
+# 5. 周K与小时K结构确认 (网络实时)
+weekly_kline = get_stock_kline_period(symbol, period="102", limit=52)
+hourly_kline = get_stock_kline_period(symbol, period="60", limit=60)
 ```
-generate_stock_report(symbol)
-```
 
-Returns a structured JSON with 6 sections. Format into a clean Markdown report for the user.
+---
 
-## Report structure
+## 2. 研报核心维度解读原则
 
-Always present the report using this template:
+### ① 趋势与均线系统
+- **多头排列**：MA5 > MA10 > MA20 > MA60，且价格依托 MA20 稳健上行；
+- **生命线划分**：
+  - 短线生命线：MA10 / MA20；
+  - 中期强弱分水岭：MA60 (季线) / MA120 (半年线)；
+  - 牛熊分水岭：MA250 (年线)。
+
+### ② 关键技术点位 (Support & Resistance)
+- **复合共振点位**：当某一价格区域同时重合了 **“均线 (如 MA60) + 斐波那契关键位 (0.382/0.5/0.618) + 前期波段高点/低点”** 时，该点位强度为最高级，极易引发大级别反弹或受阻回落。
+
+### ③ 盈亏比与动态仓位算法
+- **盈亏比公式**：`风险收益比 = (预期第一阻力位 - 当前现价) / (当前现价 - 核心支撑止损位)`；
+- **准入标准**：
+  - 盈亏比 $\ge 3.0$：优秀交易机会，建议配置合理上限仓位；
+  - 盈亏比 $2.0 \sim 3.0$：可接受机会，建议适中仓位；
+  - 盈亏比 $< 1.5$：性价比过低，即使看好也应等待回踩后再考虑进场。
+
+---
+
+## 3. 机构级技术研报标准模板
 
 ```markdown
-# {name}({symbol}) 技术分析报告
-**报告日期**: {report_date}
-> ⚠️ 基于技术指标自动生成，仅供学习参考，不构成投资建议。
+# 📊 {name} ({symbol}) 全维度技术量化研报
+**报告日期**: {report_date} | **收盘价**: {latest_price}元 ({change_pct}%)
+> ⚠️ 风险声明：本报告基于历史量化数据、形态识别与数学模型自动生成，仅供投研学习参考，不构成直接买卖指令。
 
-## 基础信息
-| 指标 | 数值 |
-|------|------|
-| 最新价 | {latest_price} |
-| 涨跌幅 | {change_pct} |
-| 量比 | {volume_ratio} |
-| 换手率 | {turnover_rate}% |
-| PE(动态) | {pe_dynamic} |
-| PB | {pb} |
-| 总市值(亿) | {total_market_cap} |
-| 60日涨跌幅 | {sixty_day_change} |
+---
 
-## 趋势分析
-- **方向**: {direction}
-- **均线状态**: {arrangement}
-- **近期涨跌幅**: {list recent_changes}
+## 一、基本面与行情概览
+| 指标 | 对应数值 | 行业横向评价 | 指标 | 对应数值 | 市场热度 |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **市盈率(动态)** | {pe_dynamic} | {pe_evaluation} | **换手率** | {turnover_rate}% | {turnover_eval} |
+| **市净率(PB)** | {pb} | {pb_evaluation} | **量比** | {volume_ratio} | {vol_eval} |
+| **总市值** | {total_market_cap} 亿元 | 大/中/小盘 | **人气排名** | 第 {popularity_rank} 名 | 近30日趋势: {rank_trend} |
+| **所属核心板块** | {sector_names} | 板块主力资金近况: {sector_inflow} |
 
-## 技术指标
-- **RSI(14)**: {value} — {status}
-- **MACD**: {signal} (DIF={DIF} DEA={DEA})
-- **KDJ**: K={K} D={D} J={J} — {status}
-- **BOLL**: {position}
-- **ATR(14)**: {value14} ({pct}%)
+---
 
-## 支撑/阻力位
-| 类型 | 价格 | 来源 | 强度 |
-|------|------|------|------|
-{list each resistance and support}
+## 二、多周期趋势综合评定
+- 🌕 **月K宏观位置**: {monthly_summary} (处于历史高位 / 中枢震荡 / 底部蓄势)
+- 🌓 **周K中期波段**: **{weekly_direction}** (周MA20={w_ma20}，中期排列状态: {w_arrangement})
+- 🌔 **日K主运行态**: **{daily_direction}** (日线均线排列: {daily_arrangement})
+  - 近期涨跌幅表现: 5日 {chg_5d} | 20日 {chg_20d} | 60日 {chg_60d} | 年初至今 {chg_ytd}
+- 🌒 **60分钟微观节奏**: {hourly_summary} (小时线处于回踩确认 / 金叉加速 / 顶部钝化)
 
-## 风险评估
-**风险等级**: {level} (高/中/低)
-{list each risk item as bullet}
+---
 
-## 仓位管理
-- **建议**: {suggestion}
-- **仓位比例**: {position_pct}
-- **止损位**: {stop_loss} (距现价 {stop_loss_pct})
-- **止盈位**: {take_profit}
-- **风险收益比**: {risk_reward_ratio}
-- **最近支撑**: {nearest_support} / **最近阻力**: {nearest_resistance}
+## 三、形态识别与关键点位矩阵
+- **当前技术形态**: `{pattern_name}` (标准度评分: {pattern_score} / 1.0, 关键位共振数: {resonance_count})
+- **关键位分层矩阵 (按价格与强度排序)**:
 
-> ⚠️ 技术分析基于历史数据，无法预测突发利空。仓位建议仅供参考。
+| 类型 | 价格 | 点位来源 (均线/斐波那契/结构) | 强度等级 | 距离现价幅度 |
+| :--- | :--- | :--- | :---: | :---: |
+| **强阻力位** | {r2_price} | {r2_source} | ★★★ | +{r2_pct}% |
+| **近期阻力** | {r1_price} | {r1_source} | ★★☆ | +{r1_pct}% |
+| **当前现价** | **{latest_price}** | **当前市场价格** | — | — |
+| **第一支撑** | {s1_price} | {s1_source} | ★★☆ | -{s1_pct}% |
+| **核心防线** | {s2_price} | {s2_source} | ★★★ | -{s2_pct}% |
+
+---
+
+## 四、核心技术指标体检
+- **动量与超买超卖**: RSI(14)={rsi14} ({rsi_status}) | KDJ(9,3,3): K={k}, D={d}, J={j} ({kdj_status})
+- **趋势与能量**: MACD DIF={dif}, DEA={dea}, MACD柱={macd_bar} ({macd_signal})
+- **通道与波动率**: BOLL 通道处于 {boll_status}，现价位于带内 {boll_pos}% 位置；ATR(14)={atr} (对应日内平均波幅 {atr_pct}%)
+
+---
+
+## 五、综合风险评估
+- **综合风险等级**: **{risk_level}** (低 / 中 / 高)
+- **核心风险预警清单**:
+  - {risk_item_1}
+  - {risk_item_2}
+  - {risk_item_3}
+
+---
+
+## 六、交易策略与仓位管理建议
+- **策略导向**: **{strategy_suggestion}** (观望等待 / 分批低吸 / 顺势突破跟进 / 逢高减仓)
+- **参考买入区间**: `{entry_range}`
+- **目标止盈点位**:
+  - 第一目标位 (轻仓减仓): `{take_profit_1}` (预期收益: +{tp1_pct}%)
+  - 第二目标位 (主阻力区): `{take_profit_2}` (预期收益: +{tp2_pct}%)
+- **纪律止损点位**: `{stop_loss}` (距离现价: {sl_pct}%)
+- **综合风险收益比**: **{risk_reward_ratio} : 1**
+- **建议最大持仓比例**: **{position_pct}%** (单票上限严控在 30% 以内)
 ```
-
-## Interpreting the report
-
-### Risk-reward ratio
-| Value | Meaning | Action |
-|-------|---------|--------|
-| > 3 | Reward 3x risk | Worth attention |
-| 2-3 | Acceptable | Moderate position |
-| 1-2 | Poor value | Wait for better entry |
-| < 1 or -1 | No clear target | Avoid |
-
-### Position sizing principle
-- Single stock max 30% of capital
-- Position size = (total capital × risk%) / (entry - stop_loss)
-- Low risk → up to 30% position
-- Medium risk → 10-20%
-- High risk → <10% or pass
-
-### Support/resistance usage
-- Break above resistance + hold → bullish
-- Break below support + fail to recover → bearish
-- MA60/MA120 is the medium-term trend dividing line
-
-## Batch comparison workflow
-
-When comparing multiple candidates (e.g., from screening results):
-
-1. `screen_stocks(...)` → top 5-8 candidates
-2. For each: `generate_stock_report(symbol)`
-3. Sort by `risk_reward_ratio` descending
-4. Show comparison table: name | price | change% | PE | RR | risk | position
-5. Highlight the 2-3 with the best risk/reward profile — present as data-backed observations with the disclaimer, never as definitive buy/sell instructions
-
-## Risk disclaimer
-
-Every report must include this warning:
-
-> ⚠️ 技术分析基于历史数据，无法预测突发利空（政策/财报/黑天鹅）。本报告不构成投资建议，入市需谨慎，请结合基本面综合判断。

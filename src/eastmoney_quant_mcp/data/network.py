@@ -79,17 +79,17 @@ def _extract_cookies_from_edge() -> str | None:
         return env_cookie
 
     for cookie_path in _get_edge_cookie_paths():
+        tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+        tmp_path = tmp.name
+        tmp.close()
         try:
-            tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
-            tmp.close()
-            shutil.copy2(cookie_path, tmp.name)
-            conn = sqlite3.connect(tmp.name)
+            shutil.copy2(cookie_path, tmp_path)
+            conn = sqlite3.connect(tmp_path)
             rows = conn.execute(
                 "SELECT name, encrypted_value FROM cookies "
                 "WHERE host_key LIKE '%eastmoney%' OR host_key LIKE '%dfcf%'"
             ).fetchall()
             conn.close()
-            os.unlink(tmp.name)
             if rows:
                 # Edge 新版可能已不加密, 直接拼接 name=value 格式
                 # 若加密则回退到明文环境变量
@@ -105,6 +105,12 @@ def _extract_cookies_from_edge() -> str | None:
                     return "; ".join(pairs)
         except Exception:
             pass
+        finally:
+            if os.path.exists(tmp_path):
+                try:
+                    os.unlink(tmp_path)
+                except OSError:
+                    pass
 
     return None
 
