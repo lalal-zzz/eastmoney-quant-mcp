@@ -24,12 +24,19 @@ from ..tools.stock_data import search_stock
 
 # ═══════════════════ 数据管理 ═══════════════════
 
-async def init_full_data(include_sector_members: bool = True, quick: bool = False) -> dict:
-    return await init_all_data(include_sector_members=include_sector_members, quick=quick)
+async def init_full_data(include_sector_members: bool = True, quick: bool = False,
+                         mode: str | None = None, workers: int = 8,
+                         resume: bool = True) -> dict:
+    return await init_all_data(include_sector_members=include_sector_members, quick=quick,
+                               mode=mode, workers=workers, resume=resume)
 
 
-async def update_daily_data(include_sector_members: bool = True) -> dict:
-    return await update_daily_all(include_sector_members=include_sector_members)
+async def update_daily_data(include_sector_members: bool = True,
+                            stock_kline_mode: str = "tracked",
+                            skip_non_trading_day: bool = True) -> dict:
+    return await update_daily_all(include_sector_members=include_sector_members,
+                                  stock_kline_mode=stock_kline_mode,
+                                  skip_non_trading_day=skip_non_trading_day)
 
 
 async def get_data_status() -> dict:
@@ -45,17 +52,18 @@ async def search_stock_full(keyword: str, limit: int = 50) -> list[dict]:
     return await search_stock(keyword)
 
 
-async def get_kline_local_or_net(symbol: str, days: int = 250, adjust: str = "qfq") -> list[dict]:
-    klines = get_stock_kline_local(symbol, days)
+async def get_kline_local_or_net(symbol: str, days: int = 300, adjust: str = "qfq") -> list[dict]:
+    klines = get_stock_kline_local(symbol, days, adjust)
     if klines:
         # 数据量达到请求的 8 成且最后一条在 7 天内才算可用, 否则重新下载
-        enough = len(klines) >= min(days, 200) * 0.8
+        enough = len(klines) >= days * 0.8
         last_date = str(klines[-1].get("date", ""))[:10]
         fresh = last_date >= (date.today() - timedelta(days=7)).isoformat()
         if enough and fresh:
             return klines
-    await sync_download_stock_kline(symbol, days=days, adjust=adjust)
-    return get_stock_kline_local(symbol, days)
+    # days 语义为交易日条数, 下载窗口按 1.55 倍换算为日历天数(覆盖节假日)
+    await sync_download_stock_kline(symbol, days=int(days * 1.55), adjust=adjust)
+    return get_stock_kline_local(symbol, days, adjust)
 
 
 async def get_rank_trend_data(symbol: str, days: int = 30) -> list[dict]:

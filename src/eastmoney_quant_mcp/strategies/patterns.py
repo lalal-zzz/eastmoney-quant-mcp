@@ -31,6 +31,7 @@ strategies/patterns.py — 技术形态识别引擎
 """
 
 import sqlite3
+import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import datetime
@@ -39,10 +40,11 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from ..core.constants import MIN_PATTERN_BARS
 from ..data.storage import get_stock_db, get_sector_db
 
 BACKTEST_START = "2010-01-01"          # 回测/历史数据起点 (用户要求 2010 之后)
-MIN_BARS = 260                          # 形态判定最少K线数 (保证 MA250 与 120 日窗口可用)
+MIN_BARS = MIN_PATTERN_BARS             # backward-compatible public constant
 
 PATTERN_NAMES = {
     "trend_pullback": "趋势回调企稳",
@@ -118,6 +120,8 @@ def load_pattern_df(universe: str, symbol: str, start: str = BACKTEST_START,
     """
     db_path, kt, it, _bt, kdate_col, id_col = _universe_defs()[universe]
     id_field = f"h.{id_col}"
+    stock_join = " AND c.adjust_type = h.adjust_type" if universe == "stocks" else ""
+    stock_where = " AND h.adjust_type = 'qfq'" if universe == "stocks" else ""
 
     select_common = f"""
         SELECT h.{kdate_col} AS date, h.open, h.high, h.low, h.close,
@@ -129,9 +133,9 @@ def load_pattern_df(universe: str, symbol: str, start: str = BACKTEST_START,
                c.BOLL_UPPER, c.BOLL_MIDDLE, c.BOLL_LOWER
         FROM {kt} h
         LEFT JOIN {it} c
-            ON c.{kdate_col} = h.{kdate_col} AND c.{id_col} = {id_field}
+            ON c.{kdate_col} = h.{kdate_col} AND c.{id_col} = {id_field}{stock_join}
     """
-    where = f"WHERE h.{id_col} = ? AND h.{kdate_col} >= ?"
+    where = f"WHERE h.{id_col} = ? AND h.{kdate_col} >= ?{stock_where}"
     params: list = [symbol, start]
     if end:
         where += f" AND h.{kdate_col} <= ?"
@@ -192,7 +196,8 @@ def get_universe_list(universe: str, exclude_st: bool = True,
 def get_latest_trade_date(universe: str) -> str | None:
     db_path, kt, _it, _bt, kdate_col, _id_col = _universe_defs()[universe]
     with sqlite3.connect(db_path, timeout=60) as conn:
-        row = conn.execute(f"SELECT MAX({kdate_col}) FROM {kt}").fetchone()
+        suffix = " WHERE adjust_type='qfq'" if universe == "stocks" else ""
+        row = conn.execute(f"SELECT MAX({kdate_col}) FROM {kt}{suffix}").fetchone()
     return row[0] if row else None
 
 
@@ -357,6 +362,12 @@ class _Ctx:
         return getattr(self, f"MA{w}")[i]
 
 
+
+# 支持的均线窗口集合 —— 由 _Ctx._COLUMNS 单一来源派生, 避免两处硬编码漂移
+MA_WINDOW_WHITELIST = frozenset(
+    int(c[2:]) for c in _Ctx._COLUMNS if c.startswith("MA") and c[2:].isdigit()
+)
+
 def _valid(x: float) -> bool:
     return x is not None and not np.isnan(x)
 
@@ -389,20 +400,6 @@ def wave_phase(ctx: _Ctx, i: int, lookback: int = 250) -> str:
         return "breakout_new_high"
     nh = sum(1 for p in ctx.zz if p.typ == "H" and p.idx >= lo)
     return {1: "first_pullback", 2: "second_pullback"}.get(nh, "later_pullback")
-
-
-def fib_levels_for_wave(ctx: _Ctx, peak_idx: int, peak_close: float,
-                        lookback: int = 90, min_gain: float = 0.15) -> dict[str, float]:
-    """基于 peak 前最近上涨波段的斐波那契回调位 (数值法, 无 pivot 滞后问题)。"""
-    lo = max(0, peak_idx - lookback)
-    seg = ctx.close[lo:peak_idx + 1]
-    if len(seg) < 10:
-        return {}
-    wave_low = seg.min()
-    if wave_low <= 0 or peak_close / wave_low - 1.0 < min_gain:
-        return {}
-    span = peak_close - wave_low
-    return {f"fib_{int(r * 1000)}": peak_close - span * r for r in FIB_RATIOS}
 
 
 def trend_context(ctx: _Ctx, i: int, lookback: int = 250,
@@ -557,6 +554,7 @@ def _detect_trend_pullback(ctx: _Ctx, i: int, symbol: str, name: str,
     min_close_since = float(since.min())
     low_since = ctx.low[peak_idx:i + 1]
     min_low_since = float(low_since.min())
+    pullback_low_idx = peak_idx + int(np.argmin(low_since))
     drawdown = (peak_close - min_close_since) / peak_close
     if not (0.02 <= drawdown <= 0.20):
         return None
@@ -618,6 +616,11 @@ def _detect_trend_pullback(ctx: _Ctx, i: int, symbol: str, name: str,
         break_days=broken, break_depth=round(break_depth, 4),
         pullback_vol_shrink=vol_shrink,
         potential_gain=high120 / ctx.close[i] - 1.0,
+        swing_start_date=ctx.dates[sl.idx], swing_start_price=round(float(sl.price), 3),
+        swing_peak_date=ctx.dates[peak_idx], swing_peak_price=round(peak_close, 3),
+        pullback_low_date=ctx.dates[pullback_low_idx], pullback_low_price=round(min_low_since, 3),
+        pullback_pct=round(drawdown, 4), key_level_name=main_name,
+        key_level_value=round(float(main_lv), 3),
         score=round(score, 3), trend="up",
     )
 
@@ -684,6 +687,8 @@ def _detect_ma_rebound(ctx: _Ctx, i: int, symbol: str, name: str,
         hit_levels=f"MA{w}", resonance=1,
         wave_phase="downtrend_ma_support",
         potential_gain=high120 / ctx.close[i] - 1.0,
+        key_level_name=f"MA{w}", key_level_value=round(float(ma), 3),
+        pullback_pct=round(dd60, 4),
         score=round(score, 3), trend="down",
     )
 
@@ -748,6 +753,10 @@ def _detect_w_bottom(ctx: _Ctx, i: int, symbol: str, name: str,
             hit_levels="neckline", resonance=1,
             wave_phase="base_breakout",
             potential_gain=(hp + (hp - bottom)) / ctx.close[i] - 1.0,
+            left_bottom_date=ctx.dates[l1.idx], left_bottom_price=round(float(l1p), 3),
+            right_bottom_date=ctx.dates[l2.idx], right_bottom_price=round(float(l2p), 3),
+            neckline_date=ctx.dates[h.idx], neckline_value=round(float(hp), 3),
+            bottom_deviation_pct=round(abs(l2p / l1p - 1.0) * 100, 2),
             score=round(score, 3), trend="down", macd_div=macd_div,
         )
     # 信号 (a): 右底确认后反弹中、未到颈线 (博第二波到颈线)
@@ -762,6 +771,10 @@ def _detect_w_bottom(ctx: _Ctx, i: int, symbol: str, name: str,
             hit_levels="second_bottom", resonance=1,
             wave_phase="base_rebound",
             potential_gain=hp / ctx.close[i] - 1.0,
+            left_bottom_date=ctx.dates[l1.idx], left_bottom_price=round(float(l1p), 3),
+            right_bottom_date=ctx.dates[l2.idx], right_bottom_price=round(float(l2p), 3),
+            neckline_date=ctx.dates[h.idx], neckline_value=round(float(hp), 3),
+            bottom_deviation_pct=round(abs(l2p / l1p - 1.0) * 100, 2),
             score=round(score, 3), trend="down", macd_div=macd_div,
         )
     return None
@@ -838,6 +851,10 @@ def _detect_m_neckline(ctx: _Ctx, i: int, symbol: str, name: str,
         wave_phase=wave_phase(ctx, i),
         pullback_vol_shrink=vol_shrink,
         potential_gain=max(h1p, h2p) / ctx.close[i] - 1.0,
+        first_top_date=ctx.dates[h1.idx], first_top_price=round(float(h1p), 3),
+        second_top_date=ctx.dates[h2.idx], second_top_price=round(float(h2p), 3),
+        neckline_date=ctx.dates[n.idx], neckline_value=round(float(np_), 3),
+        top_deviation_pct=round(two_high * 100, 2),
         score=round(score, 3), trend="up", macd_div=macd_div,
     )
 
@@ -879,6 +896,9 @@ def _detect_box_breakout(ctx: _Ctx, i: int, symbol: str, name: str,
         hit_levels="box_high", resonance=1,
         wave_phase="box_breakout",
         potential_gain=(box_high + (box_high - box_low)) / ctx.close[i] - 1.0,
+        box_start_date=ctx.dates[i - box_window], box_end_date=ctx.dates[i - 1],
+        box_high=round(box_high, 3), box_low=round(box_low, 3),
+        box_width_pct=round(width * 100, 2), breakout_pct=round(breakout * 100, 2),
         score=round(score, 3), trend="range",
     )
 
@@ -906,7 +926,7 @@ def detect_patterns(df: pd.DataFrame, symbol: str, name: str = "",
     if patterns is None:
         patterns = list(PATTERN_NAMES.keys())
     events = build_pivot_events(df, pivot_left, pivot_right)
-    ctx = _Ctx(df, tuple(w for w in ma_windows if w in (5, 10, 20, 30, 60, 100, 120, 200, 250)))
+    ctx = _Ctx(df, tuple(w for w in ma_windows if w in MA_WINDOW_WHITELIST))
     signals: list[dict] = []
     cooldown: dict[str, int] = {}
     used_keys: set = set()
@@ -1037,7 +1057,7 @@ def scan_universe(universe: str, date: str | None = None,
             return [s for s in sigs if s["date"] == date]
         except Exception as e:  # 单标的失败不影响整体扫描
             if progress:
-                print(f"  [warn] {universe} {sym} {nm}: {e}", flush=True)
+                print(f"  [warn] {universe} {sym} {nm}: {e}", file=sys.stderr, flush=True)
             return []
 
     with ThreadPoolExecutor(max_workers=workers) as pool:
@@ -1047,7 +1067,7 @@ def scan_universe(universe: str, date: str | None = None,
             done += 1
             if progress and done % 500 == 0:
                 print(f"进度: {done}/{len(items)} ({done / len(items):.0%}) "
-                      f"信号={len(all_sigs)}", flush=True)
+                      f"信号={len(all_sigs)}", file=sys.stderr, flush=True)
 
     if not all_sigs:
         return []

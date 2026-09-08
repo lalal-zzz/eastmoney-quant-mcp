@@ -1,0 +1,881 @@
+{
+  "stock": {
+    "symbol": "002803",
+    "name": "吉宏股份",
+    "latest_price": 18.76,
+    "change_pct": 0.05,
+    "change_amount": 0.01,
+    "volume": 74801.0,
+    "amount": 140984194.05,
+    "amplitude": 2.03,
+    "high": 19.05,
+    "low": 18.67,
+    "open": 18.71,
+    "pre_close": 18.75,
+    "volume_ratio": 1.02,
+    "turnover_rate": 2.51,
+    "pe_dynamic": 27.23,
+    "pb": 3.1,
+    "total_market_cap": 8590518943.0,
+    "float_market_cap": 5582303942.0,
+    "speed": null,
+    "sixty_day_change": -11.63,
+    "ytd_change": 15.95,
+    "updated_date": "2026-08-29"
+  },
+  "data_quality": {
+    "bars": 500,
+    "first_date": "2024-08-14",
+    "last_date": "2026-09-04",
+    "stale": false,
+    "adjust_type": "qfq"
+  },
+  "timeframes": {
+    "weekly": {
+      "period": "weekly",
+      "bars": 107,
+      "last_date": "2026-09-04",
+      "close": 20.81,
+      "trend": "down",
+      "moving_averages": {
+        "MA5": 19.412,
+        "MA10": 19.944,
+        "MA20": 20.925,
+        "MA60": 18.478
+      },
+      "recent_returns_pct": {
+        "return_5": 18.91,
+        "return_10": -21.2,
+        "return_20": 20.15
+      },
+      "range_20": {
+        "high": 28.0,
+        "low": 17.13
+      }
+    },
+    "monthly": {
+      "period": "monthly",
+      "bars": 26,
+      "last_date": "2026-09-30",
+      "close": 20.81,
+      "trend": "up",
+      "moving_averages": {
+        "MA5": 21.044,
+        "MA10": 19.68,
+        "MA20": 17.447
+      },
+      "recent_returns_pct": {
+        "return_5": 5.26,
+        "return_10": 29.74,
+        "return_20": 66.35
+      },
+      "range_20": {
+        "high": 28.0,
+        "low": 9.66
+      }
+    },
+    "daily": {
+      "period": "daily",
+      "bars": 500,
+      "last_date": "2026-09-04",
+      "close": 20.81,
+      "trend": "down",
+      "moving_averages": {
+        "MA5": 20.436,
+        "MA10": 19.541,
+        "MA20": 19.378,
+        "MA60": 20.944
+      },
+      "recent_returns_pct": {
+        "return_5": 10.93,
+        "return_10": 12.3,
+        "return_20": 6.83
+      },
+      "range_20": {
+        "high": 21.26,
+        "low": 18.0
+      }
+    }
+  },
+  "key_levels": {
+    "universe": "stocks",
+    "symbol": "002803",
+    "name": "吉宏股份",
+    "date": "2026-09-04",
+    "close": 20.81,
+    "trend": "up",
+    "trend_cn": "上涨趋势",
+    "levels": [
+      {
+        "type": "MA60",
+        "value": 20.944,
+        "distance_pct": 0.64
+      },
+      {
+        "type": "前高(2026-08-06)",
+        "value": 20.56,
+        "distance_pct": -1.2
+      },
+      {
+        "type": "MA5",
+        "value": 20.436,
+        "distance_pct": -1.8
+      },
+      {
+        "type": "MA120",
+        "value": 20.149,
+        "distance_pct": -3.18
+      },
+      {
+        "type": "回调位618",
+        "value": 20.083,
+        "distance_pct": -3.49
+      },
+      {
+        "type": "回调位500",
+        "value": 21.595,
+        "distance_pct": 3.77
+      },
+      {
+        "type": "MA10",
+        "value": 19.541,
+        "distance_pct": -6.1
+      },
+      {
+        "type": "MA20",
+        "value": 19.378,
+        "distance_pct": -6.88
+      },
+      {
+        "type": "MA30",
+        "value": 19.164,
+        "distance_pct": -7.91
+      },
+      {
+        "type": "MA200",
+        "value": 19.1,
+        "distance_pct": -8.22
+      },
+      {
+        "type": "MA250",
+        "value": 18.801,
+        "distance_pct": -9.65
+      },
+      {
+        "type": "回调位382",
+        "value": 23.107,
+        "distance_pct": 11.04
+      },
+      {
+        "type": "前低(2026-08-21)",
+        "value": 18.0,
+        "distance_pct": -13.5
+      },
+      {
+        "type": "回调位786",
+        "value": 17.931,
+        "distance_pct": -13.83
+      }
+    ],
+    "resistance": [
+      {
+        "type": "MA60",
+        "value": 20.944,
+        "distance_pct": 0.64
+      },
+      {
+        "type": "回调位500",
+        "value": 21.595,
+        "distance_pct": 3.77
+      },
+      {
+        "type": "回调位382",
+        "value": 23.107,
+        "distance_pct": 11.04
+      }
+    ],
+    "support": [
+      {
+        "type": "前高(2026-08-06)",
+        "value": 20.56,
+        "distance_pct": -1.2
+      },
+      {
+        "type": "MA5",
+        "value": 20.436,
+        "distance_pct": -1.8
+      },
+      {
+        "type": "MA120",
+        "value": 20.149,
+        "distance_pct": -3.18
+      },
+      {
+        "type": "回调位618",
+        "value": 20.083,
+        "distance_pct": -3.49
+      },
+      {
+        "type": "MA10",
+        "value": 19.541,
+        "distance_pct": -6.1
+      },
+      {
+        "type": "MA20",
+        "value": 19.378,
+        "distance_pct": -6.88
+      }
+    ]
+  },
+  "patterns": [
+    {
+      "symbol": "002803",
+      "name": "吉宏股份",
+      "date": "2026-08-31",
+      "pattern": "major_ma_rebound",
+      "pattern_cn": "下跌均线反弹",
+      "variant": "MA250_hold",
+      "close": 19.43,
+      "change_rate": 3.5714,
+      "turnover": NaN,
+      "turnover_ma20": NaN,
+      "updown_ratio_20": 1.8571428571428572,
+      "up_days_ratio_20": 0.55,
+      "vol_ratio": 1.3928060156198259,
+      "pullback_vol_shrink": NaN,
+      "rsi14": 51.029472347188985,
+      "ma_bull": 0,
+      "dif_above_zero": 0,
+      "bias60": -0.0716304997013737,
+      "hit_levels": "MA250",
+      "fib_level": "",
+      "resonance": 1,
+      "wave_phase": "downtrend_ma_support",
+      "break_days": 0,
+      "break_depth": 0.0,
+      "potential_gain": 0.40452907874420996,
+      "score": 37.89,
+      "trend": "down",
+      "macd_gold3": 0,
+      "dif_below0": 1,
+      "kdj_gold3": 1,
+      "kdj_j": 81.24569988500306,
+      "boll_pos": 0.6077142002853472,
+      "boll_width": 0.11978350999344453,
+      "rsi6": 66.83711802415195,
+      "macd_div": 0,
+      "key_level_name": "MA250",
+      "key_level_value": 18.746,
+      "pullback_pct": 0.288,
+      "raw_pattern": "ma_rebound",
+      "signal_date": "2026-08-31",
+      "stage": "retesting",
+      "confirmed": true,
+      "entry_status": "actionable",
+      "trend_state": "down",
+      "support": 18.746,
+      "resistance": 20.944,
+      "neckline": null,
+      "invalid_level": 18.746,
+      "fib_levels": {
+        "0.618": 20.083,
+        "0.5": 21.595,
+        "0.382": 23.107,
+        "0.786": 17.931
+      },
+      "evidence": [
+        "形态标准度 0.90",
+        "日线趋势 down",
+        "共振数 1",
+        "量能倍率 1.39",
+        "命中关键位 MA250"
+      ],
+      "warnings": [
+        "日线趋势仍偏弱"
+      ],
+      "score_raw": 0.898,
+      "score_breakdown": {
+        "pattern": 26.94,
+        "daily": 3.0,
+        "higher_timeframe": 9.0,
+        "volume": 10.45,
+        "sector": 0.0,
+        "confluence": 3.5,
+        "risk_penalty": 15.0
+      },
+      "factors": {
+        "change_rate": 3.5714,
+        "turnover": NaN,
+        "vol_ratio": 1.3928060156198259,
+        "bias60": -0.0716304997013737,
+        "rsi14": 51.029472347188985,
+        "resonance": 1,
+        "wave_phase": "downtrend_ma_support",
+        "potential_gain": 0.40452907874420996
+      }
+    },
+    {
+      "symbol": "002803",
+      "name": "吉宏股份",
+      "date": "2026-08-31",
+      "pattern": "w_bottom",
+      "pattern_cn": "W底右底",
+      "variant": "right_bottom",
+      "close": 19.43,
+      "change_rate": 3.5714,
+      "turnover": NaN,
+      "turnover_ma20": NaN,
+      "updown_ratio_20": 1.8571428571428572,
+      "up_days_ratio_20": 0.55,
+      "vol_ratio": 1.3928060156198259,
+      "pullback_vol_shrink": NaN,
+      "rsi14": 51.029472347188985,
+      "ma_bull": 0,
+      "dif_above_zero": 0,
+      "bias60": -0.0716304997013737,
+      "hit_levels": "second_bottom",
+      "fib_level": "",
+      "resonance": 1,
+      "wave_phase": "base_rebound",
+      "break_days": 0,
+      "break_depth": 0.0,
+      "potential_gain": 0.05815748841996915,
+      "score": 37.86,
+      "trend": "down",
+      "macd_gold3": 0,
+      "dif_below0": 1,
+      "kdj_gold3": 1,
+      "kdj_j": 81.24569988500306,
+      "boll_pos": 0.6077142002853472,
+      "boll_width": 0.11978350999344453,
+      "rsi6": 66.83711802415195,
+      "macd_div": 0,
+      "left_bottom_date": "2026-07-27",
+      "left_bottom_price": 17.23,
+      "right_bottom_date": "2026-08-21",
+      "right_bottom_price": 18.0,
+      "neckline_date": "2026-08-06",
+      "neckline_value": 20.56,
+      "bottom_deviation_pct": 4.47,
+      "raw_pattern": "w_bottom",
+      "signal_date": "2026-08-31",
+      "stage": "candidate",
+      "confirmed": false,
+      "entry_status": "wait_confirmation",
+      "trend_state": "down",
+      "support": 20.56,
+      "resistance": 20.944,
+      "neckline": 20.56,
+      "invalid_level": 17.64,
+      "fib_levels": {
+        "0.618": 20.083,
+        "0.5": 21.595,
+        "0.382": 23.107,
+        "0.786": 17.931
+      },
+      "evidence": [
+        "形态标准度 0.90",
+        "日线趋势 down",
+        "共振数 1",
+        "量能倍率 1.39",
+        "命中关键位 second_bottom"
+      ],
+      "warnings": [
+        "日线趋势仍偏弱"
+      ],
+      "score_raw": 0.897,
+      "score_breakdown": {
+        "pattern": 26.91,
+        "daily": 3.0,
+        "higher_timeframe": 9.0,
+        "volume": 10.45,
+        "sector": 0.0,
+        "confluence": 3.5,
+        "risk_penalty": 15.0
+      },
+      "factors": {
+        "change_rate": 3.5714,
+        "turnover": NaN,
+        "vol_ratio": 1.3928060156198259,
+        "bias60": -0.0716304997013737,
+        "rsi14": 51.029472347188985,
+        "resonance": 1,
+        "wave_phase": "base_rebound",
+        "potential_gain": 0.05815748841996915
+      }
+    }
+  ],
+  "sector_context": [
+    {
+      "sector_code": "BK0665",
+      "sector_name": "电商概念",
+      "sector_type": "concept",
+      "sector_change_pct": 0.82,
+      "latest_price": 18.28,
+      "change_pct": 1.05,
+      "turnover_rate": 1.62,
+      "volume_ratio": 1.09
+    },
+    {
+      "sector_code": "BK0854",
+      "sector_name": "华为概念",
+      "sector_type": "concept",
+      "sector_change_pct": -0.63,
+      "latest_price": 18.27,
+      "change_pct": 1.0,
+      "turnover_rate": 1.62,
+      "volume_ratio": 1.08
+    },
+    {
+      "sector_code": "BK0596",
+      "sector_name": "融资融券",
+      "sector_type": "concept",
+      "sector_change_pct": -0.42,
+      "latest_price": 18.26,
+      "change_pct": 0.94,
+      "turnover_rate": 1.62,
+      "volume_ratio": 1.08
+    },
+    {
+      "sector_code": "BK0804",
+      "sector_name": "深股通",
+      "sector_type": "concept",
+      "sector_change_pct": -0.47,
+      "latest_price": 18.53,
+      "change_pct": -0.05,
+      "turnover_rate": 2.6,
+      "volume_ratio": 0.72
+    },
+    {
+      "sector_code": "BK0867",
+      "sector_name": "富时罗素",
+      "sector_type": "concept",
+      "sector_change_pct": 0.14,
+      "latest_price": 18.53,
+      "change_pct": -0.05,
+      "turnover_rate": 2.6,
+      "volume_ratio": 0.72
+    },
+    {
+      "sector_code": "BK0499",
+      "sector_name": "AH股",
+      "sector_type": "concept",
+      "sector_change_pct": -0.35,
+      "latest_price": 18.53,
+      "change_pct": -0.05,
+      "turnover_rate": 2.6,
+      "volume_ratio": 0.72
+    },
+    {
+      "sector_code": "BK0712",
+      "sector_name": "一带一路",
+      "sector_type": "concept",
+      "sector_change_pct": 0.15,
+      "latest_price": 18.53,
+      "change_pct": -0.05,
+      "turnover_rate": 2.6,
+      "volume_ratio": 0.72
+    },
+    {
+      "sector_code": "BK1198",
+      "sector_name": "2025三季报预增",
+      "sector_type": "concept",
+      "sector_change_pct": -0.89,
+      "latest_price": 18.53,
+      "change_pct": -0.05,
+      "turnover_rate": 2.6,
+      "volume_ratio": 0.72
+    },
+    {
+      "sector_code": "BK1005",
+      "sector_name": "专精特新",
+      "sector_type": "concept",
+      "sector_change_pct": -1.24,
+      "latest_price": 18.53,
+      "change_pct": -0.054,
+      "turnover_rate": 2.60336,
+      "volume_ratio": null
+    },
+    {
+      "sector_code": "BK1061",
+      "sector_name": "数字经济",
+      "sector_type": "concept",
+      "sector_change_pct": 0.95,
+      "latest_price": 18.53,
+      "change_pct": -0.05,
+      "turnover_rate": 2.6,
+      "volume_ratio": 0.72
+    },
+    {
+      "sector_code": "BK1104",
+      "sector_name": "信创",
+      "sector_type": "concept",
+      "sector_change_pct": 0.55,
+      "latest_price": 18.53,
+      "change_pct": -0.05,
+      "turnover_rate": 2.6,
+      "volume_ratio": 0.72
+    },
+    {
+      "sector_code": "BK0830",
+      "sector_name": "区块链",
+      "sector_type": "concept",
+      "sector_change_pct": 0.74,
+      "latest_price": 18.53,
+      "change_pct": -0.05,
+      "turnover_rate": 2.6,
+      "volume_ratio": 0.72
+    },
+    {
+      "sector_code": "BK1111",
+      "sector_name": "AIGC概念",
+      "sector_type": "concept",
+      "sector_change_pct": 1.86,
+      "latest_price": 18.53,
+      "change_pct": -0.05,
+      "turnover_rate": 2.6,
+      "volume_ratio": 0.72
+    },
+    {
+      "sector_code": "BK1115",
+      "sector_name": "跨境电商",
+      "sector_type": "concept",
+      "sector_change_pct": 1.01,
+      "latest_price": 18.53,
+      "change_pct": -0.05,
+      "turnover_rate": 2.6,
+      "volume_ratio": 0.72
+    },
+    {
+      "sector_code": "BK0923",
+      "sector_name": "抖音概念(字节概念)",
+      "sector_type": "concept",
+      "sector_change_pct": 0.89,
+      "latest_price": 18.53,
+      "change_pct": -0.05,
+      "turnover_rate": 2.6,
+      "volume_ratio": 0.72
+    },
+    {
+      "sector_code": "BK1153",
+      "sector_name": "多模态AI",
+      "sector_type": "concept",
+      "sector_change_pct": 1.63,
+      "latest_price": 18.53,
+      "change_pct": -0.05,
+      "turnover_rate": 2.6,
+      "volume_ratio": 0.72
+    },
+    {
+      "sector_code": "BK1126",
+      "sector_name": "ChatGPT概念",
+      "sector_type": "concept",
+      "sector_change_pct": 1.47,
+      "latest_price": 18.53,
+      "change_pct": -0.05,
+      "turnover_rate": 2.6,
+      "volume_ratio": 0.72
+    },
+    {
+      "sector_code": "BK0800",
+      "sector_name": "人工智能",
+      "sector_type": "concept",
+      "sector_change_pct": 0.17,
+      "latest_price": 18.53,
+      "change_pct": -0.05,
+      "turnover_rate": 2.6,
+      "volume_ratio": 0.72
+    },
+    {
+      "sector_code": "BK1268",
+      "sector_name": "互联网电商",
+      "sector_type": "industry",
+      "sector_change_pct": 1.35,
+      "latest_price": 18.53,
+      "change_pct": -0.05,
+      "turnover_rate": 2.6,
+      "volume_ratio": 0.72
+    }
+  ],
+  "popularity": [
+    {
+      "rank_date": "2026-08-29",
+      "popularity_rank": 2377.0,
+      "change_pct": 0.05,
+      "latest_price": 18.76
+    },
+    {
+      "rank_date": "2026-08-21",
+      "popularity_rank": 2779.0,
+      "change_pct": -0.05,
+      "latest_price": 18.53
+    }
+  ],
+  "charts": {
+    "daily": "C:\\Users\\20127\\Desktop\\K线图片\\吉宏股份_002803_daily.png",
+    "weekly": "C:\\Users\\20127\\Desktop\\K线图片\\吉宏股份_002803_weekly.png",
+    "monthly": "C:\\Users\\20127\\Desktop\\K线图片\\吉宏股份_002803_monthly.png",
+    "bars": {
+      "daily": 500,
+      "weekly": 107,
+      "monthly": 26
+    }
+  },
+  "warnings": [],
+  "review_metrics": {
+    "ma": {
+      "20": 19.378499999999995,
+      "60": 20.94383333333333,
+      "120": 20.14858333333333,
+      "250": 18.801440000000003
+    },
+    "ma20_change_5_pct": 1.0691840300414368,
+    "ma60_change_5_pct": -0.037387638214958496,
+    "volume5_over20": 1.1888946720102709,
+    "last_volume_over_previous20": 1.0927032479963825,
+    "distance_ma20_pct": 7.387052661454718,
+    "distance_ma60_pct": -0.6390106873144785,
+    "last20_high": 21.26,
+    "last20_low": 18.0,
+    "last60_high": 28.0,
+    "last60_low": 17.23,
+    "return20_pct": 6.827515400410666
+  },
+  "screen_signal": {
+    "symbol": "002803",
+    "name": "吉宏股份",
+    "date": "2026-08-31",
+    "pattern": "w_bottom",
+    "pattern_cn": "W底右底",
+    "variant": "right_bottom",
+    "close": 19.43,
+    "change_rate": 3.5714,
+    "turnover": NaN,
+    "turnover_ma20": NaN,
+    "updown_ratio_20": 1.8571428571428572,
+    "up_days_ratio_20": 0.55,
+    "vol_ratio": 1.3928060156198259,
+    "pullback_vol_shrink": NaN,
+    "rsi14": 51.029472347188985,
+    "ma_bull": 0,
+    "dif_above_zero": 0,
+    "bias60": -0.0716304997013737,
+    "hit_levels": "second_bottom",
+    "fib_level": "",
+    "resonance": 1,
+    "wave_phase": "base_rebound",
+    "break_days": 0,
+    "break_depth": 0.0,
+    "potential_gain": 0.05815748841996915,
+    "score": 47.86,
+    "trend": "down",
+    "macd_gold3": 0,
+    "dif_below0": 1,
+    "kdj_gold3": 1,
+    "kdj_j": 81.24569988500306,
+    "boll_pos": 0.6077142002853472,
+    "boll_width": 0.11978350999344453,
+    "rsi6": 66.83711802415195,
+    "macd_div": 0,
+    "left_bottom_date": "2026-07-27",
+    "left_bottom_price": 17.23,
+    "right_bottom_date": "2026-08-21",
+    "right_bottom_price": 18.0,
+    "neckline_date": "2026-08-06",
+    "neckline_value": 20.56,
+    "bottom_deviation_pct": 4.47,
+    "raw_pattern": "w_bottom",
+    "signal_date": "2026-08-31",
+    "stage": "candidate",
+    "confirmed": false,
+    "entry_status": "wait_confirmation",
+    "trend_state": "down",
+    "support": 20.56,
+    "resistance": 20.944,
+    "neckline": 20.56,
+    "invalid_level": 17.64,
+    "fib_levels": {
+      "0.618": 20.083,
+      "0.5": 21.595,
+      "0.382": 23.107,
+      "0.786": 17.931
+    },
+    "evidence": [
+      "形态标准度 0.90",
+      "日线趋势 down",
+      "共振数 1",
+      "量能倍率 1.39",
+      "命中关键位 second_bottom"
+    ],
+    "warnings": [
+      "日线趋势仍偏弱"
+    ],
+    "score_raw": 0.897,
+    "score_breakdown": {
+      "pattern": 26.91,
+      "daily": 3.0,
+      "higher_timeframe": 9.0,
+      "volume": 10.45,
+      "sector": 10.0,
+      "confluence": 3.5,
+      "risk_penalty": 15.0
+    },
+    "factors": {
+      "change_rate": 3.5714,
+      "turnover": NaN,
+      "vol_ratio": 1.3928060156198259,
+      "bias60": -0.0716304997013737,
+      "rsi14": 51.029472347188985,
+      "resonance": 1,
+      "wave_phase": "base_rebound",
+      "potential_gain": 0.05815748841996915
+    },
+    "higher_timeframe": {
+      "weekly": {
+        "period": "weekly",
+        "bars": 90,
+        "last_date": "2026-09-04",
+        "close": 20.81,
+        "trend": "down",
+        "moving_averages": {
+          "MA5": 19.412,
+          "MA10": 19.944,
+          "MA20": 20.925,
+          "MA60": 18.478
+        },
+        "recent_returns_pct": {
+          "return_5": 18.91,
+          "return_10": -21.2,
+          "return_20": 20.15
+        },
+        "range_20": {
+          "high": 28.0,
+          "low": 17.13
+        }
+      },
+      "monthly": {
+        "period": "monthly",
+        "bars": 22,
+        "last_date": "2026-09-30",
+        "close": 20.81,
+        "trend": "up",
+        "moving_averages": {
+          "MA5": 21.044,
+          "MA10": 19.68,
+          "MA20": 17.448
+        },
+        "recent_returns_pct": {
+          "return_5": 5.26,
+          "return_10": 29.74,
+          "return_20": 66.35
+        },
+        "range_20": {
+          "high": 28.0,
+          "low": 9.66
+        }
+      }
+    },
+    "sectors": [
+      {
+        "sector_code": "BK0665",
+        "sector_name": "电商概念",
+        "sector_type": "concept",
+        "sector_change_pct": 0.82,
+        "latest_price": 18.28,
+        "change_pct": 1.05,
+        "turnover_rate": 1.62,
+        "volume_ratio": 1.09
+      },
+      {
+        "sector_code": "BK0854",
+        "sector_name": "华为概念",
+        "sector_type": "concept",
+        "sector_change_pct": -0.63,
+        "latest_price": 18.27,
+        "change_pct": 1.0,
+        "turnover_rate": 1.62,
+        "volume_ratio": 1.08
+      },
+      {
+        "sector_code": "BK0596",
+        "sector_name": "融资融券",
+        "sector_type": "concept",
+        "sector_change_pct": -0.42,
+        "latest_price": 18.26,
+        "change_pct": 0.94,
+        "turnover_rate": 1.62,
+        "volume_ratio": 1.08
+      },
+      {
+        "sector_code": "BK0804",
+        "sector_name": "深股通",
+        "sector_type": "concept",
+        "sector_change_pct": -0.47,
+        "latest_price": 18.53,
+        "change_pct": -0.05,
+        "turnover_rate": 2.6,
+        "volume_ratio": 0.72
+      },
+      {
+        "sector_code": "BK0867",
+        "sector_name": "富时罗素",
+        "sector_type": "concept",
+        "sector_change_pct": 0.14,
+        "latest_price": 18.53,
+        "change_pct": -0.05,
+        "turnover_rate": 2.6,
+        "volume_ratio": 0.72
+      },
+      {
+        "sector_code": "BK0499",
+        "sector_name": "AH股",
+        "sector_type": "concept",
+        "sector_change_pct": -0.35,
+        "latest_price": 18.53,
+        "change_pct": -0.05,
+        "turnover_rate": 2.6,
+        "volume_ratio": 0.72
+      },
+      {
+        "sector_code": "BK0712",
+        "sector_name": "一带一路",
+        "sector_type": "concept",
+        "sector_change_pct": 0.15,
+        "latest_price": 18.53,
+        "change_pct": -0.05,
+        "turnover_rate": 2.6,
+        "volume_ratio": 0.72
+      },
+      {
+        "sector_code": "BK1198",
+        "sector_name": "2025三季报预增",
+        "sector_type": "concept",
+        "sector_change_pct": -0.89,
+        "latest_price": 18.53,
+        "change_pct": -0.05,
+        "turnover_rate": 2.6,
+        "volume_ratio": 0.72
+      },
+      {
+        "sector_code": "BK1005",
+        "sector_name": "专精特新",
+        "sector_type": "concept",
+        "sector_change_pct": -1.24,
+        "latest_price": 18.53,
+        "change_pct": -0.054,
+        "turnover_rate": 2.60336,
+        "volume_ratio": null
+      },
+      {
+        "sector_code": "BK1061",
+        "sector_name": "数字经济",
+        "sector_type": "concept",
+        "sector_change_pct": 0.95,
+        "latest_price": 18.53,
+        "change_pct": -0.05,
+        "turnover_rate": 2.6,
+        "volume_ratio": 0.72
+      }
+    ]
+  }
+}

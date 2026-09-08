@@ -1,0 +1,220 @@
+=== Phase 4: Rising Candidates ===
+Step 0: Imports...
+Imports OK
+============================================================
+Step 1: screen_rising_candidates
+============================================================
+universe=5587, scanned=5732
+candidates: 20
+warning: None
+ 1. 601658 邮储银行 score=77.5 pattern=box_breakout date=2026-08-31
+    pat=30.0 daily=10.0 higher=9.0 vol=15.0 sector=10.0 conf=3.5 risk=0.0
+ 2. 002386 天原股份 score=74.1 pattern=neckline_reclaim date=2026-08-24
+    pat=23.6 daily=20.0 higher=9.0 vol=8.0 sector=10.0 conf=3.5 risk=0.0
+ 3. 600845 宝信软件 score=71.9 pattern=neckline_reclaim date=2026-08-28
+    pat=24.1 daily=20.0 higher=3.0 vol=11.2 sector=10.0 conf=3.5 risk=0.0
+ 4. 600674 川投能源 score=71.2 pattern=box_breakout date=2026-09-02
+    pat=20.7 daily=10.0 higher=15.0 vol=12.0 sector=10.0 conf=3.5 risk=0.0
+ 5. 600177 雅戈尔 score=70.2 pattern=box_breakout date=2026-09-01
+    pat=20.2 daily=10.0 higher=15.0 vol=11.5 sector=10.0 conf=3.5 risk=0.0
+ 6. 601369 陕鼓动力 score=55.8 pattern=neckline_reclaim date=2026-08-31
+    pat=24.1 daily=20.0 higher=3.0 vol=7.2 sector=8.0 conf=3.5 risk=10.0
+ 7. 300801 泰和科技 score=54.9 pattern=neckline_reclaim date=2026-08-28
+    pat=27.3 daily=20.0 higher=3.0 vol=7.1 sector=4.0 conf=3.5 risk=10.0
+ 8. 605288 凯迪股份 score=48.6 pattern=w_bottom date=2026-08-27
+    pat=30.0 daily=3.0 higher=9.0 vol=12.1 sector=6.0 conf=3.5 risk=15.0
+ 9. 002803 吉宏股份 score=47.9 pattern=w_bottom date=2026-08-31
+    pat=26.9 daily=3.0 higher=9.0 vol=10.4 sector=10.0 conf=3.5 risk=15.0
+10. 920394 民士达 score=46.8 pattern=w_bottom date=2026-09-02
+    pat=30.0 daily=3.0 higher=9.0 vol=12.3 sector=4.0 conf=3.5 risk=15.0
+11. 002456 欧菲光 score=46.1 pattern=w_bottom date=2026-08-27
+    pat=30.0 daily=3.0 higher=3.0 vol=13.6 sector=8.0 conf=3.5 risk=15.0
+12. 300912 凯龙高科 score=44.4 pattern=w_bottom date=2026-08-31
+    pat=29.1 daily=3.0 higher=9.0 vol=10.8 sector=4.0 conf=3.5 risk=15.0
+13. 601689 拓普集团 score=44.1 pattern=w_bottom date=2026-09-03
+    pat=29.2 daily=3.0 higher=3.0 vol=10.4 sector=10.0 conf=3.5 risk=15.0
+14. 603992 松霖科技 score=43.2 pattern=w_bottom date=2026-08-31
+    pat=30.0 daily=3.0 higher=3.0 vol=12.7 sector=6.0 conf=3.5 risk=15.0
+15. 300129 泰胜风能 score=42.9 pattern=w_bottom date=2026-09-01
+    pat=28.8 daily=3.0 higher=3.0 vol=11.6 sector=8.0 conf=3.5 risk=15.0
+16. 603638 艾迪精密 score=42.6 pattern=w_bottom date=2026-09-01
+    pat=30.0 daily=3.0 higher=3.0 vol=12.1 sector=6.0 conf=3.5 risk=15.0
+17. 300065 海兰信 score=42.1 pattern=w_bottom date=2026-09-01
+    pat=30.0 daily=3.0 higher=3.0 vol=7.6 sector=10.0 conf=3.5 risk=15.0
+18. 603890 春秋电子 score=41.6 pattern=w_bottom date=2026-09-02
+    pat=30.0 daily=3.0 higher=9.0 vol=11.1 sector=0.0 conf=3.5 risk=15.0
+19. 002531 天顺风能 score=41.6 pattern=w_bottom date=2026-08-31
+    pat=30.0 daily=3.0 higher=3.0 vol=11.1 sector=6.0 conf=3.5 risk=15.0
+20. 002183 怡 亚 通 score=41.4 pattern=w_bottom date=2026-08-26
+    pat=30.0 daily=3.0 higher=3.0 vol=6.9 sector=10.0 conf=3.5 risk=15.0
+Saved: reports/rising_candidates/candidates.json
+
+============================================================
+Step 2: prepare_stock_analysis (evidence)
+============================================================
+
+  601658 邮储银行:
+    data: 500 bars, 2024-08-14 ~ 2026-09-04
+    daily: close=5.42 trend=up
+    weekly: trend=down  monthly: trend=up
+    patterns: 2
+      - w_bottom score=34.3 stage=candidate
+      - box_breakout score=67.5 stage=confirmed
+    chart: daily=C:\Users\20127\Desktop\K线图片\邮储银行_601658_daily.png
+
+  002386 天原股份:
+    data: 500 bars, 2024-08-14 ~ 2026-09-04
+    daily: close=5.86 trend=down
+    weekly: trend=down  monthly: trend=up
+    patterns: 1
+      - neckline_reclaim score=64.1 stage=retesting
+    chart: daily=C:\Users\20127\Desktop\K线图片\天原股份_002386_daily.png
+
+  600845 宝信软件:
+    data: 500 bars, 2024-08-14 ~ 2026-09-04
+    daily: close=17.41 trend=down
+    weekly: trend=down  monthly: trend=down
+    patterns: 1
+      - neckline_reclaim score=61.9 stage=retesting
+    chart: daily=C:\Users\20127\Desktop\K线图片\宝信软件_600845_daily.png
+
+  600674 川投能源:
+    data: 500 bars, 2024-08-14 ~ 2026-09-04
+    daily: close=15.76 trend=up
+    weekly: trend=up  monthly: trend=up
+    patterns: 1
+      - box_breakout score=61.2 stage=confirmed
+    chart: daily=C:\Users\20127\Desktop\K线图片\川投能源_600674_daily.png
+
+  600177 雅戈尔:
+    data: 500 bars, 2024-08-14 ~ 2026-09-04
+    daily: close=8.22 trend=up
+    weekly: trend=up  monthly: trend=up
+    patterns: 1
+      - box_breakout score=60.2 stage=confirmed
+    chart: daily=C:\Users\20127\Desktop\K线图片\雅戈尔_600177_daily.png
+
+  601369 陕鼓动力:
+    data: 500 bars, 2024-07-31 ~ 2026-09-04
+    daily: close=8.55 trend=down
+    weekly: trend=down  monthly: trend=down
+    patterns: 1
+      - neckline_reclaim score=47.8 stage=retesting
+    chart: daily=C:\Users\20127\Desktop\K线图片\陕鼓动力_601369_daily.png
+
+  300801 泰和科技:
+    data: 500 bars, 2024-08-14 ~ 2026-09-04
+    daily: close=21.85 trend=down
+    weekly: trend=down  monthly: trend=down
+    patterns: 1
+      - neckline_reclaim score=50.9 stage=retesting
+    chart: daily=C:\Users\20127\Desktop\K线图片\泰和科技_300801_daily.png
+
+  605288 凯迪股份:
+    data: 500 bars, 2024-08-14 ~ 2026-09-04
+    daily: close=65.61 trend=down
+    weekly: trend=down  monthly: trend=up
+    patterns: 1
+      - w_bottom score=42.6 stage=candidate
+    chart: daily=C:\Users\20127\Desktop\K线图片\凯迪股份_605288_daily.png
+
+  002803 吉宏股份:
+    data: 500 bars, 2024-08-14 ~ 2026-09-04
+    daily: close=20.81 trend=down
+    weekly: trend=down  monthly: trend=up
+    patterns: 2
+      - major_ma_rebound score=37.9 stage=retesting
+      - w_bottom score=37.9 stage=candidate
+    chart: daily=C:\Users\20127\Desktop\K线图片\吉宏股份_002803_daily.png
+
+  920394 民士达:
+    data: 500 bars, 2024-08-14 ~ 2026-09-04
+    daily: close=44.96 trend=down
+    weekly: trend=down  monthly: trend=up
+    patterns: 1
+      - w_bottom score=42.8 stage=candidate
+    chart: daily=C:\Users\20127\Desktop\K线图片\民士达_920394_daily.png
+
+Saved: reports/rising_candidates/evidence.json (10 stocks)
+
+============================================================
+Step 3: Chart paths
+============================================================
+  601658:
+    daily: C:\Users\20127\Desktop\K线图片\邮储银行_601658_daily.png
+    weekly: C:\Users\20127\Desktop\K线图片\邮储银行_601658_weekly.png
+    monthly: C:\Users\20127\Desktop\K线图片\邮储银行_601658_monthly.png
+  002386:
+    daily: C:\Users\20127\Desktop\K线图片\天原股份_002386_daily.png
+    weekly: C:\Users\20127\Desktop\K线图片\天原股份_002386_weekly.png
+    monthly: C:\Users\20127\Desktop\K线图片\天原股份_002386_monthly.png
+  600845:
+    daily: C:\Users\20127\Desktop\K线图片\宝信软件_600845_daily.png
+    weekly: C:\Users\20127\Desktop\K线图片\宝信软件_600845_weekly.png
+    monthly: C:\Users\20127\Desktop\K线图片\宝信软件_600845_monthly.png
+  600674:
+    daily: C:\Users\20127\Desktop\K线图片\川投能源_600674_daily.png
+    weekly: C:\Users\20127\Desktop\K线图片\川投能源_600674_weekly.png
+    monthly: C:\Users\20127\Desktop\K线图片\川投能源_600674_monthly.png
+  600177:
+    daily: C:\Users\20127\Desktop\K线图片\雅戈尔_600177_daily.png
+    weekly: C:\Users\20127\Desktop\K线图片\雅戈尔_600177_weekly.png
+    monthly: C:\Users\20127\Desktop\K线图片\雅戈尔_600177_monthly.png
+  601369:
+    daily: C:\Users\20127\Desktop\K线图片\陕鼓动力_601369_daily.png
+    weekly: C:\Users\20127\Desktop\K线图片\陕鼓动力_601369_weekly.png
+    monthly: C:\Users\20127\Desktop\K线图片\陕鼓动力_601369_monthly.png
+  300801:
+    daily: C:\Users\20127\Desktop\K线图片\泰和科技_300801_daily.png
+    weekly: C:\Users\20127\Desktop\K线图片\泰和科技_300801_weekly.png
+    monthly: C:\Users\20127\Desktop\K线图片\泰和科技_300801_monthly.png
+  605288:
+    daily: C:\Users\20127\Desktop\K线图片\凯迪股份_605288_daily.png
+    weekly: C:\Users\20127\Desktop\K线图片\凯迪股份_605288_weekly.png
+    monthly: C:\Users\20127\Desktop\K线图片\凯迪股份_605288_monthly.png
+  002803:
+    daily: C:\Users\20127\Desktop\K线图片\吉宏股份_002803_daily.png
+    weekly: C:\Users\20127\Desktop\K线图片\吉宏股份_002803_weekly.png
+    monthly: C:\Users\20127\Desktop\K线图片\吉宏股份_002803_monthly.png
+  920394:
+    daily: C:\Users\20127\Desktop\K线图片\民士达_920394_daily.png
+    weekly: C:\Users\20127\Desktop\K线图片\民士达_920394_weekly.png
+    monthly: C:\Users\20127\Desktop\K线图片\民士达_920394_monthly.png
+
+============================================================
+Saved files
+============================================================
+  [OK] reports/rising_candidates/candidates.json
+  [OK] reports/rising_candidates/evidence.json
+  [OK] C:\Users\20127\Desktop\K线图片\邮储银行_601658_daily.png
+  [OK] C:\Users\20127\Desktop\K线图片\邮储银行_601658_weekly.png
+  [OK] C:\Users\20127\Desktop\K线图片\邮储银行_601658_monthly.png
+  [OK] C:\Users\20127\Desktop\K线图片\天原股份_002386_daily.png
+  [OK] C:\Users\20127\Desktop\K线图片\天原股份_002386_weekly.png
+  [OK] C:\Users\20127\Desktop\K线图片\天原股份_002386_monthly.png
+  [OK] C:\Users\20127\Desktop\K线图片\宝信软件_600845_daily.png
+  [OK] C:\Users\20127\Desktop\K线图片\宝信软件_600845_weekly.png
+  [OK] C:\Users\20127\Desktop\K线图片\宝信软件_600845_monthly.png
+  [OK] C:\Users\20127\Desktop\K线图片\川投能源_600674_daily.png
+  [OK] C:\Users\20127\Desktop\K线图片\川投能源_600674_weekly.png
+  [OK] C:\Users\20127\Desktop\K线图片\川投能源_600674_monthly.png
+  [OK] C:\Users\20127\Desktop\K线图片\雅戈尔_600177_daily.png
+  [OK] C:\Users\20127\Desktop\K线图片\雅戈尔_600177_weekly.png
+  [OK] C:\Users\20127\Desktop\K线图片\雅戈尔_600177_monthly.png
+  [OK] C:\Users\20127\Desktop\K线图片\陕鼓动力_601369_daily.png
+  [OK] C:\Users\20127\Desktop\K线图片\陕鼓动力_601369_weekly.png
+  [OK] C:\Users\20127\Desktop\K线图片\陕鼓动力_601369_monthly.png
+  [OK] C:\Users\20127\Desktop\K线图片\泰和科技_300801_daily.png
+  [OK] C:\Users\20127\Desktop\K线图片\泰和科技_300801_weekly.png
+  [OK] C:\Users\20127\Desktop\K线图片\泰和科技_300801_monthly.png
+  [OK] C:\Users\20127\Desktop\K线图片\凯迪股份_605288_daily.png
+  [OK] C:\Users\20127\Desktop\K线图片\凯迪股份_605288_weekly.png
+  [OK] C:\Users\20127\Desktop\K线图片\凯迪股份_605288_monthly.png
+  [OK] C:\Users\20127\Desktop\K线图片\吉宏股份_002803_daily.png
+  [OK] C:\Users\20127\Desktop\K线图片\吉宏股份_002803_weekly.png
+  [OK] C:\Users\20127\Desktop\K线图片\吉宏股份_002803_monthly.png
+  [OK] C:\Users\20127\Desktop\K线图片\民士达_920394_daily.png
+  [OK] C:\Users\20127\Desktop\K线图片\民士达_920394_weekly.png
+  [OK] C:\Users\20127\Desktop\K线图片\民士达_920394_monthly.png
+
+Phase 4 DONE!

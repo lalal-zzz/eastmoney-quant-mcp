@@ -17,6 +17,7 @@
 import threading
 import time
 
+from ..util import TtlCache
 from ..network import (
     http_get,
     http_get_text,
@@ -324,18 +325,10 @@ def provider_ready() -> bool:
 
 # ── 名称 → pt 代码索引(进程内缓存 24h) ──
 
-_PT_INDEX_LOCK = threading.Lock()
-_pt_index: dict[str, str] = {}
-_pt_index_ts: float = 0.0
 _PT_INDEX_TTL = 24 * 3600
 
 
-def get_name_pt_index(refresh: bool = False) -> dict[str, str]:
-    """{板块名: pt 代码}, 数据来自行业+概念两个排行接口"""
-    global _pt_index, _pt_index_ts
-    with _PT_INDEX_LOCK:
-        if not refresh and _pt_index and time.time() - _pt_index_ts < _PT_INDEX_TTL:
-            return _pt_index
+def _fetch_pt_index() -> dict[str, str]:
     index: dict[str, str] = {}
     for board_type in ("hy", "gn"):
         for row in fetch_board_rank(board_type):
@@ -343,8 +336,12 @@ def get_name_pt_index(refresh: bool = False) -> dict[str, str]:
             code = str(row.get("code", "")).strip()
             if name and code:
                 index.setdefault(name, code)
-    if index:
-        with _PT_INDEX_LOCK:
-            _pt_index = index
-            _pt_index_ts = time.time()
-    return index
+    return index or None
+
+
+_pt_index_cache = TtlCache(_PT_INDEX_TTL)
+
+
+def get_name_pt_index(refresh: bool = False) -> dict[str, str]:
+    """{板块名: pt 代码}, 数据来自行业+概念两个排行接口, 进程内缓存 24h"""
+    return _pt_index_cache.get(_fetch_pt_index, refresh=refresh) or {}

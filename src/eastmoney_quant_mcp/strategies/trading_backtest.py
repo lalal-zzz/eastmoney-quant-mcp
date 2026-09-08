@@ -1,0 +1,186 @@
+"""Callable two-layer pattern backtest used by MCP and Skills."""
+from __future__ import annotations
+
+from datetime import datetime
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+from ..data.storage import get_db_paths
+from .pattern_backtest import collect_signals
+from .patterns import BACKTEST_START, prepare_df
+
+
+def _event_summary(df: pd.DataFrame) -> list[dict]:
+    rows = []
+    if df.empty:
+        return rows
+    for (pattern, variant), group in df.groupby(["pattern", "variant"], dropna=False):
+        row = {"pattern": pattern, "variant": variant, "samples": len(group)}
+        for days in (5, 10, 20):
+            values = pd.to_numeric(group.get(f"ret_{days}"), errors="coerce").dropna()
+            row[f"win_rate_{days}"] = round(float((values > 0).mean()), 4) if len(values) else None
+            row[f"avg_return_{days}"] = round(float(values.mean()), 6) if len(values) else None
+            row[f"median_return_{days}"] = round(float(values.median()), 6) if len(values) else None
+        rows.append(row)
+    return rows
+
+
+def _simulate_trade(signal: dict, buy_cost_bps: float, sell_cost_bps: float,
+                    max_holding_days: int = 20, reward_risk: float = 2.0) -> dict | None:
+    df = prepare_df("stocks", signal["symbol"], start=signal["date"])
+    if len(df) < 2:
+        return None
+    entry_idx = next((i for i, d in enumerate(df["date"]) if d > signal["date"]), None)
+    if entry_idx is None:
+        return None
+    entry = float(df.iloc[entry_idx]["open"])
+    entry_bar = df.iloc[entry_idx]
+    if (float(entry_bar["high"]) == float(entry_bar["low"])
+            and float(entry_bar.get("change_rate") or 0) >= 9.5):
+        return None  # one-price limit-up cannot be bought
+    hist = prepare_df("stocks", signal["symbol"], end=signal["date"], tail=30)
+    if hist.empty or entry <= 0:
+        return None
+    prev_close = hist["close"].shift(1)
+    tr = pd.concat([(hist["high"] - hist["low"]),
+                    (hist["high"] - prev_close).abs(),
+                    (hist["low"] - prev_close).abs()], axis=1).max(axis=1)
+    atr = float(tr.tail(14).mean()) if tr.notna().any() else entry * 0.04
+    risk = min(entry * 0.08, max(atr * 2.0, entry * 0.02))
+    stop = entry - risk
+    target = entry + reward_risk * risk
+    end_idx = min(len(df) - 1, entry_idx + max_holding_days)
+    exit_price = float(df.iloc[end_idx]["close"])
+    exit_reason = "time_exit"
+    exit_idx = end_idx
+    for i in range(entry_idx, end_idx + 1):
+        row = df.iloc[i]
+        locked_down = (float(row["high"]) == float(row["low"])
+                       and float(row.get("change_rate") or 0) <= -9.5)
+        # Conservative convention when both are touched in the same bar.
+        if float(row["low"]) <= stop and not locked_down:
+            exit_price, exit_reason, exit_idx = stop, "stop", i
+            break
+        if float(row["high"]) >= target:
+            exit_price, exit_reason, exit_idx = target, "target_2r", i
+            break
+    gross = exit_price / entry - 1.0
+    net = gross - (buy_cost_bps + sell_cost_bps) / 10000.0
+    return {"symbol": signal["symbol"], "pattern": signal["pattern"],
+            "signal_date": signal["date"], "entry_date": str(df.iloc[entry_idx]["date"]),
+            "exit_date": str(df.iloc[exit_idx]["date"]), "entry": round(entry, 4),
+            "exit": round(exit_price, 4), "stop": round(stop, 4), "target": round(target, 4),
+            "holding_days": exit_idx - entry_idx + 1, "exit_reason": exit_reason,
+            "gross_return": round(gross, 6), "net_return": round(net, 6)}
+
+
+def _portfolio_summary(trades: list[dict], max_positions: int = 10) -> dict:
+    accepted, active = [], []
+    for trade in sorted(trades, key=lambda x: (x["entry_date"], x["symbol"])):
+        active = [x for x in active if x["exit_date"] >= trade["entry_date"]]
+        if any(x["symbol"] == trade["symbol"] for x in active) or len(active) >= max_positions:
+            continue
+        active.append(trade)
+        accepted.append(trade)
+    if not accepted:
+        return {"trades": 0, "total_return": 0.0, "max_drawdown": 0.0,
+                "win_rate": None, "profit_loss_ratio": None}
+    daily = {}
+    for trade in accepted:
+        daily.setdefault(trade["exit_date"], 0.0)
+        daily[trade["exit_date"]] += trade["net_return"] / max_positions
+    equity = 1.0
+    peak = 1.0
+    max_dd = 0.0
+    daily_returns = []
+    for _, ret in sorted(daily.items()):
+        equity *= 1.0 + ret
+        daily_returns.append(ret)
+        peak = max(peak, equity)
+        max_dd = min(max_dd, equity / peak - 1.0)
+    returns = np.array([x["net_return"] for x in accepted], dtype=float)
+    gains, losses = returns[returns > 0], returns[returns <= 0]
+    pnl = float(gains.mean() / abs(losses.mean())) if len(gains) and len(losses) and losses.mean() else None
+    if len(daily) > 1:
+        first, last = pd.Timestamp(min(daily)), pd.Timestamp(max(daily))
+        years = max((last - first).days / 365.25, 1 / 365.25)
+        annualized = equity ** (1 / years) - 1.0
+    else:
+        annualized = None
+    dret = np.array(daily_returns, dtype=float)
+    sharpe = float(dret.mean() / dret.std(ddof=1) * np.sqrt(252)) if len(dret) > 1 and dret.std(ddof=1) > 0 else None
+    return {"trades": len(accepted), "total_return": round(equity - 1.0, 6),
+            "max_drawdown": round(max_dd, 6), "win_rate": round(float((returns > 0).mean()), 4),
+            "avg_return": round(float(returns.mean()), 6),
+            "profit_loss_ratio": round(pnl, 4) if pnl is not None else None,
+            "annualized_return": round(annualized, 6) if annualized is not None else None,
+            "sharpe": round(sharpe, 4) if sharpe is not None else None}
+
+
+def _commonality(df: pd.DataFrame, split: str) -> list[dict]:
+    """Report stable candidate factors; never mutates live filters."""
+    if df.empty or "ret_10" not in df:
+        return []
+    factors = ["score", "vol_ratio", "bias60", "rsi14", "resonance", "change_rate"]
+    rows = []
+    for factor in factors:
+        values = pd.to_numeric(df.get(factor), errors="coerce")
+        valid = df[values.notna()].copy()
+        if len(valid) < 100:
+            continue
+        valid["bucket"] = pd.qcut(pd.to_numeric(valid[factor]), 4, duplicates="drop")
+        for bucket, group in valid.groupby("bucket", observed=True):
+            train = group[group["date"] < split]
+            test = group[group["date"] >= split]
+            if len(train) < 50 or len(test) < 20:
+                continue
+            tr = float((train["ret_10"] > 0).mean())
+            te = float((test["ret_10"] > 0).mean())
+            rows.append({"factor": factor, "range": str(bucket), "train_samples": len(train),
+                         "test_samples": len(test), "train_win10": round(tr, 4),
+                         "test_win10": round(te, 4), "gap": round(abs(tr - te), 4),
+                         "candidate_for_manual_review": abs(tr - te) <= 0.10 and te > 0.5})
+    return sorted(rows, key=lambda x: (x["candidate_for_manual_review"], x["test_win10"]), reverse=True)
+
+
+def backtest_pattern_strategy(*, start: str = BACKTEST_START, end: str | None = None,
+                              patterns: list[str] | None = None, sample: int | None = None,
+                              workers: int = 8, mode: str = "both", split: str = "2022-01-01",
+                              buy_cost_bps: float = 8.0, sell_cost_bps: float = 13.0) -> dict:
+    if mode not in {"event", "trading", "both"}:
+        raise ValueError("mode must be event|trading|both")
+    df = collect_signals("stocks", start, end, patterns, (20, 60, 120, 250), 0.015,
+                         sample, workers)
+    event = _event_summary(df) if mode in {"event", "both"} else []
+    trades = []
+    if mode in {"trading", "both"} and not df.empty:
+        for signal in df.to_dict(orient="records"):
+            trade = _simulate_trade(signal, buy_cost_bps, sell_cost_bps)
+            if trade:
+                trades.append(trade)
+    portfolio = _portfolio_summary(trades)
+    common = _commonality(df, split)
+    report_dir = Path(get_db_paths()["stock_dir"]) / "reports"
+    report_dir.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    report_path = report_dir / f"pattern_backtest_{stamp}.md"
+    trades_path = report_dir / f"pattern_backtest_{stamp}_trades.csv"
+    pd.DataFrame(trades).to_csv(trades_path, index=False, encoding="utf-8-sig")
+    report_path.write_text(
+        "# 形态策略双层回测\n\n"
+        f"- 信号数: {len(df)}\n- 交易数: {portfolio['trades']}\n"
+        f"- 组合收益: {portfolio['total_return']:.2%}\n"
+        f"- 最大回撤: {portfolio['max_drawdown']:.2%}\n"
+        f"- 规则更新: 仅生成候选，须人工确认后启用。\n",
+        encoding="utf-8")
+    return {"mode": mode, "period": {"start": start, "end": end, "split": split},
+            "assumptions": {"entry": "next_open", "max_holding_days": 20,
+                            "target": "2R", "fallback_stop": "min(2ATR,8%)",
+                            "buy_cost_bps": buy_cost_bps, "sell_cost_bps": sell_cost_bps,
+                            "max_positions": 10},
+            "signals": len(df), "event_summary": event,
+            "portfolio": portfolio, "trades_preview": trades[:500],
+            "commonality_candidates": common, "rules_mutated": False,
+            "report_path": str(report_path), "trades_path": str(trades_path)}

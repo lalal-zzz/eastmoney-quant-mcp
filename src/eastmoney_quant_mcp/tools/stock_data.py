@@ -6,11 +6,12 @@
 """
 
 import asyncio
-import math
 
 import pandas as pd
 import akshare as ak
 
+from ..data.paging import fetch_all_pages
+from ..data.util import parse_em_kline_rows
 from ..data.network import normalize_symbol, to_prefixed_symbol
 from ..data.indicators import compute_all_indicators
 
@@ -214,33 +215,21 @@ def _spot_page_sync(host_url: str, page: int) -> dict | None:
     return http_get(host_url, params=params, retries=2, timeout=30)
 
 
+def _extract_spot(payload: dict | None) -> tuple[list, int]:
+    """spot payload -> (diff 记录列表, 总数); None/空 payload 视为请求失败返回 ([], -1)"""
+    data = (payload or {}).get("data") or {}
+    rows = list(data.get("diff") or [])
+    if not rows and not data:
+        return [], -1  # -1 表示 host 请求失败(区别于空结果 0)
+    return rows, data.get("total", 0) or len(rows)
+
+
 async def _spot_all_rows(host_url: str) -> list[dict] | None:
-    """在指定 host 上拉取全部行情: 第1页拿 total, 剩余页并发"""
-    first = await asyncio.to_thread(_spot_page_sync, host_url, 1)
-    if not first:
-        return None
-    data = first.get("data")
-    if not data or not data.get("diff"):
-        return None
-
-    rows = list(data["diff"])
-    total = data.get("total", 0) or len(rows)
-    pages = math.ceil(total / _SPOT_PAGE_SIZE)
-    if pages <= 1:
-        return rows
-
-    sem = asyncio.Semaphore(_SPOT_PAGE_CONCURRENCY)
-
-    async def _page(pn: int) -> list:
-        async with sem:
-            r = await asyncio.to_thread(_spot_page_sync, host_url, pn)
-            d = (r or {}).get("data") or {}
-            return list(d.get("diff") or [])
-
-    chunks = await asyncio.gather(*(_page(p) for p in range(2, pages + 1)))
-    for chunk in chunks:
-        rows.extend(chunk)
-    return rows
+    """在指定 host 上拉取全部行情 (data/paging 统一分页; 失败返回 None 供上层换 host)"""
+    rows, total = await fetch_all_pages(
+        lambda pn: _spot_page_sync(host_url, pn), _extract_spot,
+        page_size=_SPOT_PAGE_SIZE, concurrency=_SPOT_PAGE_CONCURRENCY)
+    return rows if total >= 0 else None
 
 
 async def get_latest_indicators() -> list[dict]:
@@ -292,13 +281,7 @@ async def get_latest_indicators() -> list[dict]:
     return result
 
 
-def _safe_float(val):
-    if val is None or val in ("-", ""):
-        return None
-    try:
-        return float(val)
-    except (ValueError, TypeError):
-        return None
+from ..data.util import safe_float as _safe_float  # noqa: E402
 
 
 # ── 技术指标 ──
@@ -405,22 +388,7 @@ def _stock_kline_period_sync(symbol: str, period: str, limit: int, adjust: str) 
     time_key = "date" if int(klt) >= 101 else "datetime"
     cols = ["open", "close", "high", "low", "volume", "amount",
             "amplitude", "change_pct", "change_amount", "turnover_rate"]
-
-    items = []
-    for row_str in klines_list:
-        parts = row_str.split(",")
-        if len(parts) < len(cols) + 1:
-            continue
-        item = {"symbol": symbol, time_key: parts[0].strip()}
-        for i, c in enumerate(cols, start=1):
-            v = parts[i].strip()
-            try:
-                item[c] = float(v) if v not in ("-", "") else None
-            except ValueError:
-                item[c] = v
-        items.append(item)
-
-    return items
+    return parse_em_kline_rows(klines_list, {"symbol": symbol}, time_key, cols)
 
 
 async def get_stock_kline_period(

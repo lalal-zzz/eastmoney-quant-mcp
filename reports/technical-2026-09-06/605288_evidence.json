@@ -1,0 +1,703 @@
+{
+  "stock": {
+    "symbol": "605288",
+    "name": "凯迪股份",
+    "latest_price": 66.7,
+    "change_pct": 5.64,
+    "change_amount": 3.56,
+    "volume": 44329.0,
+    "amount": 288274698.0,
+    "amplitude": 9.36,
+    "high": 67.71,
+    "low": 61.8,
+    "open": 63.71,
+    "pre_close": 63.14,
+    "volume_ratio": 2.38,
+    "turnover_rate": 4.51,
+    "pe_dynamic": -136.15,
+    "pb": 3.03,
+    "total_market_cap": 6581457151.0,
+    "float_market_cap": 6555174416.0,
+    "speed": null,
+    "sixty_day_change": -5.04,
+    "ytd_change": 4.86,
+    "updated_date": "2026-08-29"
+  },
+  "data_quality": {
+    "bars": 500,
+    "first_date": "2024-08-14",
+    "last_date": "2026-09-04",
+    "stale": false,
+    "adjust_type": "qfq"
+  },
+  "timeframes": {
+    "weekly": {
+      "period": "weekly",
+      "bars": 107,
+      "last_date": "2026-09-04",
+      "close": 65.61,
+      "trend": "down",
+      "moving_averages": {
+        "MA5": 62.17,
+        "MA10": 66.394,
+        "MA20": 66.674,
+        "MA60": 65.565
+      },
+      "recent_returns_pct": {
+        "return_5": 20.16,
+        "return_10": -15.73,
+        "return_20": 8.11
+      },
+      "range_20": {
+        "high": 95.59,
+        "low": 53.0
+      }
+    },
+    "monthly": {
+      "period": "monthly",
+      "bars": 26,
+      "last_date": "2026-09-30",
+      "close": 65.61,
+      "trend": "up",
+      "moving_averages": {
+        "MA5": 67.582,
+        "MA10": 70.462,
+        "MA20": 57.73
+      },
+      "recent_returns_pct": {
+        "return_5": 11.51,
+        "return_10": -11.97,
+        "return_20": 169.78
+      },
+      "range_20": {
+        "high": 104.92,
+        "low": 22.51
+      }
+    },
+    "daily": {
+      "period": "daily",
+      "bars": 500,
+      "last_date": "2026-09-04",
+      "close": 65.61,
+      "trend": "down",
+      "moving_averages": {
+        "MA5": 67.812,
+        "MA10": 63.906,
+        "MA20": 62.281,
+        "MA60": 68.226
+      },
+      "recent_returns_pct": {
+        "return_5": -1.63,
+        "return_10": 14.88,
+        "return_20": 12.31
+      },
+      "range_20": {
+        "high": 73.54,
+        "low": 53.0
+      }
+    }
+  },
+  "key_levels": {
+    "universe": "stocks",
+    "symbol": "605288",
+    "name": "凯迪股份",
+    "date": "2026-09-04",
+    "close": 65.61,
+    "trend": "down",
+    "trend_cn": "下跌趋势",
+    "levels": [
+      {
+        "type": "MA120",
+        "value": 66.196,
+        "distance_pct": 0.89
+      },
+      {
+        "type": "MA10",
+        "value": 63.906,
+        "distance_pct": -2.6
+      },
+      {
+        "type": "MA5",
+        "value": 67.812,
+        "distance_pct": 3.36
+      },
+      {
+        "type": "MA60",
+        "value": 68.226,
+        "distance_pct": 3.99
+      },
+      {
+        "type": "MA20",
+        "value": 62.281,
+        "distance_pct": -5.07
+      },
+      {
+        "type": "前高(2026-08-12)",
+        "value": 68.98,
+        "distance_pct": 5.14
+      },
+      {
+        "type": "MA250",
+        "value": 69.141,
+        "distance_pct": 5.38
+      },
+      {
+        "type": "MA30",
+        "value": 61.347,
+        "distance_pct": -6.5
+      },
+      {
+        "type": "MA200",
+        "value": 70.097,
+        "distance_pct": 6.84
+      },
+      {
+        "type": "反弹位382",
+        "value": 72.833,
+        "distance_pct": 11.01
+      },
+      {
+        "type": "前低(2026-08-20)",
+        "value": 53.0,
+        "distance_pct": -19.22
+      },
+      {
+        "type": "反弹位500",
+        "value": 78.96,
+        "distance_pct": 20.35
+      },
+      {
+        "type": "反弹位618",
+        "value": 85.087,
+        "distance_pct": 29.69
+      }
+    ],
+    "resistance": [
+      {
+        "type": "MA120",
+        "value": 66.196,
+        "distance_pct": 0.89
+      },
+      {
+        "type": "MA5",
+        "value": 67.812,
+        "distance_pct": 3.36
+      },
+      {
+        "type": "MA60",
+        "value": 68.226,
+        "distance_pct": 3.99
+      },
+      {
+        "type": "前高(2026-08-12)",
+        "value": 68.98,
+        "distance_pct": 5.14
+      },
+      {
+        "type": "MA250",
+        "value": 69.141,
+        "distance_pct": 5.38
+      },
+      {
+        "type": "MA200",
+        "value": 70.097,
+        "distance_pct": 6.84
+      }
+    ],
+    "support": [
+      {
+        "type": "MA10",
+        "value": 63.906,
+        "distance_pct": -2.6
+      },
+      {
+        "type": "MA20",
+        "value": 62.281,
+        "distance_pct": -5.07
+      },
+      {
+        "type": "MA30",
+        "value": 61.347,
+        "distance_pct": -6.5
+      },
+      {
+        "type": "前低(2026-08-20)",
+        "value": 53.0,
+        "distance_pct": -19.22
+      }
+    ]
+  },
+  "patterns": [
+    {
+      "symbol": "605288",
+      "name": "凯迪股份",
+      "date": "2026-08-27",
+      "pattern": "w_bottom",
+      "pattern_cn": "W底右底",
+      "variant": "right_bottom",
+      "close": 63.14,
+      "change_rate": 10.000000000000009,
+      "turnover": 3.055814550321125,
+      "turnover_ma20": 2.6193138910770872,
+      "updown_ratio_20": 1.2222222222222223,
+      "up_days_ratio_20": 0.45,
+      "vol_ratio": 1.6134808241710306,
+      "pullback_vol_shrink": NaN,
+      "rsi14": 52.76976645907365,
+      "ma_bull": 0,
+      "dif_above_zero": 0,
+      "bias60": -0.07708498789228257,
+      "hit_levels": "second_bottom",
+      "fib_level": "",
+      "resonance": 1,
+      "wave_phase": "base_rebound",
+      "break_days": 0,
+      "break_depth": 0.0,
+      "potential_gain": 0.09249287298067799,
+      "score": 42.6,
+      "trend": "down",
+      "macd_gold3": 1,
+      "dif_below0": 1,
+      "kdj_gold3": 1,
+      "kdj_j": 79.2110274822958,
+      "boll_pos": 0.7687388128124728,
+      "boll_width": 0.22674712831721344,
+      "rsi6": 67.01852399802434,
+      "macd_div": 0,
+      "left_bottom_date": "2026-07-30",
+      "left_bottom_price": 53.03,
+      "right_bottom_date": "2026-08-20",
+      "right_bottom_price": 53.0,
+      "neckline_date": "2026-08-12",
+      "neckline_value": 68.98,
+      "bottom_deviation_pct": 0.06,
+      "raw_pattern": "w_bottom",
+      "signal_date": "2026-08-27",
+      "stage": "candidate",
+      "confirmed": false,
+      "entry_status": "wait_confirmation",
+      "trend_state": "down",
+      "support": 63.906,
+      "resistance": 66.196,
+      "neckline": 68.98,
+      "invalid_level": 51.94,
+      "fib_levels": {
+        "0.382": 72.833,
+        "0.5": 78.96,
+        "0.618": 85.087
+      },
+      "evidence": [
+        "形态标准度 1.00",
+        "日线趋势 down",
+        "共振数 1",
+        "量能倍率 1.61",
+        "命中关键位 second_bottom"
+      ],
+      "warnings": [
+        "日线趋势仍偏弱"
+      ],
+      "score_raw": 1.0,
+      "score_breakdown": {
+        "pattern": 30.0,
+        "daily": 3.0,
+        "higher_timeframe": 9.0,
+        "volume": 12.1,
+        "sector": 0.0,
+        "confluence": 3.5,
+        "risk_penalty": 15.0
+      },
+      "factors": {
+        "change_rate": 10.000000000000009,
+        "turnover": 3.055814550321125,
+        "vol_ratio": 1.6134808241710306,
+        "bias60": -0.07708498789228257,
+        "rsi14": 52.76976645907365,
+        "resonance": 1,
+        "wave_phase": "base_rebound",
+        "potential_gain": 0.09249287298067799
+      }
+    }
+  ],
+  "sector_context": [
+    {
+      "sector_code": "BK0680",
+      "sector_name": "智能家居",
+      "sector_type": "concept",
+      "sector_change_pct": -0.83,
+      "latest_price": 66.89,
+      "change_pct": -0.77,
+      "turnover_rate": 0.49,
+      "volume_ratio": 0.75
+    },
+    {
+      "sector_code": "BK0554",
+      "sector_name": "物联网",
+      "sector_type": "concept",
+      "sector_change_pct": -0.55,
+      "latest_price": 66.79,
+      "change_pct": -0.92,
+      "turnover_rate": 0.49,
+      "volume_ratio": 0.75
+    },
+    {
+      "sector_code": "BK0900",
+      "sector_name": "新能源车",
+      "sector_type": "concept",
+      "sector_change_pct": -1.32,
+      "latest_price": 57.11,
+      "change_pct": 3.99,
+      "turnover_rate": 1.61,
+      "volume_ratio": 0.8
+    },
+    {
+      "sector_code": "BK0707",
+      "sector_name": "沪股通",
+      "sector_type": "concept",
+      "sector_change_pct": -0.44,
+      "latest_price": 57.11,
+      "change_pct": 3.99,
+      "turnover_rate": 1.61,
+      "volume_ratio": 0.8
+    },
+    {
+      "sector_code": "BK1751",
+      "sector_name": "2026中报首亏",
+      "sector_type": "concept",
+      "sector_change_pct": 0.46,
+      "latest_price": 57.11,
+      "change_pct": 3.99,
+      "turnover_rate": 1.61,
+      "volume_ratio": 0.8
+    },
+    {
+      "sector_code": "BK0653",
+      "sector_name": "养老概念",
+      "sector_type": "concept",
+      "sector_change_pct": 0.33,
+      "latest_price": 57.11,
+      "change_pct": 3.99,
+      "turnover_rate": 1.61,
+      "volume_ratio": 0.8
+    },
+    {
+      "sector_code": "BK1237",
+      "sector_name": "自动化设备",
+      "sector_type": "industry",
+      "sector_change_pct": -1.77,
+      "latest_price": 57.11,
+      "change_pct": 3.99,
+      "turnover_rate": 1.61,
+      "volume_ratio": 0.8
+    },
+    {
+      "sector_code": "BK1050",
+      "sector_name": "昨日涨停_含一字",
+      "sector_type": "concept",
+      "sector_change_pct": -0.63,
+      "latest_price": 66.7,
+      "change_pct": 5.64,
+      "turnover_rate": 4.51,
+      "volume_ratio": 2.38
+    },
+    {
+      "sector_code": "BK0815",
+      "sector_name": "昨日涨停",
+      "sector_type": "concept",
+      "sector_change_pct": -0.84,
+      "latest_price": 66.7,
+      "change_pct": 5.64,
+      "turnover_rate": 4.51,
+      "volume_ratio": 2.38
+    },
+    {
+      "sector_code": "BK1630",
+      "sector_name": "昨日首板",
+      "sector_type": "concept",
+      "sector_change_pct": 0.23,
+      "latest_price": 66.7,
+      "change_pct": 5.64,
+      "turnover_rate": 4.51,
+      "volume_ratio": 2.38
+    }
+  ],
+  "popularity": [
+    {
+      "rank_date": "2026-08-29",
+      "popularity_rank": 565.0,
+      "change_pct": 5.64,
+      "latest_price": 66.7
+    },
+    {
+      "rank_date": "2026-08-21",
+      "popularity_rank": 1715.0,
+      "change_pct": 3.99,
+      "latest_price": 57.11
+    }
+  ],
+  "charts": {
+    "daily": "C:\\Users\\20127\\Desktop\\K线图片\\凯迪股份_605288_daily.png",
+    "weekly": "C:\\Users\\20127\\Desktop\\K线图片\\凯迪股份_605288_weekly.png",
+    "monthly": "C:\\Users\\20127\\Desktop\\K线图片\\凯迪股份_605288_monthly.png",
+    "bars": {
+      "daily": 500,
+      "weekly": 107,
+      "monthly": 26
+    }
+  },
+  "warnings": [],
+  "review_metrics": {
+    "ma": {
+      "20": 62.28099999999999,
+      "60": 68.22616666666667,
+      "120": 66.19633333333334,
+      "250": 69.14107999999999
+    },
+    "ma20_change_5_pct": 3.597062468291745,
+    "ma60_change_5_pct": -0.18799009089843777,
+    "volume5_over20": 1.061860651917432,
+    "last_volume_over_previous20": 1.2493198643460661,
+    "distance_ma20_pct": 5.345129333183496,
+    "distance_ma60_pct": -3.834550282516247,
+    "last20_high": 73.54,
+    "last20_low": 53.0,
+    "last60_high": 95.59,
+    "last60_low": 53.0,
+    "return20_pct": 12.307428962683996
+  },
+  "screen_signal": {
+    "symbol": "605288",
+    "name": "凯迪股份",
+    "date": "2026-08-27",
+    "pattern": "w_bottom",
+    "pattern_cn": "W底右底",
+    "variant": "right_bottom",
+    "close": 63.14,
+    "change_rate": 10.000000000000009,
+    "turnover": 3.055814550321125,
+    "turnover_ma20": 2.6193138910770872,
+    "updown_ratio_20": 1.2222222222222223,
+    "up_days_ratio_20": 0.45,
+    "vol_ratio": 1.6134808241710306,
+    "pullback_vol_shrink": NaN,
+    "rsi14": 52.76976645907365,
+    "ma_bull": 0,
+    "dif_above_zero": 0,
+    "bias60": -0.07708498789228257,
+    "hit_levels": "second_bottom",
+    "fib_level": "",
+    "resonance": 1,
+    "wave_phase": "base_rebound",
+    "break_days": 0,
+    "break_depth": 0.0,
+    "potential_gain": 0.09249287298067799,
+    "score": 48.6,
+    "trend": "down",
+    "macd_gold3": 1,
+    "dif_below0": 1,
+    "kdj_gold3": 1,
+    "kdj_j": 79.2110274822958,
+    "boll_pos": 0.7687388128124728,
+    "boll_width": 0.22674712831721344,
+    "rsi6": 67.01852399802434,
+    "macd_div": 0,
+    "left_bottom_date": "2026-07-30",
+    "left_bottom_price": 53.03,
+    "right_bottom_date": "2026-08-20",
+    "right_bottom_price": 53.0,
+    "neckline_date": "2026-08-12",
+    "neckline_value": 68.98,
+    "bottom_deviation_pct": 0.06,
+    "raw_pattern": "w_bottom",
+    "signal_date": "2026-08-27",
+    "stage": "candidate",
+    "confirmed": false,
+    "entry_status": "wait_confirmation",
+    "trend_state": "down",
+    "support": 63.906,
+    "resistance": 66.196,
+    "neckline": 68.98,
+    "invalid_level": 51.94,
+    "fib_levels": {
+      "0.382": 72.833,
+      "0.5": 78.96,
+      "0.618": 85.087
+    },
+    "evidence": [
+      "形态标准度 1.00",
+      "日线趋势 down",
+      "共振数 1",
+      "量能倍率 1.61",
+      "命中关键位 second_bottom"
+    ],
+    "warnings": [
+      "日线趋势仍偏弱"
+    ],
+    "score_raw": 1.0,
+    "score_breakdown": {
+      "pattern": 30.0,
+      "daily": 3.0,
+      "higher_timeframe": 9.0,
+      "volume": 12.1,
+      "sector": 6.0,
+      "confluence": 3.5,
+      "risk_penalty": 15.0
+    },
+    "factors": {
+      "change_rate": 10.000000000000009,
+      "turnover": 3.055814550321125,
+      "vol_ratio": 1.6134808241710306,
+      "bias60": -0.07708498789228257,
+      "rsi14": 52.76976645907365,
+      "resonance": 1,
+      "wave_phase": "base_rebound",
+      "potential_gain": 0.09249287298067799
+    },
+    "higher_timeframe": {
+      "weekly": {
+        "period": "weekly",
+        "bars": 90,
+        "last_date": "2026-09-04",
+        "close": 65.61,
+        "trend": "down",
+        "moving_averages": {
+          "MA5": 62.17,
+          "MA10": 66.394,
+          "MA20": 66.674,
+          "MA60": 65.565
+        },
+        "recent_returns_pct": {
+          "return_5": 20.16,
+          "return_10": -15.73,
+          "return_20": 8.11
+        },
+        "range_20": {
+          "high": 95.59,
+          "low": 53.0
+        }
+      },
+      "monthly": {
+        "period": "monthly",
+        "bars": 22,
+        "last_date": "2026-09-30",
+        "close": 65.61,
+        "trend": "up",
+        "moving_averages": {
+          "MA5": 67.582,
+          "MA10": 70.462,
+          "MA20": 57.73
+        },
+        "recent_returns_pct": {
+          "return_5": 11.51,
+          "return_10": -11.97,
+          "return_20": 169.78
+        },
+        "range_20": {
+          "high": 104.92,
+          "low": 22.51
+        }
+      }
+    },
+    "sectors": [
+      {
+        "sector_code": "BK0680",
+        "sector_name": "智能家居",
+        "sector_type": "concept",
+        "sector_change_pct": -0.83,
+        "latest_price": 66.89,
+        "change_pct": -0.77,
+        "turnover_rate": 0.49,
+        "volume_ratio": 0.75
+      },
+      {
+        "sector_code": "BK0554",
+        "sector_name": "物联网",
+        "sector_type": "concept",
+        "sector_change_pct": -0.55,
+        "latest_price": 66.79,
+        "change_pct": -0.92,
+        "turnover_rate": 0.49,
+        "volume_ratio": 0.75
+      },
+      {
+        "sector_code": "BK0900",
+        "sector_name": "新能源车",
+        "sector_type": "concept",
+        "sector_change_pct": -1.32,
+        "latest_price": 57.11,
+        "change_pct": 3.99,
+        "turnover_rate": 1.61,
+        "volume_ratio": 0.8
+      },
+      {
+        "sector_code": "BK0707",
+        "sector_name": "沪股通",
+        "sector_type": "concept",
+        "sector_change_pct": -0.44,
+        "latest_price": 57.11,
+        "change_pct": 3.99,
+        "turnover_rate": 1.61,
+        "volume_ratio": 0.8
+      },
+      {
+        "sector_code": "BK1751",
+        "sector_name": "2026中报首亏",
+        "sector_type": "concept",
+        "sector_change_pct": 0.46,
+        "latest_price": 57.11,
+        "change_pct": 3.99,
+        "turnover_rate": 1.61,
+        "volume_ratio": 0.8
+      },
+      {
+        "sector_code": "BK0653",
+        "sector_name": "养老概念",
+        "sector_type": "concept",
+        "sector_change_pct": 0.33,
+        "latest_price": 57.11,
+        "change_pct": 3.99,
+        "turnover_rate": 1.61,
+        "volume_ratio": 0.8
+      },
+      {
+        "sector_code": "BK1237",
+        "sector_name": "自动化设备",
+        "sector_type": "industry",
+        "sector_change_pct": -1.77,
+        "latest_price": 57.11,
+        "change_pct": 3.99,
+        "turnover_rate": 1.61,
+        "volume_ratio": 0.8
+      },
+      {
+        "sector_code": "BK1050",
+        "sector_name": "昨日涨停_含一字",
+        "sector_type": "concept",
+        "sector_change_pct": -0.63,
+        "latest_price": 66.7,
+        "change_pct": 5.64,
+        "turnover_rate": 4.51,
+        "volume_ratio": 2.38
+      },
+      {
+        "sector_code": "BK0815",
+        "sector_name": "昨日涨停",
+        "sector_type": "concept",
+        "sector_change_pct": -0.84,
+        "latest_price": 66.7,
+        "change_pct": 5.64,
+        "turnover_rate": 4.51,
+        "volume_ratio": 2.38
+      },
+      {
+        "sector_code": "BK1630",
+        "sector_name": "昨日首板",
+        "sector_type": "concept",
+        "sector_change_pct": 0.23,
+        "latest_price": 66.7,
+        "change_pct": 5.64,
+        "turnover_rate": 4.51,
+        "volume_ratio": 2.38
+      }
+    ]
+  }
+}

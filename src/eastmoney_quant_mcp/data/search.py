@@ -34,24 +34,41 @@ def search_stock_local(keyword: str, limit: int = 50) -> list[dict]:
     return rows
 
 
+def _chunks(values: list, size: int = 900):
+    """SQLite 变量上限 999, 大 IN 列表分块查询"""
+    for i in range(0, len(values), size):
+        yield values[i:i + size]
+
+
 def get_stock_spot_batch(symbols: list[str]) -> list[dict]:
     """批量获取股票实时行情"""
     if not symbols:
         return []
-    placeholders = ",".join("?" for _ in symbols)
-    rows = query_stock_db(
-        f"""SELECT * FROM stock_spot WHERE symbol IN ({placeholders})""",
-        tuple(symbols),
-    )
+    rows: list[dict] = []
+    for chunk in _chunks(symbols):
+        placeholders = ",".join("?" for _ in chunk)
+        rows.extend(query_stock_db(
+            f"""SELECT * FROM stock_spot WHERE symbol IN ({placeholders})""",
+            tuple(chunk),
+        ))
     return rows
 
 
-def get_stock_kline_local(symbol: str, limit: int = 250) -> list[dict]:
+def get_stock_kline_local(symbol: str, limit: int = 250, adjust: str = "qfq") -> list[dict]:
     """从本地读取股票K线"""
-    rows = query_stock_db(
-        """SELECT * FROM stock_kline WHERE symbol=? ORDER BY date DESC LIMIT ?""",
-        (symbol, limit),
-    )
+    normalized_adjust = adjust or ""
+    if normalized_adjust == "qfq":
+        rows = query_stock_db(
+            "SELECT * FROM stock_kline WHERE symbol=? AND adjust_type='qfq' ORDER BY date DESC LIMIT ?",
+            (symbol, limit))
+    else:
+        rows = query_stock_db(
+            "SELECT * FROM stock_kline_variants WHERE symbol=? AND adjust_type=? ORDER BY date DESC LIMIT ?",
+            (symbol, normalized_adjust, limit))
+        if not rows:  # fresh v2 databases keep every adjustment in the main table
+            rows = query_stock_db(
+                "SELECT * FROM stock_kline WHERE symbol=? AND adjust_type=? ORDER BY date DESC LIMIT ?",
+                (symbol, normalized_adjust, limit))
     return list(reversed(rows))
 
 
@@ -190,13 +207,15 @@ async def get_sector_to_stocks_flow(
     stock_codes = [m.get("stock_code", "") for m in top_members if m.get("stock_code")]
     rank_map = {}
     if stock_codes:
-        placeholders = ",".join("?" for _ in stock_codes)
-        rank_rows = query_stock_db(
-            f"""SELECT symbol, popularity_rank FROM stock_rank
-                WHERE symbol IN ({placeholders})
-                  AND rank_date = (SELECT MAX(rank_date) FROM stock_rank)""",
-            tuple(stock_codes),
-        )
+        rank_rows = []
+        for chunk in _chunks(stock_codes):
+            placeholders = ",".join("?" for _ in chunk)
+            rank_rows.extend(query_stock_db(
+                f"""SELECT symbol, popularity_rank FROM stock_rank
+                    WHERE symbol IN ({placeholders})
+                      AND rank_date = (SELECT MAX(rank_date) FROM stock_rank)""",
+                tuple(chunk),
+            ))
         rank_map = {r["symbol"]: r["popularity_rank"] for r in rank_rows}
 
     enriched = []
@@ -328,9 +347,8 @@ def screen_stocks_local(
         )
         if not member_rows:
             return []
-        placeholders = ",".join("?" for _ in member_rows)
-        where_sql += f" AND s.symbol IN ({placeholders})"
         params.extend(m["stock_code"] for m in member_rows)
+        member_codes = [m["stock_code"] for m in member_rows]
 
     sort_col = sort_by if sort_by in _VALID_SORT_COLS else "change_pct"
     if sort_col == "popularity_rank":
@@ -350,21 +368,58 @@ def screen_stocks_local(
         FROM stock_spot s
         LEFT JOIN stock_rank r ON s.symbol = r.symbol
              AND r.rank_date = (SELECT MAX(rank_date) FROM stock_rank)
-        WHERE {where_sql}
+        WHERE {{where_sql}}
         ORDER BY {order_clause}
         LIMIT ?
     """
-    all_params = params + [top_n]
 
-    return query_stock_db(sql, tuple(all_params))
+    codes = member_codes if sector_code else None
+    if codes and len(codes) > 900:
+        # 大板块: 分块执行避开 SQLite 999 变量上限, 内存重排还原全局排序
+        rows: list[dict] = []
+        for chunk in _chunks(codes):
+            chunk_in = ",".join("?" for _ in chunk)
+            chunk_params = params + chunk + [top_n]
+            rows.extend(query_stock_db(
+                sql.format(where_sql=f"s.symbol IN ({chunk_in})"), tuple(chunk_params)))
+        if sort_col == "popularity_rank":
+            rows.sort(key=lambda r: (r["popularity_rank"] is None,
+                                     r["popularity_rank"] if r["popularity_rank"] is not None else 0))
+        else:
+            rows.sort(key=lambda r: r[sort_col] if r[sort_col] is not None else float("-inf"),
+                      reverse=True)
+        return rows[:top_n]
+
+    if codes:
+        where_sql += f" AND s.symbol IN ({','.join('?' for _ in codes)})"
+
+    all_params = params + [top_n]
+    return query_stock_db(sql.format(where_sql=where_sql), tuple(all_params))
 
 
 def get_db_status() -> dict:
+    basic = query_stock_db("SELECT COUNT(*) AS n FROM stock_basic")[0]["n"]
+    coverage = query_stock_db(
+        """SELECT COUNT(DISTINCT CASE WHEN row_count>=260 THEN symbol END) AS symbols,
+                  SUM(CASE WHEN status='ready' AND row_count>=260 THEN 1 ELSE 0 END) AS ready,
+                  SUM(CASE WHEN status='failed' THEN 1 ELSE 0 END) AS failed,
+                  MAX(last_date) AS latest_date
+           FROM data_coverage WHERE data_type='stock_kline' AND period='daily' AND adjust_type='qfq'""")
+    cov = coverage[0] if coverage else {}
+    covered = int(cov.get("symbols") or 0)
     return {
         "stock": {
-            "count": get_meta_stock("stock_count"),
+            "count": get_meta_stock("stock_count") or str(basic),
             "spot_updated": get_meta_stock("spot_updated"),
             "rank_updated": get_meta_stock("rank_updated"),
+            "kline_coverage": {
+                "symbols": covered,
+                "ready": int(cov.get("ready") or 0),
+                "failed": int(cov.get("failed") or 0),
+                "latest_date": cov.get("latest_date"),
+                "coverage_ratio": round(covered / basic, 4) if basic else 0.0,
+                "full_market_ready": bool(basic and covered / basic >= 0.95),
+            },
         },
         "sector": {
             "count": get_meta_sector("sector_count"),

@@ -8,6 +8,8 @@
 
 Local-first A-share data and research center powered by **Eastmoney** public APIs and multi-source market providers. It maintains daily stock and sector data in high-concurrency local SQLite databases (WAL mode), enabling AI Agents to compose professional screening, chart pattern scanning, and financial research workflows.
 
+See the [unified implementation plan](IMPLEMENTATION_PLAN.md) for the data, rising-pattern, per-stock AI review, and backtest contracts.
+
 ## Agent setup (npm)
 
 ```bash
@@ -35,14 +37,15 @@ The data directory is user-owned and is never placed in the npm package director
 
 | Capability | Details |
 |------------|---------|
-| Market Data | 5530+ A-shares real-time: price / change% / PE / PB / market cap / volume ratio / turnover |
+| Market Data | Full listed A-share universe: price / change% / PE / PB / market cap / volume ratio / turnover |
 | K-lines | Daily OHLCV with forward/backward/no adjustment |
-| Indicators | MA(5~200) / RSI(6/14/24) / MACD / BOLL / KDJ / ATR / VOL_MA |
+| Indicators | MA5/10/20/30/60/100/120/200/250, RSI, MACD, BOLL, KDJ, ATR%, volume ratios, returns, rolling ranges and BIAS |
 | Popularity | Eastmoney real-time sentiment rankings + historical trends (rolling 1-year Guba rank) |
-| Sectors | ~400 concepts + ~80 industries with capital flow (super-large/large/medium/small net) |
+| Sectors | Concept and industry boards with quotes, capital flow, members, K-lines and indicators |
 | Screening | 18 composable conditions: price range / PE / PB / cap / change% / volume / turnover / sector filter |
-| Pattern Scanning | 5 chart patterns (trend pullback / MA rebound / W-bottom / M-neckline / box breakout) for stocks **and sectors**, with key levels (MA / Fibonacci / structure) |
-| Reports | Full technical analysis: trend / support & resistance / risk assessment / stop-loss & position advice |
+| Pattern Research | Five detector families plus canonical neckline-reclaim / major-MA-rebound labels and Fibonacci confluence evidence |
+| Deep Review | Rank 20 candidates, then inspect every monthly/weekly/daily numeric and chart packet |
+| Backtesting | 5/10/20-day event studies and next-open trading simulation with costs and out-of-sample checks |
 
 ---
 
@@ -85,18 +88,22 @@ pip install eastmoney-quant-mcp
 | Daily K-line | Open, high, low, close, volume, amount |
 | Adjustment | Forward (qfq) / backward (hfq) / none |
 | Extra Fields | Change%, turnover rate, amplitude |
+| Identity | `symbol + date + adjust_type`, with source and fetch time |
+| Compatibility | Existing databases migrate in place; legacy QFQ data is reused without a bulk copy |
 
 ### Technical Indicators (auto-calculated)
 
 | Category | Indicators |
 |----------|------------|
-| Moving Avg | MA5, MA10, MA20, MA30, MA60, MA100, MA200 |
+| Moving Avg | MA5, MA10, MA20, MA30, MA60, MA100, MA120, MA200, MA250 |
 | RSI | RSI6, RSI14, RSI24 |
 | MACD | DIF, DEA, MACD histogram |
 | Bollinger | Upper, middle, lower bands |
 | KDJ | K, D, J values |
-| Volatility | ATR14 (Average True Range) |
-| Volume | VOL_MA5, VOL_MA10 |
+| Volatility | ATR14 and ATR% |
+| Volume | VOL_MA5/10/20 and 5/20-day volume ratios |
+| Returns & Range | 5/10/20/60-day returns and 20/60/120-day highs/lows |
+| Bias | BIAS20, BIAS60, BIAS250 |
 
 ### Popularity Rankings
 
@@ -125,16 +132,16 @@ pip install eastmoney-quant-mcp
 | Indicators | RSI status, MACD golden/death cross, KDJ overbought/oversold, BOLL pos, ATR |
 | S&R Levels | Ranked support and resistance levels from MAs and BOLL bands |
 | Risk Assessment | Overbought/oversold, volatility, valuation, liquidity, and breakdown risk |
-| Position Advice | Stop-loss, take-profit, risk-reward ratio, suggested allocation |
+| Scenarios | Conditional confirmation, invalidation, support/resistance and risk/reward assumptions |
 
 ---
 
-## MCP Tools (14 tools)
+## MCP Tools (20 tools)
 
 | Tool | Module | Purpose |
 |------|--------|---------|
-| `init_full_data` | `data_manager` | Initial download to local SQLite (`quick=true` ~15s; full ~3-4 mins) |
-| `update_daily_data` | `data_manager` | Daily incremental refresh (quotes / rankings / sectors) |
+| `init_full_data` | `data_manager` | `quick`, `research` (320-bar universe), or long-history `full` initialization; legacy `quick` calls remain compatible |
+| `update_daily_data` | `data_manager` | Daily incremental refresh with `stock_kline_mode=none|tracked|all` |
 | `get_data_status` | `data_manager` | Local DB status (row counts / last update / paths) |
 | `screen_stocks` | `data_manager` | Universal screening: 18 conditions + sector filter + name search + sort |
 | `get_kline_local_or_net` | `data_manager` | Daily K-line, local-first with cached technical indicators |
@@ -143,23 +150,46 @@ pip install eastmoney-quant-mcp
 | `get_sector_list` | `sector_data` | Concept/industry sector list with capital flow |
 | `get_stock_belong_sectors` | `data_manager` | Reverse lookup: stock $\rightarrow$ sectors |
 | `generate_stock_report` | `analysis` | Technical report: trend / support & resistance / risk / position |
+| `render_stock_charts` | `charting` | Render daily/weekly/monthly candlestick PNGs with auto trendlines (chart extra) |
 | `scan_patterns` | `strategies/patterns` | Stock chart-pattern scan (normal or strict filter) |
 | `scan_sector_patterns` | `strategies/patterns` | Sector chart-pattern scan (concept/industry or symbols) |
 | `get_pattern_history` | `strategies/patterns` | Historical pattern signals for one symbol (stock/sector) |
 | `get_key_levels` | `strategies/patterns` | Current key levels: MA system / Fibonacci / structure (highs/lows) |
+| `sync_stock_kline_universe` | `data/sync` | Research-mode universe K-line and indicator synchronization with coverage reporting |
+| `screen_rising_candidates` | `tools/research` | Rank the top 20 rising-pattern candidates with multi-timeframe evidence |
+| `prepare_stock_analysis` | `tools/research` | Build the monthly/weekly/daily numeric and chart packet for per-stock AI review |
+| `find_cross_timeframe_similar_patterns` | `strategies/similarity` | Compare the latest N bars with all historical N-bar windows and estimate conditional outcome probabilities |
+| `backtest_pattern_strategy` | `strategies/trading_backtest` | Event study plus executable 5–20 day trading simulation |
 
-Ships with **6 Claude Skills** (installed automatically by `eastmoney-quant install`):
+Ships with **8 Agent Skills** (installed automatically by `eastmoney-quant install`):
 
 | Skill | Purpose |
 |-------|---------|
 | `eastmoney-quant` | Main index — check data readiness before research |
-| `eastmoney-quant-data-init` | First-time download, daily updates, troubleshooting |
+| `eastmoney-quant-data-init` | Existing-data reuse, initialization, coverage-aware updates and troubleshooting |
 | `eastmoney-quant-stock-screening` | Composing screening conditions and workflows |
-| `eastmoney-quant-report-generation` | Technical analysis report formatting and interpretation |
-| `eastmoney-quant-multi-timeframe` | Multi-timeframe resonance analysis (weekly/daily/60m) |
+| `eastmoney-quant-report-generation` | Evidence-based single-stock report and conditional scenarios |
+| `eastmoney-quant-multi-timeframe` | Monthly/weekly/daily/intraday analysis and conflict resolution |
 | `eastmoney-quant-strategy-backtest` | Chart pattern backtesting and parameter optimization |
+| `eastmoney-quant-chart-trend` | Per-stock visual structure attribution with pivot and line uncertainty checks |
+| `eastmoney-quant-rising-patterns` | Rank 20 candidates, deeply review every monthly/weekly/daily chart, and summarize common traits |
 
 ---
+
+## Research workflow
+
+```text
+get_data_status
+  → update or fill only missing coverage
+  → screen_rising_candidates(top_n=20)
+  → prepare_stock_analysis for every returned stock
+  → inspect monthly, weekly and daily charts
+  → compare reviewed candidates and extract common traits
+  → backtest_pattern_strategy(mode="both")
+  → human approval before any production-rule change
+```
+
+A full-market claim requires at least 95% eligible-stock K-line coverage. The five low-level pattern detectors are `trend_pullback`, `w_bottom`, `m_neckline`, `box_breakout`, and `ma_rebound`. High-level reports rename two of them to `neckline_reclaim` and `major_ma_rebound`; `fibonacci_confluence` is supporting evidence rather than a standalone reversal detector.
 
 ## Unified CLI
 
@@ -193,8 +223,8 @@ Data is stored in local SQLite databases using WAL mode for high-concurrency rea
 
 | Database | Default Path (Windows) | Default Path (Linux/macOS) | Contents |
 |----------|------------------------|----------------------------|----------|
-| Stock DB | `~/Desktop/股票信息/stock_data.db` | `~/.eastmoney-quant/data/stocks/stock_data.db` | 5530 stock quotes + K-lines + popularity + indicators + combined |
-| Sector DB | `~/Desktop/分析板块/sector_data.db` | `~/.eastmoney-quant/data/sectors/sector_data.db` | 480+ sectors + capital flow + K-lines + members + indicators |
+| Stock DB | `~/Desktop/股票信息/stock_data.db` | `~/.eastmoney-quant/data/stocks/stock_data.db` | stock quotes + adjustment-aware K-lines + popularity + indicators + combined + coverage/signals |
+| Sector DB | `~/Desktop/分析板块/sector_data.db` | `~/.eastmoney-quant/data/sectors/sector_data.db` | sector quotes + capital flow + Eastmoney-only K-lines + members + indicators |
 
 Override with `EASTMONEY_STOCK_DATA_DIR` and `EASTMONEY_SECTOR_DATA_DIR`.
 
@@ -301,14 +331,17 @@ Run `eastmoney-quant install --agents qoder`, or add to `~/.qoder/mcp.json`.
 ## Example Usage
 
 ```python
-# 1a. Quick init (~15s: stocks + quotes + ranks; sectors lazy-load on first use)
-init_full_data(quick=True)
+# Reuse an existing DB; initialize only when required
+init_full_data(mode="quick")
 
-# 1b. Or full init (~3-4 mins, includes all sector K-lines and members)
-init_full_data(include_sector_members=True)
+# Recommended before full-market rising-pattern screening
+init_full_data(mode="research", workers=6, resume=True)
 
-# 2. Daily update after market close (~30s)
-update_daily_data()
+# Or long-history full init (large resumable download for backtesting)
+init_full_data(mode="full", workers=6, resume=True)
+
+# Daily update after market close; compare freshness with the latest trading day
+update_daily_data(stock_kline_mode="tracked")
 
 # 3. Screen: change > 3%, PE < 30, volume ratio > 1.5
 screen_stocks({"min_change_pct": 3, "max_pe": 30, "min_volume_ratio": 1.5})
@@ -330,6 +363,13 @@ generate_stock_report("000001")
 
 # 9. Chart pattern scan: market-wide strictly filtered signals
 scan_patterns(strict=True)
+
+# 10. Rank 20 rising candidates, then prepare every candidate for AI chart review
+screen_rising_candidates(top_n=20, strict=True)
+prepare_stock_analysis("000001", days=500, include_chart=True)
+
+# 11. Validate event outcomes and executable portfolio assumptions
+backtest_pattern_strategy(mode="both", split="2022-01-01")
 ```
 
 ---

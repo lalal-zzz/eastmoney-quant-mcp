@@ -1,0 +1,898 @@
+{
+  "stock": {
+    "symbol": "002183",
+    "name": "怡 亚 通",
+    "latest_price": 4.55,
+    "change_pct": -1.09,
+    "change_amount": -0.05,
+    "volume": 501247.0,
+    "amount": 226334302.72,
+    "amplitude": 3.04,
+    "high": 4.59,
+    "low": 4.45,
+    "open": 4.56,
+    "pre_close": 4.6,
+    "volume_ratio": 1.42,
+    "turnover_rate": 1.93,
+    "pe_dynamic": 215.19,
+    "pb": 1.31,
+    "total_market_cap": 11816391364.0,
+    "float_market_cap": 11816323114.0,
+    "speed": null,
+    "sixty_day_change": -28.57,
+    "ytd_change": -4.41,
+    "updated_date": "2026-08-29"
+  },
+  "data_quality": {
+    "bars": 500,
+    "first_date": "2024-08-14",
+    "last_date": "2026-09-04",
+    "stale": false,
+    "adjust_type": "qfq"
+  },
+  "timeframes": {
+    "weekly": {
+      "period": "weekly",
+      "bars": 107,
+      "last_date": "2026-09-04",
+      "close": 4.35,
+      "trend": "down",
+      "moving_averages": {
+        "MA5": 4.486,
+        "MA10": 4.56,
+        "MA20": 5.381,
+        "MA60": 5.174
+      },
+      "recent_returns_pct": {
+        "return_5": -5.64,
+        "return_10": -23.01,
+        "return_20": -28.92
+      },
+      "range_20": {
+        "high": 7.93,
+        "low": 4.24
+      }
+    },
+    "monthly": {
+      "period": "monthly",
+      "bars": 26,
+      "last_date": "2026-09-30",
+      "close": 4.35,
+      "trend": "down",
+      "moving_averages": {
+        "MA5": 4.982,
+        "MA10": 5.229,
+        "MA20": 4.988
+      },
+      "recent_returns_pct": {
+        "return_5": -22.18,
+        "return_10": -9.56,
+        "return_20": 5.84
+      },
+      "range_20": {
+        "high": 7.93,
+        "low": 3.83
+      }
+    },
+    "daily": {
+      "period": "daily",
+      "bars": 500,
+      "last_date": "2026-09-04",
+      "close": 4.35,
+      "trend": "down",
+      "moving_averages": {
+        "MA5": 4.44,
+        "MA10": 4.471,
+        "MA20": 4.496,
+        "MA60": 4.762
+      },
+      "recent_returns_pct": {
+        "return_5": -4.4,
+        "return_10": -0.46,
+        "return_20": -6.05
+      },
+      "range_20": {
+        "high": 4.74,
+        "low": 4.25
+      }
+    }
+  },
+  "key_levels": {
+    "universe": "stocks",
+    "symbol": "002183",
+    "name": "怡 亚 通",
+    "date": "2026-09-04",
+    "close": 4.35,
+    "trend": "down",
+    "trend_cn": "下跌趋势",
+    "levels": [
+      {
+        "type": "MA5",
+        "value": 4.44,
+        "distance_pct": 2.07
+      },
+      {
+        "type": "前低(2026-08-19)",
+        "value": 4.25,
+        "distance_pct": -2.3
+      },
+      {
+        "type": "MA10",
+        "value": 4.471,
+        "distance_pct": 2.78
+      },
+      {
+        "type": "MA20",
+        "value": 4.497,
+        "distance_pct": 3.37
+      },
+      {
+        "type": "MA30",
+        "value": 4.532,
+        "distance_pct": 4.18
+      },
+      {
+        "type": "前高(2026-08-27)",
+        "value": 4.61,
+        "distance_pct": 5.98
+      },
+      {
+        "type": "MA60",
+        "value": 4.762,
+        "distance_pct": 9.46
+      },
+      {
+        "type": "MA250",
+        "value": 5.256,
+        "distance_pct": 20.83
+      },
+      {
+        "type": "MA200",
+        "value": 5.292,
+        "distance_pct": 21.64
+      },
+      {
+        "type": "MA120",
+        "value": 5.433,
+        "distance_pct": 24.89
+      },
+      {
+        "type": "反弹位382",
+        "value": 5.65,
+        "distance_pct": 29.88
+      },
+      {
+        "type": "反弹位500",
+        "value": 6.085,
+        "distance_pct": 39.89
+      },
+      {
+        "type": "反弹位618",
+        "value": 6.52,
+        "distance_pct": 49.89
+      }
+    ],
+    "resistance": [
+      {
+        "type": "MA5",
+        "value": 4.44,
+        "distance_pct": 2.07
+      },
+      {
+        "type": "MA10",
+        "value": 4.471,
+        "distance_pct": 2.78
+      },
+      {
+        "type": "MA20",
+        "value": 4.497,
+        "distance_pct": 3.37
+      },
+      {
+        "type": "MA30",
+        "value": 4.532,
+        "distance_pct": 4.18
+      },
+      {
+        "type": "前高(2026-08-27)",
+        "value": 4.61,
+        "distance_pct": 5.98
+      },
+      {
+        "type": "MA60",
+        "value": 4.762,
+        "distance_pct": 9.46
+      }
+    ],
+    "support": [
+      {
+        "type": "前低(2026-08-19)",
+        "value": 4.25,
+        "distance_pct": -2.3
+      }
+    ]
+  },
+  "patterns": [
+    {
+      "symbol": "002183",
+      "name": "怡 亚 通",
+      "date": "2026-08-26",
+      "pattern": "w_bottom",
+      "pattern_cn": "W底右底",
+      "variant": "right_bottom",
+      "close": 4.52,
+      "change_rate": 1.1186,
+      "turnover": NaN,
+      "turnover_ma20": NaN,
+      "updown_ratio_20": 1.4285714285714286,
+      "up_days_ratio_20": 0.5,
+      "vol_ratio": 0.9219234007231779,
+      "pullback_vol_shrink": NaN,
+      "rsi14": 46.88000001075579,
+      "ma_bull": 0,
+      "dif_above_zero": 0,
+      "bias60": -0.08932169241101429,
+      "hit_levels": "second_bottom",
+      "fib_level": "",
+      "resonance": 1,
+      "wave_phase": "base_rebound",
+      "break_days": 0,
+      "break_depth": 0.0,
+      "potential_gain": 0.05973451327433632,
+      "score": 31.41,
+      "trend": "down",
+      "macd_gold3": 1,
+      "dif_below0": 1,
+      "kdj_gold3": 1,
+      "kdj_j": 67.09262549443957,
+      "boll_pos": 0.4254741315863928,
+      "boll_width": 0.11916137826818117,
+      "rsi6": 55.72812569121271,
+      "macd_div": 0,
+      "left_bottom_date": "2026-07-21",
+      "left_bottom_price": 4.24,
+      "right_bottom_date": "2026-08-19",
+      "right_bottom_price": 4.25,
+      "neckline_date": "2026-08-05",
+      "neckline_value": 4.79,
+      "bottom_deviation_pct": 0.24,
+      "raw_pattern": "w_bottom",
+      "signal_date": "2026-08-26",
+      "stage": "candidate",
+      "confirmed": false,
+      "entry_status": "wait_confirmation",
+      "trend_state": "down",
+      "support": 4.25,
+      "resistance": 4.44,
+      "neckline": 4.79,
+      "invalid_level": 4.165,
+      "fib_levels": {
+        "0.382": 5.65,
+        "0.5": 6.085,
+        "0.618": 6.52
+      },
+      "evidence": [
+        "形态标准度 1.00",
+        "日线趋势 down",
+        "共振数 1",
+        "量能倍率 0.92",
+        "命中关键位 second_bottom"
+      ],
+      "warnings": [
+        "日线趋势仍偏弱"
+      ],
+      "score_raw": 1.0,
+      "score_breakdown": {
+        "pattern": 30.0,
+        "daily": 3.0,
+        "higher_timeframe": 3.0,
+        "volume": 6.91,
+        "sector": 0.0,
+        "confluence": 3.5,
+        "risk_penalty": 15.0
+      },
+      "factors": {
+        "change_rate": 1.1186,
+        "turnover": NaN,
+        "vol_ratio": 0.9219234007231779,
+        "bias60": -0.08932169241101429,
+        "rsi14": 46.88000001075579,
+        "resonance": 1,
+        "wave_phase": "base_rebound",
+        "potential_gain": 0.05973451327433632
+      }
+    }
+  ],
+  "sector_context": [
+    {
+      "sector_code": "BK0953",
+      "sector_name": "鸿蒙概念",
+      "sector_type": "concept",
+      "sector_change_pct": 0.77,
+      "latest_price": 4.44,
+      "change_pct": 0.68,
+      "turnover_rate": 1.0,
+      "volume_ratio": 1.32
+    },
+    {
+      "sector_code": "BK0665",
+      "sector_name": "电商概念",
+      "sector_type": "concept",
+      "sector_change_pct": 0.82,
+      "latest_price": 4.44,
+      "change_pct": 0.68,
+      "turnover_rate": 1.0,
+      "volume_ratio": 1.32
+    },
+    {
+      "sector_code": "BK1173",
+      "sector_name": "锂矿概念",
+      "sector_type": "concept",
+      "sector_change_pct": -1.89,
+      "latest_price": 4.44,
+      "change_pct": 0.68,
+      "turnover_rate": 1.0,
+      "volume_ratio": 1.3
+    },
+    {
+      "sector_code": "BK0700",
+      "sector_name": "充电桩",
+      "sector_type": "concept",
+      "sector_change_pct": -0.51,
+      "latest_price": 4.45,
+      "change_pct": 0.91,
+      "turnover_rate": 1.0,
+      "volume_ratio": 1.3
+    },
+    {
+      "sector_code": "BK0596",
+      "sector_name": "融资融券",
+      "sector_type": "concept",
+      "sector_change_pct": -0.42,
+      "latest_price": 4.45,
+      "change_pct": 0.91,
+      "turnover_rate": 1.0,
+      "volume_ratio": 1.3
+    },
+    {
+      "sector_code": "BK0804",
+      "sector_name": "深股通",
+      "sector_type": "concept",
+      "sector_change_pct": -0.47,
+      "latest_price": 4.37,
+      "change_pct": -0.23,
+      "turnover_rate": 1.17,
+      "volume_ratio": 0.67
+    },
+    {
+      "sector_code": "BK0867",
+      "sector_name": "富时罗素",
+      "sector_type": "concept",
+      "sector_change_pct": 0.14,
+      "latest_price": 4.37,
+      "change_pct": -0.23,
+      "turnover_rate": 1.17,
+      "volume_ratio": 0.67
+    },
+    {
+      "sector_code": "BK0879",
+      "sector_name": "标准普尔",
+      "sector_type": "concept",
+      "sector_change_pct": 0.12,
+      "latest_price": 4.37,
+      "change_pct": -0.23,
+      "turnover_rate": 1.17,
+      "volume_ratio": 0.67
+    },
+    {
+      "sector_code": "BK0891",
+      "sector_name": "国产芯片",
+      "sector_type": "concept",
+      "sector_change_pct": -1.64,
+      "latest_price": 4.37,
+      "change_pct": -0.23,
+      "turnover_rate": 1.17,
+      "volume_ratio": 0.67
+    },
+    {
+      "sector_code": "BK1134",
+      "sector_name": "算力概念",
+      "sector_type": "concept",
+      "sector_change_pct": -0.84,
+      "latest_price": 4.37,
+      "change_pct": -0.23,
+      "turnover_rate": 1.17,
+      "volume_ratio": 0.67
+    },
+    {
+      "sector_code": "BK0683",
+      "sector_name": "央国企改革",
+      "sector_type": "concept",
+      "sector_change_pct": 0.36,
+      "latest_price": 4.37,
+      "change_pct": -0.23,
+      "turnover_rate": 1.17,
+      "volume_ratio": 0.67
+    },
+    {
+      "sector_code": "BK0552",
+      "sector_name": "机构重仓",
+      "sector_type": "concept",
+      "sector_change_pct": -0.25,
+      "latest_price": 4.37,
+      "change_pct": -0.23,
+      "turnover_rate": 1.17,
+      "volume_ratio": 0.67
+    },
+    {
+      "sector_code": "BK0989",
+      "sector_name": "储能概念",
+      "sector_type": "concept",
+      "sector_change_pct": -0.68,
+      "latest_price": 4.37,
+      "change_pct": -0.23,
+      "turnover_rate": 1.17,
+      "volume_ratio": 0.67
+    },
+    {
+      "sector_code": "BK0549",
+      "sector_name": "深圳特区",
+      "sector_type": "concept",
+      "sector_change_pct": -0.65,
+      "latest_price": 4.37,
+      "change_pct": -0.23,
+      "turnover_rate": 1.17,
+      "volume_ratio": 0.67
+    },
+    {
+      "sector_code": "BK1643",
+      "sector_name": "小盘股",
+      "sector_type": "concept",
+      "sector_change_pct": -0.63,
+      "latest_price": 4.37,
+      "change_pct": -0.23,
+      "turnover_rate": 1.17,
+      "volume_ratio": 0.67
+    },
+    {
+      "sector_code": "BK0554",
+      "sector_name": "物联网",
+      "sector_type": "concept",
+      "sector_change_pct": -0.55,
+      "latest_price": 4.37,
+      "change_pct": -0.228,
+      "turnover_rate": 1.1738,
+      "volume_ratio": null
+    },
+    {
+      "sector_code": "BK0917",
+      "sector_name": "半导体概念",
+      "sector_type": "concept",
+      "sector_change_pct": -2.43,
+      "latest_price": 4.37,
+      "change_pct": -0.23,
+      "turnover_rate": 1.17,
+      "volume_ratio": 0.67
+    },
+    {
+      "sector_code": "BK1104",
+      "sector_name": "信创",
+      "sector_type": "concept",
+      "sector_change_pct": 0.55,
+      "latest_price": 4.37,
+      "change_pct": -0.23,
+      "turnover_rate": 1.17,
+      "volume_ratio": 0.67
+    },
+    {
+      "sector_code": "BK0830",
+      "sector_name": "区块链",
+      "sector_type": "concept",
+      "sector_change_pct": 0.74,
+      "latest_price": 4.37,
+      "change_pct": -0.23,
+      "turnover_rate": 1.17,
+      "volume_ratio": 0.67
+    },
+    {
+      "sector_code": "BK1071",
+      "sector_name": "跨境支付",
+      "sector_type": "concept",
+      "sector_change_pct": 2.45,
+      "latest_price": 4.37,
+      "change_pct": -0.23,
+      "turnover_rate": 1.17,
+      "volume_ratio": 0.67
+    },
+    {
+      "sector_code": "BK1077",
+      "sector_name": "统一大市场",
+      "sector_type": "concept",
+      "sector_change_pct": 0.77,
+      "latest_price": 4.37,
+      "change_pct": -0.23,
+      "turnover_rate": 1.17,
+      "volume_ratio": 0.67
+    },
+    {
+      "sector_code": "BK0990",
+      "sector_name": "快递概念",
+      "sector_type": "concept",
+      "sector_change_pct": 0.0,
+      "latest_price": 4.37,
+      "change_pct": -0.23,
+      "turnover_rate": 1.17,
+      "volume_ratio": 0.67
+    },
+    {
+      "sector_code": "BK0677",
+      "sector_name": "粤港自贸",
+      "sector_type": "concept",
+      "sector_change_pct": 0.34,
+      "latest_price": 4.37,
+      "change_pct": -0.23,
+      "turnover_rate": 1.17,
+      "volume_ratio": 0.67
+    },
+    {
+      "sector_code": "BK1673",
+      "sector_name": "破增发价股",
+      "sector_type": "concept",
+      "sector_change_pct": 0.43,
+      "latest_price": 4.37,
+      "change_pct": -0.23,
+      "turnover_rate": 1.17,
+      "volume_ratio": 0.67
+    },
+    {
+      "sector_code": "BK0643",
+      "sector_name": "上海自贸",
+      "sector_type": "concept",
+      "sector_change_pct": 0.36,
+      "latest_price": 4.37,
+      "change_pct": -0.228,
+      "turnover_rate": 1.1738,
+      "volume_ratio": null
+    },
+    {
+      "sector_code": "BK0634",
+      "sector_name": "大数据",
+      "sector_type": "concept",
+      "sector_change_pct": 0.54,
+      "latest_price": 4.37,
+      "change_pct": -0.23,
+      "turnover_rate": 1.17,
+      "volume_ratio": 0.67
+    },
+    {
+      "sector_code": "BK0896",
+      "sector_name": "白酒",
+      "sector_type": "concept",
+      "sector_change_pct": 2.39,
+      "latest_price": 4.37,
+      "change_pct": -0.228,
+      "turnover_rate": 1.1738,
+      "volume_ratio": null
+    },
+    {
+      "sector_code": "BK0567",
+      "sector_name": "股权激励",
+      "sector_type": "concept",
+      "sector_change_pct": -0.23,
+      "latest_price": 4.37,
+      "change_pct": -0.228,
+      "turnover_rate": 1.1738,
+      "volume_ratio": null
+    },
+    {
+      "sector_code": "BK0484",
+      "sector_name": "贸易Ⅱ",
+      "sector_type": "industry",
+      "sector_change_pct": 0.67,
+      "latest_price": 4.37,
+      "change_pct": -0.23,
+      "turnover_rate": 1.17,
+      "volume_ratio": 0.67
+    },
+    {
+      "sector_code": "BK0825",
+      "sector_name": "新零售",
+      "sector_type": "concept",
+      "sector_change_pct": 1.25,
+      "latest_price": 4.55,
+      "change_pct": -1.09,
+      "turnover_rate": 1.93,
+      "volume_ratio": 1.42
+    },
+    {
+      "sector_code": "BK1137",
+      "sector_name": "存储芯片",
+      "sector_type": "concept",
+      "sector_change_pct": -3.03,
+      "latest_price": 4.35,
+      "change_pct": 0.0,
+      "turnover_rate": 1.71,
+      "volume_ratio": 0.96
+    }
+  ],
+  "popularity": [
+    {
+      "rank_date": "2026-08-29",
+      "popularity_rank": 1805.0,
+      "change_pct": -1.09,
+      "latest_price": 4.55
+    },
+    {
+      "rank_date": "2026-08-21",
+      "popularity_rank": 1549.0,
+      "change_pct": -0.23,
+      "latest_price": 4.37
+    }
+  ],
+  "charts": {
+    "daily": "C:\\Users\\20127\\Desktop\\K线图片\\怡 亚 通_002183_daily.png",
+    "weekly": "C:\\Users\\20127\\Desktop\\K线图片\\怡 亚 通_002183_weekly.png",
+    "monthly": "C:\\Users\\20127\\Desktop\\K线图片\\怡 亚 通_002183_monthly.png",
+    "bars": {
+      "daily": 500,
+      "weekly": 107,
+      "monthly": 26
+    }
+  },
+  "warnings": [],
+  "review_metrics": {
+    "ma": {
+      "20": 4.496499999999999,
+      "60": 4.761666666666667,
+      "120": 5.432583333333334,
+      "250": 5.256119999999999
+    },
+    "ma20_change_5_pct": -1.424969856406888,
+    "ma60_change_5_pct": -2.9353808520758307,
+    "volume5_over20": 1.0628826480462468,
+    "last_volume_over_previous20": 1.0402287760996507,
+    "distance_ma20_pct": -3.2580896252640823,
+    "distance_ma60_pct": -8.645432271613585,
+    "last20_high": 4.74,
+    "last20_low": 4.25,
+    "last60_high": 5.85,
+    "last60_low": 4.24,
+    "return20_pct": -6.0475161987041055
+  },
+  "screen_signal": {
+    "symbol": "002183",
+    "name": "怡 亚 通",
+    "date": "2026-08-26",
+    "pattern": "w_bottom",
+    "pattern_cn": "W底右底",
+    "variant": "right_bottom",
+    "close": 4.52,
+    "change_rate": 1.1186,
+    "turnover": NaN,
+    "turnover_ma20": NaN,
+    "updown_ratio_20": 1.4285714285714286,
+    "up_days_ratio_20": 0.5,
+    "vol_ratio": 0.9219234007231779,
+    "pullback_vol_shrink": NaN,
+    "rsi14": 46.88000001075579,
+    "ma_bull": 0,
+    "dif_above_zero": 0,
+    "bias60": -0.08932169241101429,
+    "hit_levels": "second_bottom",
+    "fib_level": "",
+    "resonance": 1,
+    "wave_phase": "base_rebound",
+    "break_days": 0,
+    "break_depth": 0.0,
+    "potential_gain": 0.05973451327433632,
+    "score": 41.41,
+    "trend": "down",
+    "macd_gold3": 1,
+    "dif_below0": 1,
+    "kdj_gold3": 1,
+    "kdj_j": 67.09262549443957,
+    "boll_pos": 0.4254741315863928,
+    "boll_width": 0.11916137826818117,
+    "rsi6": 55.72812569121271,
+    "macd_div": 0,
+    "left_bottom_date": "2026-07-21",
+    "left_bottom_price": 4.24,
+    "right_bottom_date": "2026-08-19",
+    "right_bottom_price": 4.25,
+    "neckline_date": "2026-08-05",
+    "neckline_value": 4.79,
+    "bottom_deviation_pct": 0.24,
+    "raw_pattern": "w_bottom",
+    "signal_date": "2026-08-26",
+    "stage": "candidate",
+    "confirmed": false,
+    "entry_status": "wait_confirmation",
+    "trend_state": "down",
+    "support": 4.25,
+    "resistance": 4.44,
+    "neckline": 4.79,
+    "invalid_level": 4.165,
+    "fib_levels": {
+      "0.382": 5.65,
+      "0.5": 6.085,
+      "0.618": 6.52
+    },
+    "evidence": [
+      "形态标准度 1.00",
+      "日线趋势 down",
+      "共振数 1",
+      "量能倍率 0.92",
+      "命中关键位 second_bottom"
+    ],
+    "warnings": [
+      "日线趋势仍偏弱"
+    ],
+    "score_raw": 1.0,
+    "score_breakdown": {
+      "pattern": 30.0,
+      "daily": 3.0,
+      "higher_timeframe": 3.0,
+      "volume": 6.91,
+      "sector": 10.0,
+      "confluence": 3.5,
+      "risk_penalty": 15.0
+    },
+    "factors": {
+      "change_rate": 1.1186,
+      "turnover": NaN,
+      "vol_ratio": 0.9219234007231779,
+      "bias60": -0.08932169241101429,
+      "rsi14": 46.88000001075579,
+      "resonance": 1,
+      "wave_phase": "base_rebound",
+      "potential_gain": 0.05973451327433632
+    },
+    "higher_timeframe": {
+      "weekly": {
+        "period": "weekly",
+        "bars": 90,
+        "last_date": "2026-09-04",
+        "close": 4.35,
+        "trend": "down",
+        "moving_averages": {
+          "MA5": 4.486,
+          "MA10": 4.56,
+          "MA20": 5.382,
+          "MA60": 5.173
+        },
+        "recent_returns_pct": {
+          "return_5": -5.64,
+          "return_10": -23.01,
+          "return_20": -28.92
+        },
+        "range_20": {
+          "high": 7.93,
+          "low": 4.24
+        }
+      },
+      "monthly": {
+        "period": "monthly",
+        "bars": 22,
+        "last_date": "2026-09-30",
+        "close": 4.35,
+        "trend": "down",
+        "moving_averages": {
+          "MA5": 4.982,
+          "MA10": 5.229,
+          "MA20": 4.988
+        },
+        "recent_returns_pct": {
+          "return_5": -22.18,
+          "return_10": -9.56,
+          "return_20": 5.84
+        },
+        "range_20": {
+          "high": 7.93,
+          "low": 3.83
+        }
+      }
+    },
+    "sectors": [
+      {
+        "sector_code": "BK0953",
+        "sector_name": "鸿蒙概念",
+        "sector_type": "concept",
+        "sector_change_pct": 0.77,
+        "latest_price": 4.44,
+        "change_pct": 0.68,
+        "turnover_rate": 1.0,
+        "volume_ratio": 1.32
+      },
+      {
+        "sector_code": "BK0665",
+        "sector_name": "电商概念",
+        "sector_type": "concept",
+        "sector_change_pct": 0.82,
+        "latest_price": 4.44,
+        "change_pct": 0.68,
+        "turnover_rate": 1.0,
+        "volume_ratio": 1.32
+      },
+      {
+        "sector_code": "BK1173",
+        "sector_name": "锂矿概念",
+        "sector_type": "concept",
+        "sector_change_pct": -1.89,
+        "latest_price": 4.44,
+        "change_pct": 0.68,
+        "turnover_rate": 1.0,
+        "volume_ratio": 1.3
+      },
+      {
+        "sector_code": "BK0700",
+        "sector_name": "充电桩",
+        "sector_type": "concept",
+        "sector_change_pct": -0.51,
+        "latest_price": 4.45,
+        "change_pct": 0.91,
+        "turnover_rate": 1.0,
+        "volume_ratio": 1.3
+      },
+      {
+        "sector_code": "BK0596",
+        "sector_name": "融资融券",
+        "sector_type": "concept",
+        "sector_change_pct": -0.42,
+        "latest_price": 4.45,
+        "change_pct": 0.91,
+        "turnover_rate": 1.0,
+        "volume_ratio": 1.3
+      },
+      {
+        "sector_code": "BK0804",
+        "sector_name": "深股通",
+        "sector_type": "concept",
+        "sector_change_pct": -0.47,
+        "latest_price": 4.37,
+        "change_pct": -0.23,
+        "turnover_rate": 1.17,
+        "volume_ratio": 0.67
+      },
+      {
+        "sector_code": "BK0867",
+        "sector_name": "富时罗素",
+        "sector_type": "concept",
+        "sector_change_pct": 0.14,
+        "latest_price": 4.37,
+        "change_pct": -0.23,
+        "turnover_rate": 1.17,
+        "volume_ratio": 0.67
+      },
+      {
+        "sector_code": "BK0879",
+        "sector_name": "标准普尔",
+        "sector_type": "concept",
+        "sector_change_pct": 0.12,
+        "latest_price": 4.37,
+        "change_pct": -0.23,
+        "turnover_rate": 1.17,
+        "volume_ratio": 0.67
+      },
+      {
+        "sector_code": "BK0891",
+        "sector_name": "国产芯片",
+        "sector_type": "concept",
+        "sector_change_pct": -1.64,
+        "latest_price": 4.37,
+        "change_pct": -0.23,
+        "turnover_rate": 1.17,
+        "volume_ratio": 0.67
+      },
+      {
+        "sector_code": "BK1134",
+        "sector_name": "算力概念",
+        "sector_type": "concept",
+        "sector_change_pct": -0.84,
+        "latest_price": 4.37,
+        "change_pct": -0.23,
+        "turnover_rate": 1.17,
+        "volume_ratio": 0.67
+      }
+    ]
+  }
+}

@@ -1,0 +1,756 @@
+{
+  "stock": {
+    "symbol": "002386",
+    "name": "天原股份",
+    "latest_price": 6.02,
+    "change_pct": 2.21,
+    "change_amount": 0.13,
+    "volume": 239906.0,
+    "amount": 143224073.22,
+    "amplitude": 3.06,
+    "high": 6.03,
+    "low": 5.85,
+    "open": 5.87,
+    "pre_close": 5.89,
+    "volume_ratio": 1.4,
+    "turnover_rate": 1.84,
+    "pe_dynamic": 18.72,
+    "pb": 1.01,
+    "total_market_cap": 7835915379.0,
+    "float_market_cap": 7834338633.0,
+    "speed": null,
+    "sixty_day_change": 4.7,
+    "ytd_change": 10.87,
+    "updated_date": "2026-08-29"
+  },
+  "data_quality": {
+    "bars": 500,
+    "first_date": "2024-08-14",
+    "last_date": "2026-09-04",
+    "stale": false,
+    "adjust_type": "qfq"
+  },
+  "timeframes": {
+    "weekly": {
+      "period": "weekly",
+      "bars": 107,
+      "last_date": "2026-09-04",
+      "close": 5.86,
+      "trend": "down",
+      "moving_averages": {
+        "MA5": 5.878,
+        "MA10": 5.842,
+        "MA20": 6.014,
+        "MA60": 5.759
+      },
+      "recent_returns_pct": {
+        "return_5": 0.69,
+        "return_10": -0.85,
+        "return_20": -9.01
+      },
+      "range_20": {
+        "high": 7.44,
+        "low": 5.4
+      }
+    },
+    "monthly": {
+      "period": "monthly",
+      "bars": 26,
+      "last_date": "2026-09-30",
+      "close": 5.86,
+      "trend": "up",
+      "moving_averages": {
+        "MA5": 5.914,
+        "MA10": 6.047,
+        "MA20": 5.513
+      },
+      "recent_returns_pct": {
+        "return_5": -16.17,
+        "return_10": 0.69,
+        "return_20": 42.58
+      },
+      "range_20": {
+        "high": 7.44,
+        "low": 3.81
+      }
+    },
+    "daily": {
+      "period": "daily",
+      "bars": 500,
+      "last_date": "2026-09-04",
+      "close": 5.86,
+      "trend": "down",
+      "moving_averages": {
+        "MA5": 5.954,
+        "MA10": 5.946,
+        "MA20": 5.872,
+        "MA60": 5.867
+      },
+      "recent_returns_pct": {
+        "return_5": -2.66,
+        "return_10": 0.17,
+        "return_20": -1.01
+      },
+      "range_20": {
+        "high": 6.1,
+        "low": 5.64
+      }
+    }
+  },
+  "key_levels": {
+    "universe": "stocks",
+    "symbol": "002386",
+    "name": "天原股份",
+    "date": "2026-09-04",
+    "close": 5.86,
+    "trend": "range",
+    "trend_cn": "震荡",
+    "levels": [
+      {
+        "type": "MA60",
+        "value": 5.866,
+        "distance_pct": 0.11
+      },
+      {
+        "type": "MA30",
+        "value": 5.851,
+        "distance_pct": -0.15
+      },
+      {
+        "type": "MA20",
+        "value": 5.872,
+        "distance_pct": 0.2
+      },
+      {
+        "type": "回调位618",
+        "value": 5.883,
+        "distance_pct": 0.39
+      },
+      {
+        "type": "MA250",
+        "value": 5.83,
+        "distance_pct": -0.52
+      },
+      {
+        "type": "MA200",
+        "value": 5.935,
+        "distance_pct": 1.28
+      },
+      {
+        "type": "MA10",
+        "value": 5.946,
+        "distance_pct": 1.47
+      },
+      {
+        "type": "MA5",
+        "value": 5.954,
+        "distance_pct": 1.6
+      },
+      {
+        "type": "MA120",
+        "value": 6.022,
+        "distance_pct": 2.77
+      },
+      {
+        "type": "前高(2026-08-07)",
+        "value": 6.06,
+        "distance_pct": 3.41
+      },
+      {
+        "type": "前低(2026-08-19)",
+        "value": 5.64,
+        "distance_pct": -3.75
+      },
+      {
+        "type": "回调位500",
+        "value": 6.18,
+        "distance_pct": 5.46
+      },
+      {
+        "type": "回调位786",
+        "value": 5.459,
+        "distance_pct": -6.84
+      },
+      {
+        "type": "回调位382",
+        "value": 6.477,
+        "distance_pct": 10.54
+      }
+    ],
+    "resistance": [
+      {
+        "type": "MA60",
+        "value": 5.866,
+        "distance_pct": 0.11
+      },
+      {
+        "type": "MA20",
+        "value": 5.872,
+        "distance_pct": 0.2
+      },
+      {
+        "type": "回调位618",
+        "value": 5.883,
+        "distance_pct": 0.39
+      },
+      {
+        "type": "MA200",
+        "value": 5.935,
+        "distance_pct": 1.28
+      },
+      {
+        "type": "MA10",
+        "value": 5.946,
+        "distance_pct": 1.47
+      },
+      {
+        "type": "MA5",
+        "value": 5.954,
+        "distance_pct": 1.6
+      }
+    ],
+    "support": [
+      {
+        "type": "MA30",
+        "value": 5.851,
+        "distance_pct": -0.15
+      },
+      {
+        "type": "MA250",
+        "value": 5.83,
+        "distance_pct": -0.52
+      },
+      {
+        "type": "前低(2026-08-19)",
+        "value": 5.64,
+        "distance_pct": -3.75
+      },
+      {
+        "type": "回调位786",
+        "value": 5.459,
+        "distance_pct": -6.84
+      }
+    ]
+  },
+  "patterns": [
+    {
+      "symbol": "002386",
+      "name": "天原股份",
+      "date": "2026-08-24",
+      "pattern": "neckline_reclaim",
+      "pattern_cn": "M形颈线支撑",
+      "variant": "neckline_hold",
+      "close": 5.9,
+      "change_rate": 0.8547,
+      "turnover": NaN,
+      "turnover_ma20": NaN,
+      "updown_ratio_20": 1.5,
+      "up_days_ratio_20": 0.65,
+      "vol_ratio": 1.0665630112597442,
+      "pullback_vol_shrink": 0.7367732413396735,
+      "rsi14": 54.19382936081717,
+      "ma_bull": 0,
+      "dif_above_zero": 0,
+      "bias60": 0.011197440585009266,
+      "hit_levels": "neckline",
+      "fib_level": "",
+      "resonance": 1,
+      "wave_phase": "later_pullback",
+      "break_days": 0,
+      "break_depth": 0.0,
+      "potential_gain": 0.09322033898305082,
+      "score": 64.11,
+      "trend": "up",
+      "macd_gold3": 0,
+      "dif_below0": 1,
+      "kdj_gold3": 0,
+      "kdj_j": 90.35931926605762,
+      "boll_pos": 0.7560841226704408,
+      "boll_width": 0.05673969488062859,
+      "rsi6": 62.558865853516096,
+      "macd_div": 0,
+      "first_top_date": "2026-07-02",
+      "first_top_price": 6.45,
+      "second_top_date": "2026-08-07",
+      "second_top_price": 6.06,
+      "neckline_date": "2026-07-13",
+      "neckline_value": 5.4,
+      "top_deviation_pct": 6.05,
+      "raw_pattern": "m_neckline",
+      "signal_date": "2026-08-24",
+      "stage": "retesting",
+      "confirmed": true,
+      "entry_status": "actionable",
+      "trend_state": "up",
+      "support": 5.851,
+      "resistance": 5.866,
+      "neckline": 5.4,
+      "invalid_level": 5.292,
+      "fib_levels": {
+        "0.618": 5.883,
+        "0.5": 6.18,
+        "0.786": 5.459,
+        "0.382": 6.477
+      },
+      "evidence": [
+        "形态标准度 0.79",
+        "日线趋势 up",
+        "共振数 1",
+        "量能倍率 1.07",
+        "命中关键位 neckline"
+      ],
+      "warnings": [],
+      "score_raw": 0.787,
+      "score_breakdown": {
+        "pattern": 23.61,
+        "daily": 20.0,
+        "higher_timeframe": 9.0,
+        "volume": 8.0,
+        "sector": 0.0,
+        "confluence": 3.5,
+        "risk_penalty": 0.0
+      },
+      "factors": {
+        "change_rate": 0.8547,
+        "turnover": NaN,
+        "vol_ratio": 1.0665630112597442,
+        "bias60": 0.011197440585009266,
+        "rsi14": 54.19382936081717,
+        "resonance": 1,
+        "wave_phase": "later_pullback",
+        "potential_gain": 0.09322033898305082
+      }
+    }
+  ],
+  "sector_context": [
+    {
+      "sector_code": "BK0864",
+      "sector_name": "氢能源",
+      "sector_type": "concept",
+      "sector_change_pct": -0.61,
+      "latest_price": 5.66,
+      "change_pct": 0.0,
+      "turnover_rate": 0.43,
+      "volume_ratio": 0.94
+    },
+    {
+      "sector_code": "BK0574",
+      "sector_name": "锂电池概念",
+      "sector_type": "concept",
+      "sector_change_pct": -1.42,
+      "latest_price": 5.66,
+      "change_pct": 0.0,
+      "turnover_rate": 0.43,
+      "volume_ratio": 0.94
+    },
+    {
+      "sector_code": "BK0596",
+      "sector_name": "融资融券",
+      "sector_type": "concept",
+      "sector_change_pct": -0.42,
+      "latest_price": 5.66,
+      "change_pct": 0.0,
+      "turnover_rate": 0.44,
+      "volume_ratio": 0.93
+    },
+    {
+      "sector_code": "BK0804",
+      "sector_name": "深股通",
+      "sector_type": "concept",
+      "sector_change_pct": -0.47,
+      "latest_price": 5.85,
+      "change_pct": 1.56,
+      "turnover_rate": 1.27,
+      "volume_ratio": 1.46
+    },
+    {
+      "sector_code": "BK1749",
+      "sector_name": "2026中报预增",
+      "sector_type": "concept",
+      "sector_change_pct": -1.11,
+      "latest_price": 5.85,
+      "change_pct": 1.56,
+      "turnover_rate": 1.27,
+      "volume_ratio": 1.46
+    },
+    {
+      "sector_code": "BK1648",
+      "sector_name": "电池技术",
+      "sector_type": "concept",
+      "sector_change_pct": -1.38,
+      "latest_price": 5.85,
+      "change_pct": 1.56,
+      "turnover_rate": 1.27,
+      "volume_ratio": 1.46
+    },
+    {
+      "sector_code": "BK0683",
+      "sector_name": "央国企改革",
+      "sector_type": "concept",
+      "sector_change_pct": 0.36,
+      "latest_price": 5.85,
+      "change_pct": 1.56,
+      "turnover_rate": 1.27,
+      "volume_ratio": 1.46
+    },
+    {
+      "sector_code": "BK0523",
+      "sector_name": "新材料",
+      "sector_type": "concept",
+      "sector_change_pct": -1.52,
+      "latest_price": 5.85,
+      "change_pct": 1.56,
+      "turnover_rate": 1.27,
+      "volume_ratio": 1.46
+    },
+    {
+      "sector_code": "BK0590",
+      "sector_name": "西部大开发",
+      "sector_type": "concept",
+      "sector_change_pct": 0.13,
+      "latest_price": 5.85,
+      "change_pct": 1.56,
+      "turnover_rate": 1.27,
+      "volume_ratio": 1.46
+    },
+    {
+      "sector_code": "BK0534",
+      "sector_name": "成渝特区",
+      "sector_type": "concept",
+      "sector_change_pct": 0.15,
+      "latest_price": 5.85,
+      "change_pct": 1.563,
+      "turnover_rate": 1.26936,
+      "volume_ratio": null
+    },
+    {
+      "sector_code": "BK0805",
+      "sector_name": "钛白粉概念",
+      "sector_type": "concept",
+      "sector_change_pct": -0.14,
+      "latest_price": 5.85,
+      "change_pct": 1.56,
+      "turnover_rate": 1.27,
+      "volume_ratio": 1.46
+    },
+    {
+      "sector_code": "BK1672",
+      "sector_name": "破发股",
+      "sector_type": "concept",
+      "sector_change_pct": 0.37,
+      "latest_price": 5.85,
+      "change_pct": 1.56,
+      "turnover_rate": 1.27,
+      "volume_ratio": 1.46
+    },
+    {
+      "sector_code": "BK1112",
+      "sector_name": "破净股",
+      "sector_type": "concept",
+      "sector_change_pct": 0.72,
+      "latest_price": 5.85,
+      "change_pct": 1.56,
+      "turnover_rate": 1.27,
+      "volume_ratio": 1.46
+    },
+    {
+      "sector_code": "BK1019",
+      "sector_name": "化学原料",
+      "sector_type": "industry",
+      "sector_change_pct": -0.95,
+      "latest_price": 6.02,
+      "change_pct": 2.21,
+      "turnover_rate": 1.84,
+      "volume_ratio": 1.4
+    },
+    {
+      "sector_code": "BK1010",
+      "sector_name": "磷化工",
+      "sector_type": "concept",
+      "sector_change_pct": -0.93,
+      "latest_price": 6.02,
+      "change_pct": 2.21,
+      "turnover_rate": 1.84,
+      "volume_ratio": 1.4
+    }
+  ],
+  "popularity": [
+    {
+      "rank_date": "2026-08-29",
+      "popularity_rank": 1325.0,
+      "change_pct": 2.21,
+      "latest_price": 6.02
+    },
+    {
+      "rank_date": "2026-08-21",
+      "popularity_rank": 1680.0,
+      "change_pct": 1.56,
+      "latest_price": 5.85
+    }
+  ],
+  "charts": {
+    "daily": "C:\\Users\\20127\\Desktop\\K线图片\\天原股份_002386_daily.png",
+    "weekly": "C:\\Users\\20127\\Desktop\\K线图片\\天原股份_002386_weekly.png",
+    "monthly": "C:\\Users\\20127\\Desktop\\K线图片\\天原股份_002386_monthly.png",
+    "bars": {
+      "daily": 500,
+      "weekly": 107,
+      "monthly": 26
+    }
+  },
+  "warnings": [],
+  "review_metrics": {
+    "ma": {
+      "20": 5.872,
+      "60": 5.8665,
+      "120": 6.022333333333334,
+      "250": 5.8296
+    },
+    "ma20_change_5_pct": 0.35033752029394183,
+    "ma60_change_5_pct": 0.4566340363594712,
+    "volume5_over20": 1.0389955659226662,
+    "last_volume_over_previous20": 0.9496864183968752,
+    "distance_ma20_pct": -0.2043596730245123,
+    "distance_ma60_pct": -0.11079860223301985,
+    "last20_high": 6.1,
+    "last20_low": 5.64,
+    "last60_high": 6.45,
+    "last60_low": 5.4,
+    "return20_pct": -1.0135135135135087
+  },
+  "screen_signal": {
+    "symbol": "002386",
+    "name": "天原股份",
+    "date": "2026-08-24",
+    "pattern": "neckline_reclaim",
+    "pattern_cn": "M形颈线支撑",
+    "variant": "neckline_hold",
+    "close": 5.9,
+    "change_rate": 0.8547,
+    "turnover": NaN,
+    "turnover_ma20": NaN,
+    "updown_ratio_20": 1.5,
+    "up_days_ratio_20": 0.65,
+    "vol_ratio": 1.0665630112597442,
+    "pullback_vol_shrink": 0.7367732413396735,
+    "rsi14": 54.19382936081717,
+    "ma_bull": 0,
+    "dif_above_zero": 0,
+    "bias60": 0.011197440585009266,
+    "hit_levels": "neckline",
+    "fib_level": "",
+    "resonance": 1,
+    "wave_phase": "later_pullback",
+    "break_days": 0,
+    "break_depth": 0.0,
+    "potential_gain": 0.09322033898305082,
+    "score": 74.11,
+    "trend": "up",
+    "macd_gold3": 0,
+    "dif_below0": 1,
+    "kdj_gold3": 0,
+    "kdj_j": 90.35931926605762,
+    "boll_pos": 0.7560841226704408,
+    "boll_width": 0.05673969488062859,
+    "rsi6": 62.558865853516096,
+    "macd_div": 0,
+    "first_top_date": "2026-07-02",
+    "first_top_price": 6.45,
+    "second_top_date": "2026-08-07",
+    "second_top_price": 6.06,
+    "neckline_date": "2026-07-13",
+    "neckline_value": 5.4,
+    "top_deviation_pct": 6.05,
+    "raw_pattern": "m_neckline",
+    "signal_date": "2026-08-24",
+    "stage": "retesting",
+    "confirmed": true,
+    "entry_status": "actionable",
+    "trend_state": "up",
+    "support": 5.851,
+    "resistance": 5.866,
+    "neckline": 5.4,
+    "invalid_level": 5.292,
+    "fib_levels": {
+      "0.618": 5.883,
+      "0.5": 6.18,
+      "0.786": 5.459,
+      "0.382": 6.477
+    },
+    "evidence": [
+      "形态标准度 0.79",
+      "日线趋势 up",
+      "共振数 1",
+      "量能倍率 1.07",
+      "命中关键位 neckline"
+    ],
+    "warnings": [],
+    "score_raw": 0.787,
+    "score_breakdown": {
+      "pattern": 23.61,
+      "daily": 20.0,
+      "higher_timeframe": 9.0,
+      "volume": 8.0,
+      "sector": 10.0,
+      "confluence": 3.5,
+      "risk_penalty": 0.0
+    },
+    "factors": {
+      "change_rate": 0.8547,
+      "turnover": NaN,
+      "vol_ratio": 1.0665630112597442,
+      "bias60": 0.011197440585009266,
+      "rsi14": 54.19382936081717,
+      "resonance": 1,
+      "wave_phase": "later_pullback",
+      "potential_gain": 0.09322033898305082
+    },
+    "higher_timeframe": {
+      "weekly": {
+        "period": "weekly",
+        "bars": 90,
+        "last_date": "2026-09-04",
+        "close": 5.86,
+        "trend": "down",
+        "moving_averages": {
+          "MA5": 5.878,
+          "MA10": 5.842,
+          "MA20": 6.014,
+          "MA60": 5.759
+        },
+        "recent_returns_pct": {
+          "return_5": 0.69,
+          "return_10": -0.85,
+          "return_20": -9.01
+        },
+        "range_20": {
+          "high": 7.44,
+          "low": 5.4
+        }
+      },
+      "monthly": {
+        "period": "monthly",
+        "bars": 22,
+        "last_date": "2026-09-30",
+        "close": 5.86,
+        "trend": "up",
+        "moving_averages": {
+          "MA5": 5.914,
+          "MA10": 6.047,
+          "MA20": 5.513
+        },
+        "recent_returns_pct": {
+          "return_5": -16.17,
+          "return_10": 0.69,
+          "return_20": 42.58
+        },
+        "range_20": {
+          "high": 7.44,
+          "low": 3.81
+        }
+      }
+    },
+    "sectors": [
+      {
+        "sector_code": "BK0864",
+        "sector_name": "氢能源",
+        "sector_type": "concept",
+        "sector_change_pct": -0.61,
+        "latest_price": 5.66,
+        "change_pct": 0.0,
+        "turnover_rate": 0.43,
+        "volume_ratio": 0.94
+      },
+      {
+        "sector_code": "BK0574",
+        "sector_name": "锂电池概念",
+        "sector_type": "concept",
+        "sector_change_pct": -1.42,
+        "latest_price": 5.66,
+        "change_pct": 0.0,
+        "turnover_rate": 0.43,
+        "volume_ratio": 0.94
+      },
+      {
+        "sector_code": "BK0596",
+        "sector_name": "融资融券",
+        "sector_type": "concept",
+        "sector_change_pct": -0.42,
+        "latest_price": 5.66,
+        "change_pct": 0.0,
+        "turnover_rate": 0.44,
+        "volume_ratio": 0.93
+      },
+      {
+        "sector_code": "BK0804",
+        "sector_name": "深股通",
+        "sector_type": "concept",
+        "sector_change_pct": -0.47,
+        "latest_price": 5.85,
+        "change_pct": 1.56,
+        "turnover_rate": 1.27,
+        "volume_ratio": 1.46
+      },
+      {
+        "sector_code": "BK1749",
+        "sector_name": "2026中报预增",
+        "sector_type": "concept",
+        "sector_change_pct": -1.11,
+        "latest_price": 5.85,
+        "change_pct": 1.56,
+        "turnover_rate": 1.27,
+        "volume_ratio": 1.46
+      },
+      {
+        "sector_code": "BK1648",
+        "sector_name": "电池技术",
+        "sector_type": "concept",
+        "sector_change_pct": -1.38,
+        "latest_price": 5.85,
+        "change_pct": 1.56,
+        "turnover_rate": 1.27,
+        "volume_ratio": 1.46
+      },
+      {
+        "sector_code": "BK0683",
+        "sector_name": "央国企改革",
+        "sector_type": "concept",
+        "sector_change_pct": 0.36,
+        "latest_price": 5.85,
+        "change_pct": 1.56,
+        "turnover_rate": 1.27,
+        "volume_ratio": 1.46
+      },
+      {
+        "sector_code": "BK0523",
+        "sector_name": "新材料",
+        "sector_type": "concept",
+        "sector_change_pct": -1.52,
+        "latest_price": 5.85,
+        "change_pct": 1.56,
+        "turnover_rate": 1.27,
+        "volume_ratio": 1.46
+      },
+      {
+        "sector_code": "BK0590",
+        "sector_name": "西部大开发",
+        "sector_type": "concept",
+        "sector_change_pct": 0.13,
+        "latest_price": 5.85,
+        "change_pct": 1.56,
+        "turnover_rate": 1.27,
+        "volume_ratio": 1.46
+      },
+      {
+        "sector_code": "BK0534",
+        "sector_name": "成渝特区",
+        "sector_type": "concept",
+        "sector_change_pct": 0.15,
+        "latest_price": 5.85,
+        "change_pct": 1.563,
+        "turnover_rate": 1.26936,
+        "volume_ratio": null
+      }
+    ]
+  }
+}

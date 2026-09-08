@@ -1,0 +1,787 @@
+[
+  {
+    "sector_name": "AI应用",
+    "latest_close": 680.7,
+    "kline_count": 126,
+    "signals": [],
+    "rsi14": 43.56,
+    "pct_5d": -0.15,
+    "pct_20d": -4.11,
+    "ma5": 669.52,
+    "ma20": 691.75,
+    "sector_code": "BK1629",
+    "change_pct": 1.02,
+    "main_net_inflow": 8555132416.0,
+    "matched_keywords": [
+      "AI"
+    ]
+  },
+  {
+    "sector_name": "AIGC概念",
+    "latest_close": 1746.86,
+    "kline_count": 250,
+    "signals": [],
+    "rsi14": 41.29,
+    "pct_5d": -0.74,
+    "pct_20d": -5.99,
+    "ma5": 1729.08,
+    "ma20": 1796.26,
+    "sector_code": "BK1111",
+    "change_pct": 1.86,
+    "main_net_inflow": 5812803328.0,
+    "matched_keywords": [
+      "AI"
+    ]
+  },
+  {
+    "sector_name": "AI智能体",
+    "latest_close": 1047.46,
+    "kline_count": 250,
+    "signals": [],
+    "rsi14": 43.12,
+    "pct_5d": 0.36,
+    "pct_20d": -5.16,
+    "ma5": 1032.93,
+    "ma20": 1066.61,
+    "sector_code": "BK0809",
+    "change_pct": 0.92,
+    "main_net_inflow": 4148445952.0,
+    "matched_keywords": [
+      "AI"
+    ]
+  },
+  {
+    "sector_name": "多模态AI",
+    "latest_close": 1120.21,
+    "kline_count": 250,
+    "signals": [],
+    "rsi14": 40.14,
+    "pct_5d": -0.03,
+    "pct_20d": -9.14,
+    "ma5": 1104.14,
+    "ma20": 1164.72,
+    "sector_code": "BK1153",
+    "change_pct": 1.63,
+    "main_net_inflow": 3926974464.0,
+    "matched_keywords": [
+      "AI"
+    ]
+  },
+  {
+    "sector_name": "跨境电商",
+    "latest_close": 1332.85,
+    "kline_count": 250,
+    "signals": [],
+    "rsi14": 43.73,
+    "pct_5d": 1.83,
+    "pct_20d": -2.74,
+    "ma5": 1309.05,
+    "ma20": 1353.09,
+    "sector_code": "BK1115",
+    "change_pct": 1.01,
+    "main_net_inflow": 3676300800.0,
+    "matched_keywords": [
+      "跨境电商"
+    ]
+  },
+  {
+    "sector_name": "数据要素",
+    "latest_close": 1032.23,
+    "kline_count": 250,
+    "signals": [],
+    "rsi14": 42.13,
+    "pct_5d": 0.59,
+    "pct_20d": -6.02,
+    "ma5": 1015.31,
+    "ma20": 1056.53,
+    "sector_code": "BK1135",
+    "change_pct": 0.94,
+    "main_net_inflow": 3033512704.0,
+    "matched_keywords": [
+      "数据要素"
+    ]
+  },
+  {
+    "sector_name": "AI语料",
+    "latest_close": 934.58,
+    "kline_count": 250,
+    "signals": [],
+    "rsi14": 47.68,
+    "pct_5d": 0.89,
+    "pct_20d": 0.1,
+    "ma5": 910.39,
+    "ma20": 930.59,
+    "sector_code": "BK1172",
+    "change_pct": 2.11,
+    "main_net_inflow": 2906865488.0,
+    "matched_keywords": [
+      "AI"
+    ]
+  },
+  {
+    "sector_name": "区块链",
+    "latest_close": 991.25,
+    "kline_count": 250,
+    "signals": [],
+    "rsi14": 46.12,
+    "pct_5d": 1.12,
+    "pct_20d": -2.45,
+    "ma5": 974.65,
+    "ma20": 993.92,
+    "sector_code": "BK0830",
+    "change_pct": 0.74,
+    "main_net_inflow": 2218390528.0,
+    "matched_keywords": [
+      "区块链"
+    ]
+  },
+  {
+    "sector_name": "元宇宙概念",
+    "latest_close": 1922.33,
+    "kline_count": 250,
+    "signals": [],
+    "rsi14": 38.62,
+    "pct_5d": -1.09,
+    "pct_20d": -9.53,
+    "ma5": 1903.43,
+    "ma20": 2013.97,
+    "sector_code": "BK1009",
+    "change_pct": 0.39,
+    "main_net_inflow": 1205859584.0,
+    "matched_keywords": [
+      "元宇宙"
+    ]
+  },
+  {
+    "sector_name": "智谱AI概念",
+    "latest_close": 1020.86,
+    "kline_count": 250,
+    "signals": [],
+    "rsi14": 41.97,
+    "pct_5d": 0.41,
+    "pct_20d": -8.41,
+    "ma5": 1003.27,
+    "ma20": 1045.87,
+    "sector_code": "BK1182",
+    "change_pct": 0.66,
+    "main_net_inflow": 1199402496.0,
+    "matched_keywords": [
+      "AI"
+    ]
+  },
+  {
+    "sector_name": "虚拟机器人",
+    "latest_close": 1184.97,
+    "kline_count": 250,
+    "signals": [],
+    "rsi14": 38.73,
+    "pct_5d": -1.56,
+    "pct_20d": -14.53,
+    "ma5": 1166.33,
+    "ma20": 1257.38,
+    "sector_code": "BK1190",
+    "change_pct": 1.02,
+    "main_net_inflow": 668468816.0,
+    "matched_keywords": [
+      "机器人"
+    ]
+  },
+  {
+    "sector_name": "转基因",
+    "latest_close": 1534.34,
+    "kline_count": 255,
+    "signals": [
+      "overbought_RSI"
+    ],
+    "rsi14": 75.97,
+    "pct_5d": 25.25,
+    "pct_20d": 24.06,
+    "ma5": 1451.45,
+    "ma20": 1288.02,
+    "sector_code": "BK0907",
+    "change_pct": 1.99,
+    "main_net_inflow": 519636816.0,
+    "matched_keywords": [
+      "基因"
+    ]
+  },
+  {
+    "sector_name": "基因测序",
+    "latest_close": 1644.88,
+    "kline_count": 250,
+    "signals": [],
+    "rsi14": 44.41,
+    "pct_5d": 0.45,
+    "pct_20d": -1.25,
+    "ma5": 1627.13,
+    "ma20": 1682.66,
+    "sector_code": "BK0693",
+    "change_pct": -0.47,
+    "main_net_inflow": 264370608.0,
+    "matched_keywords": [
+      "基因"
+    ]
+  },
+  {
+    "sector_name": "时空大数据",
+    "latest_close": 1262.71,
+    "kline_count": 250,
+    "signals": [],
+    "rsi14": 38.97,
+    "pct_5d": 2.09,
+    "pct_20d": -10.31,
+    "ma5": 1239.31,
+    "ma20": 1325.19,
+    "sector_code": "BK1130",
+    "change_pct": 0.32,
+    "main_net_inflow": 19153584.0,
+    "matched_keywords": [
+      "大数据"
+    ]
+  },
+  {
+    "sector_name": "第四代半导体",
+    "latest_close": 2165.85,
+    "kline_count": 250,
+    "signals": [],
+    "rsi14": 40.66,
+    "pct_5d": -3.23,
+    "pct_20d": -18.24,
+    "ma5": 2197.61,
+    "ma20": 2434.07,
+    "sector_code": "BK1121",
+    "change_pct": -1.86,
+    "main_net_inflow": -147477486.0,
+    "matched_keywords": [
+      "半导体"
+    ]
+  },
+  {
+    "sector_name": "机器人执行器",
+    "latest_close": 1864.55,
+    "kline_count": 250,
+    "signals": [],
+    "rsi14": 38.12,
+    "pct_5d": -2.34,
+    "pct_20d": -14.43,
+    "ma5": 1858.87,
+    "ma20": 2068.25,
+    "sector_code": "BK1145",
+    "change_pct": -2.17,
+    "main_net_inflow": -200888352.0,
+    "matched_keywords": [
+      "机器人"
+    ]
+  },
+  {
+    "sector_name": "熔盐储能",
+    "latest_close": 965.41,
+    "kline_count": 250,
+    "signals": [],
+    "rsi14": 41.82,
+    "pct_5d": 1.14,
+    "pct_20d": -6.13,
+    "ma5": 956.72,
+    "ma20": 988.28,
+    "sector_code": "BK1103",
+    "change_pct": 0.12,
+    "main_net_inflow": -201885713.0,
+    "matched_keywords": [
+      "储能"
+    ]
+  },
+  {
+    "sector_name": "数字经济",
+    "latest_close": 1196.62,
+    "kline_count": 260,
+    "signals": [],
+    "rsi14": 48.66,
+    "pct_5d": -3.73,
+    "pct_20d": 10.87,
+    "ma5": 1212.82,
+    "ma20": 1205.04,
+    "sector_code": "BK1061",
+    "change_pct": 0.95,
+    "main_net_inflow": -234856192.0,
+    "matched_keywords": [
+      "数字经济"
+    ]
+  },
+  {
+    "sector_name": "AI芯片",
+    "latest_close": 1772.24,
+    "kline_count": 250,
+    "signals": [],
+    "rsi14": 36.25,
+    "pct_5d": -3.79,
+    "pct_20d": -19.92,
+    "ma5": 1808.72,
+    "ma20": 1977.12,
+    "sector_code": "BK1127",
+    "change_pct": -1.69,
+    "main_net_inflow": -888840192.0,
+    "matched_keywords": [
+      "AI",
+      "芯片"
+    ]
+  },
+  {
+    "sector_name": "新能源",
+    "latest_close": 16656.39,
+    "kline_count": 250,
+    "signals": [],
+    "rsi14": 40.22,
+    "pct_5d": 1.82,
+    "pct_20d": -8.13,
+    "ma5": 16554.56,
+    "ma20": 17020.43,
+    "sector_code": "BK0493",
+    "change_pct": -0.25,
+    "main_net_inflow": -1499377408.0,
+    "matched_keywords": [
+      "新能源"
+    ]
+  },
+  {
+    "sector_name": "AI制药（医疗）",
+    "latest_close": 1222.32,
+    "kline_count": 250,
+    "signals": [],
+    "rsi14": 48.09,
+    "pct_5d": 1.26,
+    "pct_20d": 0.66,
+    "ma5": 1200.96,
+    "ma20": 1232.36,
+    "sector_code": "BK1170",
+    "change_pct": -0.4,
+    "main_net_inflow": -1588271152.0,
+    "matched_keywords": [
+      "AI"
+    ]
+  },
+  {
+    "sector_name": "人工智能",
+    "latest_close": 1616.99,
+    "kline_count": 250,
+    "signals": [],
+    "rsi14": 39.94,
+    "pct_5d": 0.39,
+    "pct_20d": -8.19,
+    "ma5": 1599.87,
+    "ma20": 1678.39,
+    "sector_code": "BK0800",
+    "change_pct": 0.17,
+    "main_net_inflow": -1974275072.0,
+    "matched_keywords": [
+      "人工智能"
+    ]
+  },
+  {
+    "sector_name": "AI手机",
+    "latest_close": 1699.19,
+    "kline_count": 250,
+    "signals": [],
+    "rsi14": 33.57,
+    "pct_5d": -4.72,
+    "pct_20d": -21.83,
+    "ma5": 1729.13,
+    "ma20": 1922.15,
+    "sector_code": "BK1162",
+    "change_pct": -2.08,
+    "main_net_inflow": -2144302784.0,
+    "matched_keywords": [
+      "AI"
+    ]
+  },
+  {
+    "sector_name": "氢能源",
+    "latest_close": 1434.36,
+    "kline_count": 260,
+    "signals": [],
+    "rsi14": 49.23,
+    "pct_5d": -1.5,
+    "pct_20d": 8.59,
+    "ma5": 1447.5,
+    "ma20": 1422.91,
+    "sector_code": "BK0864",
+    "change_pct": -0.61,
+    "main_net_inflow": -2421933824.0,
+    "matched_keywords": [
+      "氢能"
+    ]
+  },
+  {
+    "sector_name": "低空经济",
+    "latest_close": 1443.58,
+    "kline_count": 250,
+    "signals": [],
+    "rsi14": 36.22,
+    "pct_5d": -0.01,
+    "pct_20d": -12.38,
+    "ma5": 1432.23,
+    "ma20": 1536.58,
+    "sector_code": "BK1166",
+    "change_pct": -0.15,
+    "main_net_inflow": -2500589824.0,
+    "matched_keywords": [
+      "低空经济"
+    ]
+  },
+  {
+    "sector_name": "F5G概念",
+    "latest_close": 4762.63,
+    "kline_count": 260,
+    "signals": [],
+    "rsi14": 49.65,
+    "pct_5d": -0.18,
+    "pct_20d": 15.15,
+    "ma5": 4889.7,
+    "ma20": 4727.15,
+    "sector_code": "BK1088",
+    "change_pct": -2.56,
+    "main_net_inflow": -2810798080.0,
+    "matched_keywords": [
+      "5G"
+    ]
+  },
+  {
+    "sector_name": "量子科技",
+    "latest_close": 3006.13,
+    "kline_count": 250,
+    "signals": [],
+    "rsi14": 34.61,
+    "pct_5d": -0.42,
+    "pct_20d": -16.88,
+    "ma5": 2990.38,
+    "ma20": 3232.34,
+    "sector_code": "BK0710",
+    "change_pct": -0.42,
+    "main_net_inflow": -3585497600.0,
+    "matched_keywords": [
+      "量子"
+    ]
+  },
+  {
+    "sector_name": "大数据",
+    "latest_close": 4609.3,
+    "kline_count": 250,
+    "signals": [],
+    "rsi14": 40.69,
+    "pct_5d": 0.23,
+    "pct_20d": -7.65,
+    "ma5": 4552.26,
+    "ma20": 4742.78,
+    "sector_code": "BK0634",
+    "change_pct": 0.54,
+    "main_net_inflow": -3662718976.0,
+    "matched_keywords": [
+      "大数据"
+    ]
+  },
+  {
+    "sector_name": "储能概念",
+    "latest_close": 2213.82,
+    "kline_count": 260,
+    "signals": [],
+    "rsi14": 49.64,
+    "pct_5d": -1.62,
+    "pct_20d": 9.04,
+    "ma5": 2234.6,
+    "ma20": 2190.74,
+    "sector_code": "BK0989",
+    "change_pct": -0.68,
+    "main_net_inflow": -3774615040.0,
+    "matched_keywords": [
+      "储能"
+    ]
+  },
+  {
+    "sector_name": "光伏概念",
+    "latest_close": 3697.05,
+    "kline_count": 250,
+    "signals": [],
+    "rsi14": 36.73,
+    "pct_5d": 1.1,
+    "pct_20d": -13.12,
+    "ma5": 3680.81,
+    "ma20": 3887.04,
+    "sector_code": "BK0588",
+    "change_pct": -0.58,
+    "main_net_inflow": -4288816896.0,
+    "matched_keywords": [
+      "光伏"
+    ]
+  },
+  {
+    "sector_name": "云计算",
+    "latest_close": 3020.04,
+    "kline_count": 250,
+    "signals": [],
+    "rsi14": 41.67,
+    "pct_5d": -0.28,
+    "pct_20d": -6.01,
+    "ma5": 3001.88,
+    "ma20": 3090.4,
+    "sector_code": "BK0579",
+    "change_pct": 0.29,
+    "main_net_inflow": -4633484288.0,
+    "matched_keywords": [
+      "云计算"
+    ]
+  },
+  {
+    "sector_name": "AIPC",
+    "latest_close": 2565.23,
+    "kline_count": 260,
+    "signals": [],
+    "rsi14": 48.89,
+    "pct_5d": -2.08,
+    "pct_20d": 7.78,
+    "ma5": 2601.31,
+    "ma20": 2506.77,
+    "sector_code": "BK1164",
+    "change_pct": -2.46,
+    "main_net_inflow": -4996653056.0,
+    "matched_keywords": [
+      "AI"
+    ]
+  },
+  {
+    "sector_name": "第三代半导体",
+    "latest_close": 2387.04,
+    "kline_count": 260,
+    "signals": [],
+    "rsi14": 49.82,
+    "pct_5d": -1.59,
+    "pct_20d": 11.05,
+    "ma5": 2425.61,
+    "ma20": 2292.52,
+    "sector_code": "BK0952",
+    "change_pct": -2.14,
+    "main_net_inflow": -6371912704.0,
+    "matched_keywords": [
+      "半导体"
+    ]
+  },
+  {
+    "sector_name": "算力概念",
+    "latest_close": 1874.56,
+    "kline_count": 260,
+    "signals": [],
+    "rsi14": 48.6,
+    "pct_5d": -4.31,
+    "pct_20d": 10.15,
+    "ma5": 1907.64,
+    "ma20": 1864.67,
+    "sector_code": "BK1134",
+    "change_pct": -0.84,
+    "main_net_inflow": -6420207616.0,
+    "matched_keywords": [
+      "算力"
+    ]
+  },
+  {
+    "sector_name": "人形机器人",
+    "latest_close": 1649.7,
+    "kline_count": 260,
+    "signals": [],
+    "rsi14": 46.85,
+    "pct_5d": -3.21,
+    "pct_20d": 10.03,
+    "ma5": 1685.65,
+    "ma20": 1642.02,
+    "sector_code": "BK1184",
+    "change_pct": -1.84,
+    "main_net_inflow": -6457093376.0,
+    "matched_keywords": [
+      "机器人"
+    ]
+  },
+  {
+    "sector_name": "汽车芯片",
+    "latest_close": 1445.67,
+    "kline_count": 250,
+    "signals": [],
+    "rsi14": 32.44,
+    "pct_5d": -4.1,
+    "pct_20d": -28.42,
+    "ma5": 1472.18,
+    "ma20": 1702.22,
+    "sector_code": "BK0969",
+    "change_pct": -2.18,
+    "main_net_inflow": -6476824064.0,
+    "matched_keywords": [
+      "芯片"
+    ]
+  },
+  {
+    "sector_name": "AI眼镜",
+    "latest_close": 2235.16,
+    "kline_count": 260,
+    "signals": [],
+    "rsi14": 49.86,
+    "pct_5d": -1.88,
+    "pct_20d": 9.44,
+    "ma5": 2259.64,
+    "ma20": 2174.04,
+    "sector_code": "BK1178",
+    "change_pct": -2.1,
+    "main_net_inflow": -8703499008.0,
+    "matched_keywords": [
+      "AI"
+    ]
+  },
+  {
+    "sector_name": "新能源车",
+    "latest_close": 2372.25,
+    "kline_count": 260,
+    "signals": [],
+    "rsi14": 50.28,
+    "pct_5d": -1.48,
+    "pct_20d": 10.74,
+    "ma5": 2396.14,
+    "ma20": 2329.14,
+    "sector_code": "BK0900",
+    "change_pct": -1.32,
+    "main_net_inflow": -11814663680.0,
+    "matched_keywords": [
+      "新能源"
+    ]
+  },
+  {
+    "sector_name": "机器人概念",
+    "latest_close": 1958.93,
+    "kline_count": 260,
+    "signals": [],
+    "rsi14": 48.97,
+    "pct_5d": -2.22,
+    "pct_20d": 10.41,
+    "ma5": 1987.29,
+    "ma20": 1938.75,
+    "sector_code": "BK1090",
+    "change_pct": -1.03,
+    "main_net_inflow": -12351585024.0,
+    "matched_keywords": [
+      "机器人"
+    ]
+  },
+  {
+    "sector_name": "物联网",
+    "latest_close": 16034.84,
+    "kline_count": 260,
+    "signals": [],
+    "rsi14": 49.78,
+    "pct_5d": -2.56,
+    "pct_20d": 9.9,
+    "ma5": 16234.18,
+    "ma20": 15881.2,
+    "sector_code": "BK0554",
+    "change_pct": -0.55,
+    "main_net_inflow": -12624442112.0,
+    "matched_keywords": [
+      "物联网"
+    ]
+  },
+  {
+    "sector_name": "5G概念",
+    "latest_close": 2015.62,
+    "kline_count": 260,
+    "signals": [],
+    "rsi14": 51.31,
+    "pct_5d": -1.92,
+    "pct_20d": 12.72,
+    "ma5": 2040.14,
+    "ma20": 1943.41,
+    "sector_code": "BK0714",
+    "change_pct": -1.86,
+    "main_net_inflow": -15649516800.0,
+    "matched_keywords": [
+      "5G"
+    ]
+  },
+  {
+    "sector_name": "存储芯片",
+    "latest_close": 2779.8,
+    "kline_count": 255,
+    "signals": [],
+    "rsi14": 39.43,
+    "pct_5d": 1.62,
+    "pct_20d": -24.23,
+    "ma5": 2885.54,
+    "ma20": 3058.13,
+    "sector_code": "BK1137",
+    "change_pct": -3.03,
+    "main_net_inflow": -16725873408.0,
+    "matched_keywords": [
+      "芯片"
+    ]
+  },
+  {
+    "sector_name": "国产芯片",
+    "latest_close": 4735.06,
+    "kline_count": 260,
+    "signals": [],
+    "rsi14": 48.85,
+    "pct_5d": -2.1,
+    "pct_20d": 8.33,
+    "ma5": 4816.26,
+    "ma20": 4631.28,
+    "sector_code": "BK0891",
+    "change_pct": -1.64,
+    "main_net_inflow": -23362131712.0,
+    "matched_keywords": [
+      "芯片"
+    ]
+  },
+  {
+    "sector_name": "半导体概念",
+    "latest_close": 2823.75,
+    "kline_count": 260,
+    "signals": [],
+    "rsi14": 49.36,
+    "pct_5d": -1.74,
+    "pct_20d": 9.29,
+    "ma5": 2879.72,
+    "ma20": 2728.39,
+    "sector_code": "BK0917",
+    "change_pct": -2.43,
+    "main_net_inflow": -27327519232.0,
+    "matched_keywords": [
+      "半导体"
+    ]
+  },
+  {
+    "sector_name": "光伏设备",
+    "latest_close": 1072.29,
+    "kline_count": 250,
+    "signals": [],
+    "rsi14": 32.19,
+    "pct_5d": 1.1,
+    "pct_20d": -19.84,
+    "ma5": 1068.5,
+    "ma20": 1153.07,
+    "sector_code": "BK1031",
+    "change_pct": -0.14,
+    "main_net_inflow": 53374432.0,
+    "matched_keywords": [
+      "光伏"
+    ]
+  },
+  {
+    "sector_name": "半导体",
+    "latest_close": 2635.14,
+    "kline_count": 255,
+    "signals": [],
+    "rsi14": 39.78,
+    "pct_5d": 2.68,
+    "pct_20d": -24.53,
+    "ma5": 2733.1,
+    "ma20": 2904.36,
+    "sector_code": "BK1036",
+    "change_pct": -2.88,
+    "main_net_inflow": -16037667072.0,
+    "matched_keywords": [
+      "半导体"
+    ]
+  }
+]

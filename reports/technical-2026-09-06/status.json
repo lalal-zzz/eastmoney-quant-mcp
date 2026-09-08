@@ -1,0 +1,25 @@
+{
+  "stock": {
+    "count": "5905",
+    "spot_updated": "2026-08-29",
+    "rank_updated": "2026-08-29",
+    "kline_coverage": {
+      "symbols": 5732,
+      "ready": 5732,
+      "failed": 0,
+      "latest_date": "2026-09-04",
+      "coverage_ratio": 0.97,
+      "full_market_ready": true
+    }
+  },
+  "sector": {
+    "count": "632",
+    "sector_updated": "2026-09-06",
+    "kline_updated": "2026-09-06",
+    "member_updated": "2026-09-06"
+  },
+  "paths": {
+    "stock_db": "C:\\Users\\20127\\Desktop\\股票信息\\stock_data.db",
+    "sector_db": "C:\\Users\\20127\\Desktop\\分析板块\\sector_data.db"
+  }
+}

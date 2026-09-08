@@ -51,6 +51,7 @@ from .sources import (
     previous_trade_day,
     wait_for_internet,
 )
+from .sync import _stocks_from_spot
 
 
 # ── 通用小工具 ──
@@ -69,19 +70,7 @@ def _get_symbols() -> list[str]:
     return [r["symbol"] for r in query_stock_db("SELECT symbol FROM stock_basic ORDER BY symbol")]
 
 
-def _indicator_rows_from_df(df: pd.DataFrame) -> list[dict]:
-    """K线 df(升序, 含 close/high/low/volume) → 指标行列表(KDJ 列名重映射)"""
-    ind_df = compute_all_indicators(df)
-    ind_cols = [
-        "MA5", "MA10", "MA20", "MA30", "MA60", "MA100", "MA200",
-        "RSI6", "RSI14", "RSI24",
-        "DIF", "DEA", "MACD",
-        "BOLL_UPPER", "BOLL_MIDDLE", "BOLL_LOWER",
-        "K", "D", "J", "VOL_MA5", "VOL_MA10", "ATR14",
-    ]
-    available = [c for c in ind_cols if c in ind_df.columns]
-    out = ind_df[available].rename(columns={"K": "KDJ_K", "D": "KDJ_D", "J": "KDJ_J"})
-    return out.where(out.notna(), None).to_dict(orient="records")
+from .indicators import indicator_rows_from_df as _indicator_rows_from_df  # noqa: E402
 
 
 def _fetch_full_history(symbol: str, adjust: str = "qfq", limit: int = None) -> list[dict]:
@@ -123,11 +112,7 @@ def step_spot(dry_run: bool = False) -> int:
     spot_trade_date = _today() if is_trade_day(_today()) else previous_trade_day(_today())
     print(f"step spot: {len(rows)} rows, snapshot trade_date={spot_trade_date}", flush=True)
 
-    list_rows = [
-        {"symbol": r["symbol"], "name": r.get("name"),
-         "raw_symbol": r.get("raw_code") or r["symbol"]}
-        for r in rows
-    ]
+    list_rows = _stocks_from_spot(rows)
     save_stock_basic(list_rows)
     written = save_daily_stock_info(spot_trade_date, capture_time, rows)
     print(f"step spot: stock_basic={len(list_rows)}, daily_stock_info={written}", flush=True)
@@ -270,11 +255,11 @@ def compute_all_stock_indicators(workers: int = 8, dry_run: bool = False) -> int
     def _calc(sym: str) -> int:
         rows = query_stock_db(
             "SELECT date, open, high, low, close, volume FROM stock_kline "
-            "WHERE symbol=? ORDER BY date", (sym,))
+            "WHERE symbol=? AND adjust_type='qfq' ORDER BY date", (sym,))
         if len(rows) < 30:
             return 0
         df = pd.DataFrame(rows)
-        ind_rows = _indicator_rows_from_df(df)
+        ind_rows = _indicator_rows_from_df(df, index_cols=("date",))
         if not ind_rows:
             return 0
         for r in ind_rows:
@@ -298,6 +283,49 @@ def compute_all_stock_indicators(workers: int = 8, dry_run: bool = False) -> int
     print(f"step indicators: done, {success} stocks cached in {int(time.time() - start)}s",
           flush=True)
     return success
+
+
+def update_stock_indicators_since(start_date: str, workers: int = 8,
+                                  lookback: int = 320) -> int:
+    """Recompute enough history for indicators, but persist only new dates."""
+    symbols = _get_symbols()
+    success = 0
+    written = 0
+    started = time.time()
+
+    def _calc(sym: str) -> int:
+        rows = query_stock_db(
+            "SELECT date,open,high,low,close,volume FROM ("
+            " SELECT date,open,high,low,close,volume FROM stock_kline"
+            " WHERE symbol=? AND adjust_type='qfq' ORDER BY date DESC LIMIT ?"
+            ") ORDER BY date", (sym, lookback))
+        if len(rows) < 30:
+            return 0
+        df = pd.DataFrame(rows)
+        values = _indicator_rows_from_df(df, index_cols=("date",))
+        values = [r for r in values if r.get("date") and r["date"] >= start_date]
+        for row in values:
+            row["symbol"] = sym
+            row["adjust_type"] = "qfq"
+        return save_stock_indicators(values) if values else 0
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = {pool.submit(_calc, symbol): symbol for symbol in symbols}
+        done_count = 0
+        for future in as_completed(futures):
+            try:
+                count = future.result()
+                if count:
+                    success += 1
+                    written += count
+            except Exception:
+                pass
+            done_count += 1
+            if done_count % 500 == 0 or done_count == len(symbols):
+                print(f"  incremental indicators: {done_count}/{len(symbols)} "
+                      f"ok={success} rows={written}, {int(time.time() - started)}s",
+                      flush=True)
+    return written
 
 
 # ── 板块全量K线 + 板块指标 ──
@@ -384,11 +412,12 @@ def compute_all_sector_indicators(workers: int = 8, dry_run: bool = False) -> in
         if len(rows) < 30:
             return 0
         df = pd.DataFrame(rows)
-        ind_rows = _indicator_rows_from_df(df)
+        ind_rows = _indicator_rows_from_df(df, index_cols=("date",))
         if not ind_rows:
             return 0
         for r in ind_rows:
             r["sector_code"] = code
+            r["trade_date"] = r.pop("date")
         save_sector_indicators(ind_rows)
         return len(ind_rows)
 
@@ -604,6 +633,7 @@ def backfill_rank(start: str, end: str, max_workers: int = 8,
     print(f"发现 {len(missing_dates)} 个缺失交易日: {missing_dates[:10]}...", flush=True)
 
     symbols = _get_symbols()
+    missing_date_set = set(missing_dates)
 
     total_rows = 0
     completed = 0
@@ -613,7 +643,8 @@ def backfill_rank(start: str, end: str, max_workers: int = 8,
         for future in as_completed(futures):
             symbol = futures[future]
             try:
-                recs = future.result()
+                recs = [r for r in future.result()
+                        if r.get("trade_date") in missing_date_set]
                 save_popularity_rank(recs, replace=False)
                 total_rows += len(recs)
             except Exception as e:
@@ -652,7 +683,7 @@ def backfill_data(start: str | None = None, end: str | None = None,
         return 0
     if (do_history or do_rank) and not start:
         rows = query_stock_db(
-            "SELECT date FROM stock_kline WHERE date >= date('now', '-30 days') "
+            "SELECT date FROM stock_kline WHERE adjust_type='qfq' AND date >= date('now', '-30 days') "
             "GROUP BY date ORDER BY COUNT(DISTINCT symbol) DESC, date DESC LIMIT 1")
         start = rows[0]["date"] if rows else end
     print(f"补数据日期范围: {start} ~ {end}")
@@ -713,11 +744,7 @@ def save_spot_snapshot(capture_time: str, trade_date: str) -> int:
     spot_rows = fetch_full_spot(verbose=True)
     if not spot_rows:
         raise RuntimeError("fetch_full_spot returned no rows")
-    list_rows = [
-        {"symbol": r["symbol"], "name": r.get("name"),
-         "raw_symbol": r.get("raw_code") or r["symbol"]}
-        for r in spot_rows
-    ]
+    list_rows = _stocks_from_spot(spot_rows)
     save_stock_basic(list_rows)
     written = save_daily_stock_info(trade_date, capture_time, spot_rows)
     upsert_combined_spot()

@@ -1,0 +1,644 @@
+{
+  "analysis_scope": {
+    "total_signals": 5930,
+    "signals_with_backtest": 5402,
+    "signals_in_new_business_sectors": 497,
+    "date_range": [
+      "2011-02-01 00:00:00",
+      "2026-09-03 00:00:00"
+    ]
+  },
+  "high_winrate_patterns": {
+    "box_breakout": {
+      "count": 577,
+      "win_rate_5d": 54.07,
+      "win_rate_10d": 50.43,
+      "win_rate_20d": 47.14,
+      "avg_ret_10d": 0.0188,
+      "avg_max_gain_10d": 0.1055,
+      "avg_score": 0.7986
+    },
+    "m_neckline": {
+      "count": 1752,
+      "win_rate_5d": 51.26,
+      "win_rate_10d": 49.2,
+      "win_rate_20d": 46.63,
+      "avg_ret_10d": 0.011,
+      "avg_max_gain_10d": 0.0947,
+      "avg_score": 0.8381
+    },
+    "ma_rebound": {
+      "count": 73,
+      "win_rate_5d": 32.88,
+      "win_rate_10d": 0.0,
+      "win_rate_20d": 0.0,
+      "avg_ret_10d": NaN,
+      "avg_max_gain_10d": NaN,
+      "avg_score": 0.7928
+    },
+    "trend_pullback": {
+      "count": 24,
+      "win_rate_5d": 50.0,
+      "win_rate_10d": 0.0,
+      "win_rate_20d": 0.0,
+      "avg_ret_10d": NaN,
+      "avg_max_gain_10d": NaN,
+      "avg_score": 0.806
+    },
+    "w_bottom": {
+      "count": 2976,
+      "win_rate_5d": 47.55,
+      "win_rate_10d": 45.4,
+      "win_rate_20d": 43.41,
+      "avg_ret_10d": 0.0005,
+      "avg_max_gain_10d": 0.0848,
+      "avg_score": 0.8492
+    }
+  },
+  "technical_indicator_commonalities": {
+    "m_neckline": {
+      "winners": {
+        "RSI14": {
+          "mean": 59.7394,
+          "median": 59.6596,
+          "std": 6.3139,
+          "p25": 55.6103,
+          "p75": 63.6792,
+          "min": 43.2189,
+          "max": 89.563
+        },
+        "量比": {
+          "mean": 1.6714,
+          "median": 1.6074,
+          "std": 0.4874,
+          "p25": 1.3408,
+          "p75": 1.9337,
+          "min": 0.3746,
+          "max": 4.0364
+        },
+        "综合评分": {
+          "mean": 0.8448,
+          "median": 0.853,
+          "std": 0.1153,
+          "p25": 0.7492,
+          "p75": 0.9507,
+          "min": 0.602,
+          "max": 1.0
+        },
+        "均线多头": {
+          "ratio_true": 0.0,
+          "count": 862
+        },
+        "DIF>0": {
+          "ratio_true": 0.0,
+          "count": 862
+        },
+        "MACD金叉3日": {
+          "ratio_true": 0.0,
+          "count": 862
+        },
+        "DIF<0": {
+          "ratio_true": 0.0,
+          "count": 862
+        },
+        "KDJ金叉3日": {
+          "ratio_true": 0.0,
+          "count": 862
+        },
+        "MACD背离": {
+          "ratio_true": 0.0,
+          "count": 862
+        },
+        "trend_dist": {
+          "up": 862
+        },
+        "wave_phase_dist": {
+          "later_pullback": 787,
+          "breakout_new_high": 75
+        }
+      },
+      "losers": {
+        "RSI14": {
+          "mean": 59.8041,
+          "median": 59.4644,
+          "std": 6.1789,
+          "p25": 55.4946,
+          "p75": 63.7143,
+          "min": 39.0169,
+          "max": 84.7338
+        },
+        "量比": {
+          "mean": 1.6653,
+          "median": 1.5985,
+          "std": 0.4853,
+          "p25": 1.3281,
+          "p75": 1.9426,
+          "min": 0.4517,
+          "max": 3.7164
+        },
+        "综合评分": {
+          "mean": 0.8326,
+          "median": 0.8415,
+          "std": 0.1152,
+          "p25": 0.7378,
+          "p75": 0.932,
+          "min": 0.601,
+          "max": 1.0
+        },
+        "均线多头": {
+          "ratio_true": 0.0,
+          "count": 836
+        },
+        "DIF>0": {
+          "ratio_true": 0.0,
+          "count": 836
+        },
+        "MACD金叉3日": {
+          "ratio_true": 0.0,
+          "count": 836
+        },
+        "DIF<0": {
+          "ratio_true": 0.0,
+          "count": 836
+        },
+        "KDJ金叉3日": {
+          "ratio_true": 0.0,
+          "count": 836
+        },
+        "MACD背离": {
+          "ratio_true": 0.0,
+          "count": 836
+        },
+        "trend_dist": {
+          "up": 836
+        },
+        "wave_phase_dist": {
+          "later_pullback": 762,
+          "breakout_new_high": 74
+        }
+      },
+      "total": 1698,
+      "win_count": 862
+    },
+    "box_breakout": {
+      "winners": {
+        "RSI14": {
+          "mean": 69.5122,
+          "median": 68.9997,
+          "std": 5.1198,
+          "p25": 65.6111,
+          "p75": 72.5263,
+          "min": 57.9032,
+          "max": 85.3722
+        },
+        "量比": {
+          "mean": 2.0969,
+          "median": 2.037,
+          "std": 0.4299,
+          "p25": 1.782,
+          "p75": 2.311,
+          "min": 1.503,
+          "max": 4.0504
+        },
+        "综合评分": {
+          "mean": 0.7861,
+          "median": 0.77,
+          "std": 0.1189,
+          "p25": 0.6815,
+          "p75": 0.8825,
+          "min": 0.6,
+          "max": 1.0
+        },
+        "均线多头": {
+          "ratio_true": 0.0,
+          "count": 291
+        },
+        "DIF>0": {
+          "ratio_true": 0.0,
+          "count": 291
+        },
+        "MACD金叉3日": {
+          "ratio_true": 0.0,
+          "count": 291
+        },
+        "DIF<0": {
+          "ratio_true": 0.0,
+          "count": 291
+        },
+        "KDJ金叉3日": {
+          "ratio_true": 0.0,
+          "count": 291
+        },
+        "MACD背离": {
+          "ratio_true": 0.0,
+          "count": 291
+        },
+        "trend_dist": {
+          "range": 291
+        },
+        "wave_phase_dist": {
+          "box_breakout": 291
+        }
+      },
+      "losers": {
+        "RSI14": {
+          "mean": 69.6444,
+          "median": 68.7809,
+          "std": 5.3939,
+          "p25": 65.5951,
+          "p75": 73.297,
+          "min": 58.7482,
+          "max": 87.4326
+        },
+        "RSI6": {
+          "mean": 90.2032,
+          "median": 90.2032,
+          "std": 0,
+          "p25": 90.2032,
+          "p75": 90.2032,
+          "min": 90.2032,
+          "max": 90.2032
+        },
+        "BOLL位置": {
+          "mean": 1.0784,
+          "median": 1.0784,
+          "std": 0,
+          "p25": 1.0784,
+          "p75": 1.0784,
+          "min": 1.0784,
+          "max": 1.0784
+        },
+        "BOLL宽度": {
+          "mean": 0.1245,
+          "median": 0.1245,
+          "std": 0,
+          "p25": 0.1245,
+          "p75": 0.1245,
+          "min": 0.1245,
+          "max": 0.1245
+        },
+        "KDJ-J": {
+          "mean": 99.7123,
+          "median": 99.7123,
+          "std": 0,
+          "p25": 99.7123,
+          "p75": 99.7123,
+          "min": 99.7123,
+          "max": 99.7123
+        },
+        "量比": {
+          "mean": 2.1539,
+          "median": 2.0471,
+          "std": 0.438,
+          "p25": 1.8662,
+          "p75": 2.3565,
+          "min": 1.5144,
+          "max": 4.1601
+        },
+        "BIAS60": {
+          "mean": 0.0872,
+          "median": 0.0872,
+          "std": 0,
+          "p25": 0.0872,
+          "p75": 0.0872,
+          "min": 0.0872,
+          "max": 0.0872
+        },
+        "综合评分": {
+          "mean": 0.8113,
+          "median": 0.798,
+          "std": 0.1213,
+          "p25": 0.7105,
+          "p75": 0.9205,
+          "min": 0.602,
+          "max": 1.0
+        },
+        "均线多头": {
+          "ratio_true": 0.35,
+          "count": 283
+        },
+        "DIF>0": {
+          "ratio_true": 0.35,
+          "count": 283
+        },
+        "MACD金叉3日": {
+          "ratio_true": 0.0,
+          "count": 283
+        },
+        "DIF<0": {
+          "ratio_true": 0.0,
+          "count": 283
+        },
+        "KDJ金叉3日": {
+          "ratio_true": 0.0,
+          "count": 283
+        },
+        "MACD背离": {
+          "ratio_true": 0.0,
+          "count": 283
+        },
+        "trend_dist": {
+          "range": 283
+        },
+        "wave_phase_dist": {
+          "box_breakout": 283
+        }
+      },
+      "total": 574,
+      "win_count": 291
+    },
+    "w_bottom": {
+      "winners": {
+        "RSI14": {
+          "mean": 55.4344,
+          "median": 54.6546,
+          "std": 7.1732,
+          "p25": 50.1339,
+          "p75": 60.1814,
+          "min": 38.1969,
+          "max": 80.4986
+        },
+        "量比": {
+          "mean": 1.6591,
+          "median": 1.6062,
+          "std": 0.4842,
+          "p25": 1.3185,
+          "p75": 1.899,
+          "min": 0.5973,
+          "max": 3.9783
+        },
+        "综合评分": {
+          "mean": 0.8482,
+          "median": 0.859,
+          "std": 0.1148,
+          "p25": 0.752,
+          "p75": 0.9545,
+          "min": 0.601,
+          "max": 1.0
+        },
+        "均线多头": {
+          "ratio_true": 0.0,
+          "count": 1351
+        },
+        "DIF>0": {
+          "ratio_true": 0.0,
+          "count": 1351
+        },
+        "MACD金叉3日": {
+          "ratio_true": 0.0,
+          "count": 1351
+        },
+        "DIF<0": {
+          "ratio_true": 0.0,
+          "count": 1351
+        },
+        "KDJ金叉3日": {
+          "ratio_true": 0.0,
+          "count": 1351
+        },
+        "MACD背离": {
+          "ratio_true": 0.0,
+          "count": 1351
+        },
+        "trend_dist": {
+          "down": 1351
+        },
+        "wave_phase_dist": {
+          "base_rebound": 956,
+          "base_breakout": 395
+        }
+      },
+      "losers": {
+        "RSI14": {
+          "mean": 56.0861,
+          "median": 55.2863,
+          "std": 7.3191,
+          "p25": 50.4592,
+          "p75": 61.2383,
+          "min": 35.511,
+          "max": 86.1338
+        },
+        "量比": {
+          "mean": 1.7374,
+          "median": 1.673,
+          "std": 0.5478,
+          "p25": 1.3487,
+          "p75": 2.0164,
+          "min": 0.5167,
+          "max": 4.1613
+        },
+        "综合评分": {
+          "mean": 0.8503,
+          "median": 0.859,
+          "std": 0.1154,
+          "p25": 0.76,
+          "p75": 0.957,
+          "min": 0.6,
+          "max": 1.0
+        },
+        "均线多头": {
+          "ratio_true": 0.0,
+          "count": 1497
+        },
+        "DIF>0": {
+          "ratio_true": 0.0,
+          "count": 1497
+        },
+        "MACD金叉3日": {
+          "ratio_true": 0.0,
+          "count": 1497
+        },
+        "DIF<0": {
+          "ratio_true": 0.0,
+          "count": 1497
+        },
+        "KDJ金叉3日": {
+          "ratio_true": 0.0,
+          "count": 1497
+        },
+        "MACD背离": {
+          "ratio_true": 0.0,
+          "count": 1497
+        },
+        "trend_dist": {
+          "down": 1497
+        },
+        "wave_phase_dist": {
+          "base_rebound": 1040,
+          "base_breakout": 457
+        }
+      },
+      "total": 2848,
+      "win_count": 1351
+    }
+  },
+  "sector_concentration": {
+    "基因测序": {
+      "total_signals": 17,
+      "win_rate_10d": 64.71,
+      "avg_ret_10d": 0.0527,
+      "unique_stocks": 1
+    },
+    "光伏概念": {
+      "total_signals": 129,
+      "win_rate_10d": 51.16,
+      "avg_ret_10d": 0.0187,
+      "unique_stocks": 4
+    },
+    "5G概念": {
+      "total_signals": 96,
+      "win_rate_10d": 48.96,
+      "avg_ret_10d": 0.0061,
+      "unique_stocks": 3
+    },
+    "氢能源": {
+      "total_signals": 50,
+      "win_rate_10d": 44.0,
+      "avg_ret_10d": 0.0073,
+      "unique_stocks": 2
+    },
+    "机器人概念": {
+      "total_signals": 107,
+      "win_rate_10d": 43.93,
+      "avg_ret_10d": 0.0054,
+      "unique_stocks": 4
+    },
+    "物联网": {
+      "total_signals": 97,
+      "win_rate_10d": 43.3,
+      "avg_ret_10d": -0.0059,
+      "unique_stocks": 4
+    },
+    "区块链": {
+      "total_signals": 1,
+      "win_rate_10d": 0.0,
+      "avg_ret_10d": -0.0339,
+      "unique_stocks": 1
+    }
+  },
+  "volume_characteristics": {
+    "缩量<0.8": {
+      "count": 54,
+      "win_rate_10d": 53.7,
+      "avg_ret_10d": -0.0076
+    },
+    "平量0.8-1.2": {
+      "count": 643,
+      "win_rate_10d": 47.9,
+      "avg_ret_10d": 0.0008
+    },
+    "放量1.2-2.0": {
+      "count": 3089,
+      "win_rate_10d": 50.44,
+      "avg_ret_10d": 0.0072
+    },
+    "显著放量2.0-5.0": {
+      "count": 1334,
+      "win_rate_10d": 45.65,
+      "avg_ret_10d": 0.0062
+    }
+  },
+  "wave_phase_analysis": {
+    "box_breakout": {
+      "count": 577,
+      "win_rate_5d": 54.07,
+      "win_rate_10d": 50.43,
+      "avg_ret_10d": 0.0188,
+      "avg_max_gain_10d": 0.1055
+    },
+    "breakout_new_high": {
+      "count": 153,
+      "win_rate_5d": 54.9,
+      "win_rate_10d": 49.02,
+      "avg_ret_10d": 0.03,
+      "avg_max_gain_10d": 0.137
+    },
+    "later_pullback": {
+      "count": 1623,
+      "win_rate_5d": 50.89,
+      "win_rate_10d": 48.49,
+      "avg_ret_10d": 0.0091,
+      "avg_max_gain_10d": 0.0906
+    },
+    "base_rebound": {
+      "count": 2104,
+      "win_rate_5d": 47.77,
+      "win_rate_10d": 45.44,
+      "avg_ret_10d": 0.0,
+      "avg_max_gain_10d": 0.0811
+    },
+    "base_breakout": {
+      "count": 872,
+      "win_rate_5d": 47.02,
+      "win_rate_10d": 45.3,
+      "avg_ret_10d": 0.0015,
+      "avg_max_gain_10d": 0.0935
+    },
+    "downtrend_ma_support": {
+      "count": 73,
+      "win_rate_5d": 32.88,
+      "win_rate_10d": 0.0,
+      "avg_ret_10d": NaN,
+      "avg_max_gain_10d": NaN
+    }
+  },
+  "capital_flow_correlation": {
+    "大幅流出(<-10亿)": {
+      "count": 479,
+      "win_rate_10d": 46.76,
+      "avg_ret_10d": 0.007
+    },
+    "小幅流入(0~10亿)": {
+      "count": 17,
+      "win_rate_10d": 64.71,
+      "avg_ret_10d": 0.0527
+    },
+    "大幅流入(>10亿)": {
+      "count": 1,
+      "win_rate_10d": 0.0,
+      "avg_ret_10d": -0.0339
+    }
+  },
+  "factor_analysis": {
+    "0_factors": {
+      "count": 492,
+      "win_rate_10d": 50.81,
+      "avg_ret_10d": 0.0212
+    },
+    "1_factors": {
+      "count": 1692,
+      "win_rate_10d": 47.28,
+      "avg_ret_10d": 0.0017
+    },
+    "2_factors": {
+      "count": 2254,
+      "win_rate_10d": 48.49,
+      "avg_ret_10d": 0.004
+    },
+    "3_factors": {
+      "count": 682,
+      "win_rate_10d": 52.93,
+      "avg_ret_10d": 0.0125
+    }
+  },
+  "optimal_entry_conditions": {
+    "best_wave_phases": [
+      "box_breakout",
+      "breakout_new_high",
+      "later_pullback"
+    ],
+    "best_rsi_range": "40-65",
+    "best_boll_range": "0.3-0.8",
+    "favorable_trend": "up",
+    "favorable_ma": "bullish (ma_bull=1)",
+    "favorable_dif": "DIF > 0",
+    "min_score": 0.85
+  },
+  "risk_factors": {
+    "rsi_overbought_threshold": 75,
+    "boll_upper_break_risk": "boll_pos > 1.0",
+    "down_trend_warning": "trend = down",
+    "heavy_volume_risk": "vol_ratio > 5.0 (巨量可能是出货)",
+    "sector_outflow_warning": "板块资金大幅流出"
+  }
+}

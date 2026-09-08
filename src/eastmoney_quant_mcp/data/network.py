@@ -2,12 +2,17 @@
 东方财富 API 网络请求工具
 
 - 使用 curl_cffi 绕过 TLS 指纹检测
-- 强制 IPv4 避免 IPv6 连接超时
+- 强制 IPv4 避免 IPv6 连接超时 (EASTMONEY_NET_PATCH=0 可关闭全部进程级网络 patch)
 - 自动从 Edge 浏览器提取 Cookies 提升请求成功率
+
+注意: 本模块 import 时默认会修改进程级网络行为(getaddrinfo 强制 IPv4、清空代理环境
+变量)。这是为了让 akshare/requests 在受限环境下稳定工作; 如宿主进程需要保留自身
+网络配置, 设置环境变量 EASTMONEY_NET_PATCH=0 后再 import 本模块。
 """
 
 import itertools
 import json
+import logging
 import os
 import re
 import shutil
@@ -18,7 +23,9 @@ import time
 from pathlib import Path
 from urllib.parse import urlencode
 
-# ── 强制 IPv4 ──
+logger = logging.getLogger("eastmoney.network")
+
+# ── 强制 IPv4 + 清除代理 (可用 EASTMONEY_NET_PATCH=0 关闭) ──
 _orig_getaddrinfo = socket.getaddrinfo
 
 
@@ -26,20 +33,22 @@ def _patched_getaddrinfo(host, port, family=0, type=0, proto=0, flags=0):
     return _orig_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)
 
 
-socket.getaddrinfo = _patched_getaddrinfo
+_NET_PATCH_ENABLED = os.environ.get("EASTMONEY_NET_PATCH", "1") != "0"
 
-# ── 清除代理 ──
-# 清空代理环境变量; 同时设 NO_PROXY=* 覆盖 Windows 注册表系统代理,
-# 否则 requests/akshare 会绕过环境变量直接读注册表, 走不稳定的系统代理
-for _key in ("http_proxy", "https_proxy", "all_proxy", "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY"):
-    os.environ[_key] = ""
-os.environ["NO_PROXY"] = "*"
-os.environ["no_proxy"] = "*"
+if _NET_PATCH_ENABLED:
+    socket.getaddrinfo = _patched_getaddrinfo
+    # 清空代理环境变量; 同时设 NO_PROXY=* 覆盖 Windows 注册表系统代理,
+    # 否则 requests/akshare 会绕过环境变量直接读注册表, 走不稳定的系统代理
+    for _key in ("http_proxy", "https_proxy", "all_proxy", "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY"):
+        os.environ[_key] = ""
+    os.environ["NO_PROXY"] = "*"
+    os.environ["no_proxy"] = "*"
 
 from curl_cffi import requests
 import urllib3
 
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+if os.environ.get("EASTMONEY_VERIFY_TLS", "") != "1":
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 SYMBOL_RE = re.compile(r"(\d{6})$")
 SECTOR_CODE_RE = re.compile(r"(?:BK)?(\d{4})$", re.IGNORECASE)
@@ -103,8 +112,8 @@ def _extract_cookies_from_edge() -> str | None:
                         pass
                 if pairs:
                     return "; ".join(pairs)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Edge cookie 提取失败 (%s): %s", cookie_path, e)
         finally:
             if os.path.exists(tmp_path):
                 try:
@@ -126,7 +135,7 @@ def _load_cookies() -> str | None:
 
 def http_get(url: str, params: dict = None, retries: int = 3, timeout: int = 20,
              extra_headers: dict = None, impersonate: str = "edge",
-             use_cookies: bool = True) -> dict | None:
+             use_cookies: bool = True, verify: bool | None = None) -> dict | None:
     """使用 curl_cffi 发起 GET 请求，返回 JSON dict 或 None
 
     impersonate: TLS 指纹模拟目标。搜狐 WAF 会拒绝新版 edge 指纹但放行
@@ -142,6 +151,8 @@ def http_get(url: str, params: dict = None, retries: int = 3, timeout: int = 20,
         cookies = _load_cookies()
         if cookies:
             headers["Cookie"] = cookies
+    if verify is None:
+        verify = os.environ.get("EASTMONEY_VERIFY_TLS", "") == "1"
     last_error = None
 
     for attempt in range(1, retries + 1):
@@ -151,7 +162,7 @@ def http_get(url: str, params: dict = None, retries: int = 3, timeout: int = 20,
                 headers=headers,
                 impersonate=impersonate,
                 http_version="v1",
-                verify=False,
+                verify=verify,
                 timeout=timeout,
                 proxies={"http": "", "https": ""},
             )
@@ -163,12 +174,14 @@ def http_get(url: str, params: dict = None, retries: int = 3, timeout: int = 20,
         if attempt < retries:
             time.sleep(1.5 * attempt)
 
+    logger.debug("http_get 全部重试失败: %s (%s)", full_url[:120], last_error)
     return None
 
 
 def http_get_text(url: str, params: dict = None, retries: int = 3, timeout: int = 20,
                   encoding: str = None, extra_headers: dict = None,
-                  impersonate: str = "edge", use_cookies: bool = True) -> str | None:
+                  impersonate: str = "edge", use_cookies: bool = True,
+                  verify: bool | None = None) -> str | None:
     """使用 curl_cffi 发起 GET 请求，返回原始文本。
 
     encoding: 显式指定响应解码(如 GBK 站点 qt.gtimg.cn / sohu / sina);
@@ -182,6 +195,9 @@ def http_get_text(url: str, params: dict = None, retries: int = 3, timeout: int 
         cookies = _load_cookies()
         if cookies:
             headers["Cookie"] = cookies
+    if verify is None:
+        verify = os.environ.get("EASTMONEY_VERIFY_TLS", "") == "1"
+    last_error = None
 
     for attempt in range(1, retries + 1):
         try:
@@ -190,7 +206,7 @@ def http_get_text(url: str, params: dict = None, retries: int = 3, timeout: int 
                 headers=headers,
                 impersonate=impersonate,
                 http_version="v1",
-                verify=False,
+                verify=verify,
                 timeout=timeout,
                 proxies={"http": "", "https": ""},
             )
@@ -198,11 +214,13 @@ def http_get_text(url: str, params: dict = None, retries: int = 3, timeout: int 
                 if encoding:
                     return resp.content.decode(encoding, errors="replace")
                 return resp.text
-        except Exception:
-            pass
+            last_error = f"HTTP {resp.status_code}"
+        except Exception as e:
+            last_error = str(e)
         if attempt < retries:
             time.sleep(1.5 * attempt)
 
+    logger.debug("http_get_text 全部重试失败: %s (%s)", full_url[:120], last_error)
     return None
 
 
@@ -274,12 +292,21 @@ def rotated(hosts: list) -> list:
 
 
 def try_kline_hosts(params: dict, timeout: int = 15) -> dict | None:
-    """K 线接口多 host 轮转重试, 成功返回 payload(data 非空), 全失败返回 None"""
+    """K 线接口多 host 轮转重试, 成功返回 payload(data 非空), 全失败返回 None。
+
+    副作用: 记录 _last_kline_had_response, 供 fetch_em_kline 区分
+    "网络失败" 与 "网络正常但该标的无数据"。
+    """
+    global _last_kline_had_response
+    had_response = False
     for host in rotated(KLINE_HOSTS):
         r = http_get(host, params=params, retries=2, timeout=timeout)
-        if r and r.get("data"):  # 偶发空 data(null) 时继续尝试下一个 host
-            return r
-    return None
+        if r is not None:
+            had_response = True
+            if r.get("data"):  # 偶发空 data(null) 时继续尝试下一个 host
+                break
+    _last_kline_had_response = had_response
+    return r if had_response and r and r.get("data") else None
 
 
 # ── 东财 K 线熔断包装 ──
@@ -288,14 +315,24 @@ def try_kline_hosts(params: dict, timeout: int = 15) -> dict | None:
 # 避免批量下载时对已被限流的服务商放大重试。
 
 EM_KLINE = "em_kline"
+_last_kline_had_response = False
 
 
 def fetch_em_kline(params: dict, timeout: int = 15) -> dict | None:
-    """try_kline_hosts + 健康熔断(冷却期直接返回 None 不发请求)"""
+    """try_kline_hosts + 健康熔断(冷却期直接返回 None 不发请求)
+
+    只有真正的网络/HTTP 失败才计入熔断; host 正常响应但 data 为空
+    (退市股、无数据标的)不算失败, 否则批量下载会误熔断。
+    """
+    global _last_kline_had_response
     if not provider_available(EM_KLINE):
         return None
     result = try_kline_hosts(params, timeout=timeout)
+    had_response = _last_kline_had_response
     if result:
+        mark_provider_ok(EM_KLINE)
+    elif had_response:
+        # 网络连通但无数据: 清零失败计数, 不进入冷却
         mark_provider_ok(EM_KLINE)
     else:
         mark_provider_fail(EM_KLINE)

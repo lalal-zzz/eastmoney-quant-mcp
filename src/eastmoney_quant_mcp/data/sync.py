@@ -7,6 +7,7 @@
 """
 
 import asyncio
+import sys
 import time
 from datetime import date, timedelta
 
@@ -24,13 +25,15 @@ from .storage import (
     set_meta_sector,
     query_stock_db,
     get_db_paths,
+    save_data_coverage,
 )
 
-from ..tools.stock_data import get_stock_history, get_latest_indicators
-from ..tools.stock_rank import _fetch_all_rankings, _format_rank_item
-from ..tools.sector_data import get_sector_list, get_sector_kline_net, get_sector_members
-from .indicators import compute_all_indicators
+from .indicators import indicator_rows_from_df
 from .progress import make_progress
+from .util import stocks_from_spot as _stocks_from_spot, today as _today
+
+# 注: data 层不在模块顶层反向 import tools 层 (tools.data_manager 顶层 import 本模块),
+# tools 层的网络函数在使用处延迟加载, 与 build.py/search.py 的约定一致。
 
 import pandas as pd
 
@@ -44,6 +47,7 @@ def _today() -> str:
 
 def _format_rank_items(items: list[dict]) -> list[dict]:
     """批量格式化排名数据, 跳过无法识别代码的脏数据, 避免单条异常炸掉整批更新"""
+    from ..tools.stock_rank import _format_rank_item
     result = []
     for item in items:
         try:
@@ -96,7 +100,8 @@ async def _with_spinner(desc: str, coro):
 
 
 async def _fetch_kline(item):
-    code, limit, name = item if isinstance(item, tuple) else (item, 250, None)
+    from ..tools.sector_data import get_sector_kline_net
+    code, limit, name = item if isinstance(item, tuple) else (item, 300, None)
     try:
         return await get_sector_kline_net(code, limit, sector_name=name)
     except Exception:
@@ -104,6 +109,7 @@ async def _fetch_kline(item):
 
 
 async def _fetch_members(item):
+    from ..tools.sector_data import get_sector_members
     if isinstance(item, tuple):
         code, name = item
     else:
@@ -116,17 +122,29 @@ async def _fetch_members(item):
 
 # ═══════════════════ 全量初始化 ═══════════════════
 
-async def init_all_data(include_sector_members: bool = True, quick: bool = False) -> dict:
+async def init_all_data(include_sector_members: bool = True, quick: bool = False,
+                        mode: str | None = None, workers: int = 8,
+                        resume: bool = True) -> dict:
     """
     一次性全量下载(并发加速)
 
     quick=True: 快速模式, 仅股票列表+实时行情+人气排名(秒级完成),
     板块数据在首次使用时自动从网络下载并缓存(懒加载)。
     """
+    from ..tools.sector_data import get_sector_list
+    from ..tools.stock_data import get_latest_indicators
+    from ..tools.stock_rank import _fetch_all_rankings
+    if mode is None:
+        mode = "quick" if quick else "legacy_full"
+    if mode not in {"quick", "research", "full", "legacy_full"}:
+        raise ValueError("mode must be quick|research|full")
+    quick = mode == "quick"
     init_dbs()
     log = []
     today = _today()
-    total_steps = 3 if quick else (7 if include_sector_members else 5)
+    has_stock_history = mode in {"research", "full"}
+    total_steps = 3 if quick else ((8 if include_sector_members else 6)
+                                   if has_stock_history else (7 if include_sector_members else 5))
     step = 0
 
     def _step(msg):
@@ -164,6 +182,15 @@ async def init_all_data(include_sector_members: bool = True, quick: bool = False
         log.append("快速模式完成: 板块数据将在首次使用时自动下载")
         return {"status": "ok", "mode": "quick", "log": log, "paths": get_db_paths()}
 
+    if mode in {"research", "full"}:
+        _step(f"同步全市场股票K线 ({mode})...")
+        symbols = [s["symbol"] for s in stocks]
+        target = 320 if mode == "research" else 4000
+        synced = await sync_stock_kline_universe(symbols=symbols, target_bars=target,
+                                                  workers=workers, resume=resume)
+        log[-1] += (f" ready={synced['ready']}/{synced['total']} "
+                    f"coverage={synced['coverage_ratio']:.1%}")
+
     # 4. 板块列表
     _step("下载概念板块...")
     concept = await _with_spinner("下载概念板块...", get_sector_list("concept"))
@@ -177,11 +204,11 @@ async def init_all_data(include_sector_members: bool = True, quick: bool = False
     set_meta_sector("sector_updated", today)
     log[-1] += f" 概念{len(concept)}+行业{len(industry)}={len(all_sectors)}"
 
-    # 5. 板块 K 线(并发下载, 限250条)
+    # 5. 板块 K 线(并发下载, 限300条; 形态引擎要求 >=260 根)
     codes = [s.get("sector_code", "") for s in all_sectors if s.get("sector_code")]
     name_by_code = {s.get("sector_code", ""): s.get("sector_name") for s in all_sectors}
     _step(f"并发下载 {len(codes)} 个板块 K 线...")
-    tasks = [(code, 250, name_by_code.get(code)) for code in codes]
+    tasks = [(code, 300, name_by_code.get(code)) for code in codes]
     t0 = time.perf_counter()
     all_klines = await _concurrent_map(tasks, _fetch_kline, desc="板块K线")
     kline_total = 0
@@ -215,13 +242,15 @@ async def init_all_data(include_sector_members: bool = True, quick: bool = False
     else:
         _step("跳过成分股下载")
 
-    return {"status": "ok", "log": log, "paths": get_db_paths()}
+    return {"status": "ok", "mode": mode, "log": log, "paths": get_db_paths()}
 
 
 # ═══════════════════ 增量每日更新 ═══════════════════
 
 async def update_daily_stocks() -> dict:
     """增量更新股票: 行情+排名+列表(三项并发执行)"""
+    from ..tools.stock_data import get_latest_indicators
+    from ..tools.stock_rank import _fetch_all_rankings
     log = []
     today = _today()
     jobs = [
@@ -256,6 +285,7 @@ async def update_daily_sectors(include_members: bool = True, top_n: int = 50) ->
     - K 线: 仅更新涨跌幅前 top_n 板块的最近 5 条(避免 280+ 次 API 调用)
     - 成分股: 仅更新涨跌幅前 top_n 板块(与 K 线一致)
     """
+    from ..tools.sector_data import get_sector_list
     log = []
     today = _today()
 
@@ -324,59 +354,97 @@ async def update_daily_sectors(include_members: bool = True, top_n: int = 50) ->
     return {"status": "ok", "log": log}
 
 
-async def update_daily_all(include_sector_members: bool = True) -> dict:
+async def update_daily_all(include_sector_members: bool = True,
+                           stock_kline_mode: str = "tracked",
+                           skip_non_trading_day: bool = True) -> dict:
+    if stock_kline_mode not in {"none", "tracked", "all"}:
+        raise ValueError("stock_kline_mode must be none|tracked|all")
+    if skip_non_trading_day:
+        try:
+            from .sources import is_trade_day
+            if not await asyncio.to_thread(is_trade_day, date.today()):
+                return {"status": "skipped", "reason": "non_trading_day",
+                        "date": _today(), "paths": get_db_paths()}
+        except Exception as exc:
+            # Calendar failure must not prevent a normal update; surface it in the result.
+            calendar_warning = str(exc)
+        else:
+            calendar_warning = None
+    else:
+        calendar_warning = None
     stock_result = await update_daily_stocks()
     sector_result = await update_daily_sectors(include_sector_members)
+    kline_result = None
+    if stock_kline_mode != "none":
+        if stock_kline_mode == "tracked":
+            rows = query_stock_db(
+                "SELECT DISTINCT symbol FROM data_coverage WHERE data_type='stock_kline'")
+        else:
+            rows = query_stock_db("SELECT symbol FROM stock_basic ORDER BY symbol")
+        symbols = [r["symbol"] for r in rows]
+        if symbols:
+            kline_result = await sync_stock_kline_universe(symbols=symbols, target_bars=320,
+                                                            workers=6, resume=False)
     return {
         "status": "ok",
         "stock_log": stock_result["log"],
         "sector_log": sector_result["log"],
+        "stock_kline": kline_result,
+        "warnings": ([f"交易日历不可用: {calendar_warning}"] if calendar_warning else []),
         "paths": get_db_paths(),
     }
 
 
 # ═══════════════════ 个股 K 线(按需, 并发批量) ═══════════════════
 
-async def _download_one_kline(symbol: str, days: int = 365, adjust: str = "qfq") -> dict:
+async def _download_one_kline(symbol: str, days: int = 560, adjust: str = "qfq") -> dict:
     end = date.today()
     start = end - timedelta(days=days + 30)
     try:
+        from ..tools.stock_data import get_stock_history
         klines = await get_stock_history(
             symbol, start_date=start.strftime("%Y%m%d"),
             end_date=end.strftime("%Y%m%d"), adjust=adjust,
         )
         if klines:
+            for row in klines:
+                row["adjust_type"] = adjust
+                row.setdefault("source", "multi-provider")
             save_stock_kline(klines)
             try:
-                df = pd.DataFrame(klines)
-                df = df.sort_values("date", ascending=True)
-                ind_df = compute_all_indicators(df)
-                ind_cols = [
-                    "symbol", "date",
-                    "MA5", "MA10", "MA20", "MA30", "MA60", "MA100", "MA200",
-                    "RSI6", "RSI14", "RSI24",
-                    "DIF", "DEA", "MACD",
-                    "BOLL_UPPER", "BOLL_MIDDLE", "BOLL_LOWER",
-                    "K", "D", "J", "VOL_MA5", "VOL_MA10", "ATR14",
-                ]
-                available = [c for c in ind_cols if c in ind_df.columns]
-                ind_rows = ind_df[available].rename(columns={"K": "KDJ_K", "D": "KDJ_D", "J": "KDJ_J"})
-                ind_rows = ind_rows.where(ind_rows.notna(), None).to_dict(orient="records")
+                df = pd.DataFrame(klines).sort_values("date", ascending=True)
+                ind_rows = indicator_rows_from_df(df, index_cols=("symbol", "date", "adjust_type"))
                 if ind_rows:
                     save_stock_indicators(ind_rows)
-            except Exception:
-                pass
-            return {"status": "ok", "symbol": symbol, "count": len(klines)}
+            except Exception as ind_err:
+                # K线已保存; 指标失败不能无感知(下游形态引擎要求指标齐全)
+                print(f"[warn] {symbol} 指标计算失败: {ind_err}", file=sys.stderr)
+                save_data_coverage("stock_indicators", symbol, adjust_type=adjust,
+                                   first_date=klines[0]["date"], last_date=klines[-1]["date"],
+                                   row_count=len(klines), status="failed", last_error=str(ind_err))
+            else:
+                save_data_coverage("stock_indicators", symbol, adjust_type=adjust,
+                                   first_date=klines[0]["date"], last_date=klines[-1]["date"],
+                                   row_count=len(klines), status="ready")
+            save_data_coverage("stock_kline", symbol, adjust_type=adjust,
+                               first_date=klines[0]["date"], last_date=klines[-1]["date"],
+                               row_count=len(klines), source="multi-provider",
+                               status="ready" if len(klines) >= 260 else "partial")
+            return {"status": "ok", "symbol": symbol, "count": len(klines),
+                    "first_date": klines[0]["date"], "last_date": klines[-1]["date"]}
+        save_data_coverage("stock_kline", symbol, adjust_type=adjust, status="empty")
         return {"status": "empty", "symbol": symbol}
     except Exception as e:
+        save_data_coverage("stock_kline", symbol, adjust_type=adjust,
+                           status="failed", last_error=str(e))
         return {"status": "error", "symbol": symbol, "error": str(e)}
 
 
-async def download_stock_kline(symbol: str, days: int = 365, adjust: str = "qfq") -> dict:
+async def download_stock_kline(symbol: str, days: int = 560, adjust: str = "qfq") -> dict:
     return await _download_one_kline(symbol, days, adjust)
 
 
-async def download_stocks_kline_batch(symbols: list[str], days: int = 365, adjust: str = "qfq") -> dict:
+async def download_stocks_kline_batch(symbols: list[str], days: int = 560, adjust: str = "qfq") -> dict:
     """并发批量下载多只股票 K 线"""
     async def _task(sym):
         return await _download_one_kline(sym, days, adjust)
@@ -384,3 +452,39 @@ async def download_stocks_kline_batch(symbols: list[str], days: int = 365, adjus
     results = await _concurrent_map(symbols, _task, desc="K线批量")
     total = sum(r.get("count", 0) for r in results if isinstance(r, dict))
     return {"status": "ok", "symbols": len(symbols), "total_klines": total, "detail": results}
+
+
+async def sync_stock_kline_universe(symbols: list[str] | None = None,
+                                    target_bars: int = 320, adjust: str = "qfq",
+                                    workers: int = 6, resume: bool = True) -> dict:
+    """Synchronize a stock universe and report honest data coverage."""
+    if symbols is None:
+        symbols = [r["symbol"] for r in query_stock_db("SELECT symbol FROM stock_basic ORDER BY symbol")]
+    symbols = list(dict.fromkeys(symbols))
+    if resume:
+        ready = {r["symbol"] for r in query_stock_db(
+            """SELECT symbol FROM data_coverage
+               WHERE data_type='stock_kline' AND period='daily' AND adjust_type=?
+                 AND status='ready' AND row_count>=?""", (adjust, target_bars))}
+        pending = [s for s in symbols if s not in ready]
+    else:
+        pending = symbols
+    sem = asyncio.Semaphore(max(1, min(int(workers), 16)))
+
+    async def _one(sym):
+        async with sem:
+            return await _download_one_kline(sym, days=max(560, int(target_bars * 1.6)), adjust=adjust)
+
+    results = await asyncio.gather(*(_one(s) for s in pending), return_exceptions=True)
+    detail = [r if isinstance(r, dict) else {"status": "error", "error": str(r)} for r in results]
+    rows = query_stock_db(
+        """SELECT symbol,status,row_count,last_date FROM data_coverage
+           WHERE data_type='stock_kline' AND period='daily' AND adjust_type=?""", (adjust,))
+    requested = set(symbols)
+    covered = [r for r in rows if r["symbol"] in requested and r["status"] in {"ready", "partial"}]
+    ready_count = sum(r["status"] == "ready" for r in covered)
+    failed = sum(1 for r in detail if r.get("status") in {"error", "empty"})
+    return {"status": "ok", "total": len(symbols), "processed": len(pending),
+            "ready": ready_count, "covered": len(covered), "failed": failed,
+            "coverage_ratio": len(covered) / len(symbols) if symbols else 0.0,
+            "detail": detail}

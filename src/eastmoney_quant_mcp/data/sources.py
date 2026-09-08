@@ -170,10 +170,26 @@ def fetch_kline_history(symbol: str, adjust: str = "qfq", limit: int = None,
     if rows:
         return _clip_and_sort(rows, start, end, limit)
 
-    # 2. akshare 新浪 (stock_zh_a_daily, 带复权)
-    df = _akshare_daily(symbol, start, end, adjust)
+    # 2. akshare 新浪 (stock_zh_a_daily, 带复权)。仅请求最近 N 根时，
+    # 不要把默认的 1990~2050 区间传给备用源；新浪会为每只股票分页抓取
+    # 全历史，主源熔断后会把一次日更拖成数小时。
+    fallback_start, fallback_end = start, end
+    if limit and not start_date:
+        from datetime import date as _date, datetime as _datetime, timedelta
+
+        anchor = _date.today()
+        if end_date:
+            try:
+                anchor = min(anchor, _datetime.strptime(end, "%Y%m%d").date())
+            except ValueError:
+                pass
+        calendar_days = max(60, int(want * 2.2) + 30)
+        fallback_start = (anchor - timedelta(days=calendar_days)).strftime("%Y%m%d")
+        fallback_end = anchor.strftime("%Y%m%d")
+
+    df = _akshare_daily(symbol, fallback_start, fallback_end, adjust)
     if df is not None and not df.empty:
-        rows = _akshare_df_rows(df, symbol, start, end)
+        rows = _akshare_df_rows(df, symbol, fallback_start, fallback_end)
         if rows:
             return _clip_and_sort(rows, start, end, limit)
 

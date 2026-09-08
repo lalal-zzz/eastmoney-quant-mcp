@@ -11,6 +11,8 @@
 
 import re
 import threading
+
+from ..util import TtlCache
 import time
 
 from ..network import (
@@ -33,9 +35,6 @@ _SOHU_IMPERSONATE = "edge99"
 _MEMBER_RE = re.compile(r'/cn/(\d{6})/index\.shtml"[^>]*>([^<]+)</a>')
 _BK_LINK_RE = re.compile(r'href="bk_(\d{4,6})\.shtml"[^>]*>([^<]+)<')
 
-_BK_INDEX_LOCK = threading.Lock()
-_bk_index: dict[str, str] = {}
-_bk_index_ts: float = 0.0
 _BK_INDEX_TTL = 24 * 3600
 
 
@@ -149,18 +148,12 @@ def _parse_member_html(html: str, sector_code: str) -> list[dict]:
     return items
 
 
-def get_name_bk_index(refresh: bool = False) -> dict[str, str]:
-    """{板块名: 搜狐 bk 数字代码}, 来自 bk.shtml 服务端渲染名单, 缓存 24h"""
-    global _bk_index, _bk_index_ts
-    with _BK_INDEX_LOCK:
-        if not refresh and _bk_index and time.time() - _bk_index_ts < _BK_INDEX_TTL:
-            return _bk_index
+def _fetch_bk_index() -> dict[str, str] | None:
     text = http_get_text(BK_LIST_URL, retries=2, timeout=25, encoding="gbk",
                          extra_headers=_SOHU_HEADERS, impersonate=_SOHU_IMPERSONATE, use_cookies=False)
     if text is None:
         mark_provider_fail(PROVIDER)
-        with _BK_INDEX_LOCK:
-            return _bk_index
+        return None
     mark_provider_ok(PROVIDER)
 
     index = {}
@@ -168,11 +161,15 @@ def get_name_bk_index(refresh: bool = False) -> dict[str, str]:
         code, name = m.group(1), m.group(2).strip()
         if name:
             index.setdefault(name, code)
-    if index:
-        with _BK_INDEX_LOCK:
-            _bk_index = index
-            _bk_index_ts = time.time()
-    return index
+    return index or None
+
+
+_bk_index_cache = TtlCache(_BK_INDEX_TTL)
+
+
+def get_name_bk_index(refresh: bool = False) -> dict[str, str]:
+    """{板块名: 搜狐 bk 数字代码}, 来自 bk.shtml 服务端渲染名单, 缓存 24h"""
+    return _bk_index_cache.get(_fetch_bk_index, refresh=refresh) or {}
 
 
 def fetch_sector_members(bk_code: str, sector_code: str = "",

@@ -10,10 +10,10 @@ from eastmoney_quant_mcp.data import storage
 @pytest.fixture
 def dbs(tmp_path, monkeypatch):
     """把股票/板块库指向 tmp 路径并建表"""
-    monkeypatch.setattr(storage, "STOCK_DB", str(tmp_path / "stock.db"))
-    monkeypatch.setattr(storage, "SECTOR_DB", str(tmp_path / "sector.db"))
+    storage.set_db_paths(str(tmp_path / "stock.db"), str(tmp_path / "sector.db"))
     storage.init_all()
-    return storage
+    yield storage
+    storage.set_db_paths(None, None)
 
 
 def _tables(conn) -> set:
@@ -112,10 +112,22 @@ def test_build_combined_pipeline(dbs):
 
 
 def test_rebuild_progress(dbs):
+    # kline 步骤: 进度必须与真实数据表交叉校验
     dbs.record_rebuild_progress("kline", "000001", 1200)
     dbs.record_rebuild_progress("kline", "600000", 800)
-    assert dbs.get_rebuild_done("kline") == {"000001", "600000"}
-    assert dbs.get_rebuild_done("spot") == set()
+    # 无实际K线数据 → 失效进度被清除, 不计入 done
+    assert dbs.get_rebuild_done("kline") == set()
+    # 写入 000001 的真实K线后, 进度才生效
+    dbs.save_stock_kline([
+        {"symbol": "000001", "date": "2026-08-13", "open": 10.0, "high": 10.5,
+         "low": 9.9, "close": 10.4, "volume": 1e6},
+    ])
+    dbs.record_rebuild_progress("kline", "000001", 1200)
+    assert dbs.get_rebuild_done("kline") == {"000001"}
+    # 无数据表映射的步骤(如 spot) 保持原有纯进度语义
+    dbs.record_rebuild_progress("spot", "000001", 1)
+    assert dbs.get_rebuild_done("spot") == {"000001"}
+    assert dbs.get_rebuild_done("nonexistent") == set()
 
 
 def test_save_sector_indicators(dbs):

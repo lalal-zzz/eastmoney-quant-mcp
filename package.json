@@ -13,7 +13,7 @@
     "bin/",
     "lib/",
     "src/**/*.py",
-    "src/**/SKILL.md",
+    "skills/",
     ".claude-plugin/",
     ".mcp.json",
     "pyproject.toml",
@@ -56,7 +56,9 @@
   "mcp": {
     "server": {
       "command": "npx",
-      "args": ["eastmoney-quant-mcp"]
+      "args": [
+        "eastmoney-quant-mcp"
+      ]
     },
     "tools": [
       "init_full_data",
@@ -64,6 +66,7 @@
       "get_data_status",
       "screen_stocks",
       "get_kline_local_or_net",
+      "render_stock_charts",
       "get_stock_kline_period",
       "get_rank_trend_data",
       "get_sector_list",
@@ -72,7 +75,12 @@
       "scan_patterns",
       "scan_sector_patterns",
       "get_pattern_history",
-      "get_key_levels"
+      "get_key_levels",
+      "sync_stock_kline_universe",
+      "screen_rising_candidates",
+      "prepare_stock_analysis",
+      "find_cross_timeframe_similar_patterns",
+      "backtest_pattern_strategy"
     ]
   },
   "publishConfig": {

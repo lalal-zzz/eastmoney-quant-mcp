@@ -8,6 +8,8 @@
 
 基于**东方财富网**及多源公开行情的 A 股本地优先量化分析 MCP 服务，为 Claude Code / Codex / Cursor / VS Code Copilot / Qoder 等 AI 客户端与 Agent 提供专业的股票数据分析与形态选股能力。
 
+数据、上涨形态、20只逐股分析和双层回测的统一约定见 [实施计划](IMPLEMENTATION_PLAN.md)。
+
 ## Agent 一键配置（npm）
 
 ```bash
@@ -35,14 +37,15 @@ eastmoney-quant doctor                  # 检查运行时 / 配置 / Agent 状�
 
 | 能力 | 说明 |
 |------|------|
-| 全市场行情 | 5530+ 只 A 股实时价格 / 涨跌幅 / PE / PB / 市值 / 量比 / 换手率 |
+| 全市场行情 | 上市 A 股全量列表及价格 / 涨跌幅 / PE / PB / 市值 / 量比 / 换手率 |
 | 历史 K 线 | 日线数据（开高低收量额），支持前复权/后复权/不复权 |
-| 技术指标 | MA(5~200) / RSI(6/14/24) / MACD / BOLL / KDJ / ATR / VOL_MA |
+| 技术指标 | MA5/10/20/30/60/100/120/200/250、RSI、MACD、BOLL、KDJ、ATR%、量能倍率、收益率、区间高低点和BIAS |
 | 人气排名 | 东方财富人气榜单 + 历史排名趋势追踪（含股吧年历史） |
-| 板块分析 | 概念板块(~400个) + 行业板块(~80个)，含主力资金流向(超大单/大单/中单/小单) |
+| 板块分析 | 概念与行业板块行情、资金流、成分股、K线和指标 |
 | 多条件选股 | 18 种条件自由组合：价格区间 / PE / PB / 市值 / 涨跌幅 / 量比 / 换手 / 振幅 / 板块限定 |
-| 形态扫描 | 5 大形态（趋势回踩 / 均线反弹 / W底 / M头颈线 / 箱体突破）股票 + 板块双宇宙扫描，含关键位（MA / 斐波那契 / 结构位） |
-| 分析报告 | 综合技术分析：趋势判断 / 支撑位与阻力位 / 风险等级评估 / 止损止盈与仓位建议 |
+| 形态研究 | 5类底层检测器、高层颈线收复/大均线反弹标准名，以及斐波那契共振证据 |
+| 深度研判 | 固定筛选20只候选，对每只读取月/周/日数值与图表证据 |
+| 策略回测 | 5/10/20日事件研究、次日开盘交易模拟、成本和时间外检验 |
 
 ---
 
@@ -85,18 +88,22 @@ pip install eastmoney-quant-mcp
 | 日线 K 线 | 开盘价、最高价、最低价、收盘价、成交量、成交额 |
 | 复权方式 | 前复权(qfq) / 后复权(hfq) / 不复权 |
 | 附加字段 | 涨跌幅、换手率、振幅 |
+| 唯一标识 | `symbol + date + adjust_type`，同时记录来源与抓取时间 |
+| 旧库兼容 | 原地迁移并复用已有前复权数据，不复制或要求重新下载大库 |
 
 ### 技术指标 (自动计算)
 
 | 类别 | 指标 |
 |------|------|
-| 均线 | MA5、MA10、MA20、MA30、MA60、MA100、MA200 |
+| 均线 | MA5、MA10、MA20、MA30、MA60、MA100、MA120、MA200、MA250 |
 | 相对强弱 | RSI6、RSI14、RSI24 |
 | MACD | DIF、DEA、MACD 柱 |
 | 布林带 | 上轨、中轨、下轨 (BOLL) |
 | KDJ | K、D、J 值 |
-| 波动率 | ATR14 (平均真实波幅) |
-| 量能 | VOL_MA5、VOL_MA10 |
+| 波动率 | ATR14、ATR百分比 |
+| 量能 | VOL_MA5/10/20、5/20日量能倍率 |
+| 收益与区间 | 5/10/20/60日收益、20/60/120日高低点 |
+| 乖离率 | BIAS20、BIAS60、BIAS250 |
 
 ### 人气排名数据
 
@@ -125,16 +132,16 @@ pip install eastmoney-quant-mcp
 | 技术指标 | RSI 状态、MACD 金叉死叉、KDJ 超买超卖、BOLL 位置、ATR 波幅 |
 | 支撑阻力 | 均线支撑/阻力位 + BOLL 上下轨，按强度排序 |
 | 风险评估 | 超买超卖风险、波动率风险、估值风险、流动性风险、趋势破位风险 |
-| 仓位管理 | 止损位、止盈位、风险收益比、仓位比例建议 |
+| 条件情景 | 确认条件、失效位、支撑压力与风险收益假设 |
 
 ---
 
-## MCP 工具 (14 个)
+## MCP 工具 (20 个)
 
 | 工具 | 功能 |
 |------|------|
-| `init_full_data` | 首次下载数据到本地 SQLite（`quick=true` 约 15 秒仅股票+行情+排名，板块数据懒加载；`quick=false` 完整版约 3-4 分钟） |
-| `update_daily_data` | 增量每日刷新（行情/排名/板块） |
+| `init_full_data` | 支持 quick、research（全市场320根日K）和长历史full模式；旧quick参数保持兼容 |
+| `update_daily_data` | 每日增量刷新，股票K线范围支持 `none|tracked|all` |
 | `get_data_status` | 查看本地数据库状态（数据量/更新时间/存储路径） |
 | `screen_stocks` | 万能多条件选股：18 种条件自由组合(价格/PE/PB/市值/涨跌幅/量比/换手/振幅)，支持板块限定、名称搜索、多字段排序 |
 | `get_kline_local_or_net` | 获取个股历史 K 线（本地优先，不足自动下载并缓存技术指标） |
@@ -147,19 +154,42 @@ pip install eastmoney-quant-mcp
 | `scan_sector_patterns` | 板块形态扫描（concept / industry 或指定板块） |
 | `get_pattern_history` | 单标的（股票/板块）历史形态信号列表 |
 | `get_key_levels` | 单标的关键位：MA 体系 / 斐波那契回调位 / 结构位（颈线/前高/箱体） |
+| `render_stock_charts` | 生成日K、周K、月K分析图 |
+| `sync_stock_kline_universe` | 批量同步股票K线与指标并报告覆盖率 |
+| `screen_rising_candidates` | 六类上涨结构评分并返回前20只候选 |
+| `prepare_stock_analysis` | 为逐股AI研判准备月周日数值和图表 |
+| `find_cross_timeframe_similar_patterns` | 目标取最近N根K线，与全市场全部历史N根窗口比较；返回相似片段及后续上涨/震荡/下跌概率 |
+| `backtest_pattern_strategy` | 事件研究与5～20日交易回测 |
 
-附带 **6 个 Claude Skill**（由 `eastmoney-quant install` 自动安装），教授 AI 如何组合使用这些工具完成复杂选股和报告工作流：
+附带 **8 个 Agent Skill**（由 `eastmoney-quant install` 自动安装），教授 AI 如何组合使用这些工具完成复杂选股和报告工作流：
 
 | Skill | 用途 |
 |-------|------|
 | `eastmoney-quant` | 主索引 — 先查数据状态再开展研究的工作流 |
-| `eastmoney-quant-data-init` | 首次初始化、每日更新、故障排查 |
+| `eastmoney-quant-data-init` | 复用已有数据、初始化、覆盖率更新与故障排查 |
 | `eastmoney-quant-stock-screening` | 选股条件组合与筛选套路 |
-| `eastmoney-quant-report-generation` | 报告格式化与解读指南 |
-| `eastmoney-quant-multi-timeframe` | 多周期共振分析（周K/日K/60分钟） |
+| `eastmoney-quant-report-generation` | 基于证据的单股报告与条件情景 |
+| `eastmoney-quant-multi-timeframe` | 月周日与分时联立、周期冲突解释 |
 | `eastmoney-quant-strategy-backtest` | 策略回测与参数调优指南 |
+| `eastmoney-quant-chart-trend` | K线图结构归因与趋势线分析 |
+| `eastmoney-quant-rising-patterns` | 20只上涨形态候选逐股月周日深度分析 |
 
 ---
+
+## 完整投研流程
+
+```text
+get_data_status
+  → 只更新或回填缺失数据
+  → screen_rising_candidates(top_n=20)
+  → 对每只候选调用 prepare_stock_analysis
+  → 逐只读取月K、周K、日K图
+  → 汇总当前样本、历史成功和失败样本共性
+  → backtest_pattern_strategy(mode="both")
+  → 人工确认后才修改正式规则
+```
+
+只有合格股票K线覆盖率达到95%时才能称为全市场结果。底层5类检测器是 `trend_pullback`、`w_bottom`、`m_neckline`、`box_breakout` 和 `ma_rebound`；高层报告将后两类名称统一为 `neckline_reclaim` 与 `major_ma_rebound`。第六类 `fibonacci_confluence` 是增强证据，不是独立反转形态。
 
 ## 统一 CLI 工具
 
@@ -193,8 +223,8 @@ python -m eastmoney_quant_mcp.cli pattern-optimize --cache signals.csv
 
 | 数据库 | 默认路径（Windows）| 默认路径（Linux/macOS）| 内容 |
 |--------|-------------------|----------------------|------|
-| 股票数据库 | `~/Desktop/股票信息/stock_data.db` | `~/.eastmoney-quant/data/stocks/stock_data.db` | 5530 只股票行情 + K 线 + 人气排名 + 技术指标 + 综合快照 |
-| 板块数据库 | `~/Desktop/分析板块/sector_data.db` | `~/.eastmoney-quant/data/sectors/sector_data.db` | 480+ 板块行情 + 资金流向 + K 线 + 成分股 + 技术指标 |
+| 股票数据库 | `~/Desktop/股票信息/stock_data.db` | `~/.eastmoney-quant/data/stocks/stock_data.db` | 行情、分复权K线、人气、指标、综合表、覆盖率与形态信号 |
+| 板块数据库 | `~/Desktop/分析板块/sector_data.db` | `~/.eastmoney-quant/data/sectors/sector_data.db` | 板块行情、资金流、东财单源K线、成分股和指标 |
 
 可通过环境变量 `EASTMONEY_STOCK_DATA_DIR` 和 `EASTMONEY_SECTOR_DATA_DIR` 自定义路径。
 
@@ -301,14 +331,17 @@ args = ["eastmoney-quant-mcp"]
 ## 使用示例
 
 ```python
-# 1a. 快速初始化（约 15 秒：股票列表+行情+排名，板块数据首次使用时自动下载）
-init_full_data(quick=True)
+# 已有数据库直接复用；只有缺数据时才初始化
+init_full_data(mode="quick")
 
-# 1b. 或完整初始化（约 3-4 分钟，含全部板块 K 线+成分股）
-init_full_data(include_sector_members=True)
+# 全市场上涨形态扫描前推荐
+init_full_data(mode="research", workers=6, resume=True)
 
-# 2. 每日收盘后更新（约 30 秒）
-update_daily_data()
+# 或长历史完整初始化（用于回测，可断点续传）
+init_full_data(mode="full", workers=6, resume=True)
+
+# 每日收盘后增量更新；新鲜度按最近交易日判断
+update_daily_data(stock_kline_mode="tracked")
 
 # 3. 选股：找涨幅>3%、PE<30、量比>1.5 的放量突破股
 screen_stocks({"min_change_pct":3, "max_pe":30, "min_volume_ratio":1.5})
@@ -331,6 +364,13 @@ generate_stock_report("000001")
 
 # 9. 形态扫描：识别全市场符合形态的标的
 scan_patterns(strict=True)
+
+# 10. 筛选20只上涨结构候选，并为每只准备月周日深研数据
+screen_rising_candidates(top_n=20, strict=True)
+prepare_stock_analysis("000001", days=500, include_chart=True)
+
+# 11. 同时执行事件研究和可执行交易模拟
+backtest_pattern_strategy(mode="both", split="2022-01-01")
 ```
 
 ---

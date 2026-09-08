@@ -3,16 +3,18 @@
 ## Architecture
 
 - **Dual-runtime**: `index.js` (Node shim, ESM) spawns `python -m eastmoney_quant_mcp.server` via stdio and proxies I/O. The Python server is the real MCP implementation. Python interpreter resolution: `EASTMONEY_PYTHON` env → `~/.eastmoney-quant/runtime.json` (uv-managed venv) → `python`.
-- **Entrypoint**: `src/eastmoney_quant_mcp/server.py` — uses `mcp.server.stdio` and a `@register(name, desc, schema)` decorator to wire exactly 14 tools to MCP handlers; every result is wrapped in a `{data, meta, warnings, error}` envelope.
-- **Node CLI**: `bin/eastmoney-quant.js` + `lib/` — installer commands `install` / `setup` / `doctor` / `uninstall` / `config show`. `lib/installer.js` creates a `uv` venv under `~/.eastmoney-quant/runtime/` and writes `config.toml` / `runtime.json` / `install-state.json`; `lib/adapters.js` auto-configures 5 agents with backups — Claude Code (`~/.claude.json`), Codex (`~/.codex/config.toml`), Cursor (`~/.cursor/mcp.json`), VS Code Copilot (user `mcp.json`, `servers` key + `type: stdio`), Qoder (`~/.qoder/mcp.json`) — and copies the 6 skills to skill-aware agents (Claude Code / Codex / Qoder); `lib/paths.js` centralizes `~/.eastmoney-quant` paths.
+- **Entrypoint**: `src/eastmoney_quant_mcp/server.py` — uses `mcp.server.stdio` and a `@register(name, desc, schema)` decorator to wire exactly 20 tools to MCP handlers; every result is wrapped in a `{data, meta, warnings, error}` envelope.
+- **Node CLI**: `bin/eastmoney-quant.js` + `lib/` — installer commands `install` / `setup` / `doctor` / `uninstall` / `config show`. `lib/installer.js` creates a `uv` venv under `~/.eastmoney-quant/runtime/` and writes `config.toml` / `runtime.json` / `install-state.json`; `lib/adapters.js` auto-configures 5 agents with backups — Claude Code (`~/.claude.json`), Codex (`~/.codex/config.toml`), Cursor (`~/.cursor/mcp.json`), VS Code Copilot (user `mcp.json`, `servers` key + `type: stdio`), Qoder (`~/.qoder/mcp.json`) — and copies the skills from root `skills/` to skill-aware agents (Claude Code / Codex / Qoder); skill ids = `skills/` directory names, discovered dynamically (no mapping table); `lib/paths.js` centralizes `~/.eastmoney-quant` paths.
 - **Source layout**:
   - `core/config.py` — settings resolution: env vars → `~/.eastmoney-quant/config.toml` → defaults (`get_settings()`)
+  - `core/constants.py` — schema/indicator/pattern engine versions, research bar and coverage defaults
   - `core/registry.py` — provider/feature registries reserved for future extensions
   - `data/network.py` — HTTP client (curl_cffi) + Edge cookie extraction + symbol normalization + K-line host rotation (`try_kline_hosts`)
   - `data/indicators.py` — technical indicator calcs (MA/RSI/MACD/BOLL/KDJ/ATR)
   - `data/storage.py` — SQLite storage engine (stock database + sector database) with WAL mode, decoupled read-lock concurrency, and column padding defense
   - `data/sync.py` — full init download + incremental daily update coordinator (semaphore-pipelined async concurrency, 16 in flight; `init_all_data(quick=True)` = fast mode)
   - `data/search.py` — local DB queries with fallback to network APIs
+  - `charting.py` — K线图渲染 (包顶层呈现层, 非数据层; 日K→周K/月K 重采样, 蜡烛图+MA+成交量 PNG, 供 chart-trend skill 与 `render_stock_charts` MCP 工具看图分析; 依赖 `chart` extra 的 matplotlib, 延迟导入)
   - `data/progress.py` — progress-bar shim: tqdm → null (stderr-only, auto-silent on non-TTY)
   - `data/sources.py` — extended data sources (移植自旧“股票信息”项目): `fetch_full_spot` (push2 clist 三镜像分页), `fetch_kline_history` (腾讯 fqkline 日期分段翻页 + 全局限速, 回退 akshare/搜狐), `fetch_guba_rank_history` (股吧年文件 AES-CBC 解密, key=md5("getUtilsFromFile")), `fetch_xuangu_rankings` (dataapi/xuangu 分页), `is_trade_day`/`previous_trade_day` (新浪交易日历缓存)
   - `data/build.py` — 重建/回填/采集/清理: `rebuild_full_data` (步骤化全量重建 + rebuild_progress 断点续传 + `--dry-run` 预览不联网), `backfill_data` (缺口检测补齐), `daily_capture` (晚间采集: xuangu 排名 + spot 快照 + K 线增量 + 指标缓存, 跳过非交易日), `cleanup_database` (冗余表清理 + VACUUM), 板块全量 K 线下载 + 板块指标缓存
@@ -23,11 +25,14 @@
   - `tools/sector_screen.py` — sector screening + capital flow analysis
   - `tools/data_manager.py` — local data management MCP tools (init/update/search/sector→stocks)
   - `tools/analysis.py` — individual stock technical analysis reports (support/resistance/risk/position)
-  - `strategies/patterns.py` — 形态引擎 (移植旧项目 stock_patterns.py): 波段引擎 (Pivot/build_pivot_events/update_zigzag/wave_phase), 关键位 (MA5~250 补算 MA120/250, 斐波那契 0.382/0.5/0.618/0.786, 结构位), 因子列 add_factor_columns, 5 形态 (trend_pullback/ma_rebound/w_bottom/m_neckline/box_breakout), PATTERN_FILTERS/PATTERN_STRICT_FILTERS/PATTERN_COOLDOWN; **双宇宙抽象**: `prepare_df(universe, symbol)` 支持 stocks (stock_kline+stock_indicators) / sectors (sector_kline+sector_indicators, trade_date→date、turnover_rate→turnover、KDJ_K→K 映射), MIN_BARS=260 不足自动跳过; 避免未来函数 (pivot 右确认 + 次日开盘入场)
+  - `tools/research.py` — top-20 rising-candidate ranking and per-stock monthly/weekly/daily evidence packets
+  - `strategies/patterns.py` — 形态引擎: 波段/Pivot、关键位、因子列和5类底层检测器 (trend_pullback/ma_rebound/w_bottom/m_neckline/box_breakout); 高层将旧名规范为 major_ma_rebound/neckline_reclaim，并把 Fibonacci confluence 作为第6类增强证据; **双宇宙抽象**支持 stocks/sectors, MIN_BARS=260, pivot 右确认避免未来函数
   - `strategies/pattern_backtest.py` — 形态回测 CLI (6 份报告: 形态×变体胜率/关键位分层/wave_phase 分层/因子分层/过滤阈值搜索/分年度胜率), `--universe stocks|sectors`
   - `strategies/pattern_optimize.py` — beam search 多因子规则搜索 + train/test 时间切分防过拟合, 尝试记录 markdown 输出
+  - `strategies/trading_backtest.py` — callable 事件研究 + 次日开盘/止损/2R/20日退出交易回测，输出 Markdown/CSV 且不自动改规则
+  - `strategies/similarity.py` — 价格成交量跨股票/跨周期相似形态引擎: 固定长度归一化、DTW价格路径、回撤/振幅/量能/Pivot转向评分及历史后验统计；全市场候选复用本地日K并重采样
   - `cli.py` — 统一 CLI 入口 `python -m eastmoney_quant_mcp.cli`: rebuild / backfill / daily-capture / cleanup / pattern-scan / pattern-backtest / pattern-optimize, 通用 `--data-dir` (等价 EASTMONEY_DATA_DIR) 与 `--dry-run`
-  - `skill/SKILL.md` — main skill index; sub-skills: `data-init/`, `stock-screening/`, `report-generation/`, `multi-timeframe-analysis/`, `strategy-backtest/`
+  - Root `skills/` follows `skills/<skill-id>/SKILL.md`: `eastmoney-quant` plus data-init, stock-screening, report-generation, multi-timeframe, strategy-backtest, chart-trend and rising-patterns. Skill ids = directory names; `lib/adapters.js` discovers them dynamically.
 - **Progress display**: Uses standard `tqdm` directly for progress display across sync/cli operations (stderr-only, auto-silent on non-TTY).
 - **Data sources (multi-provider)**: [akshare](https://github.com/akfamily/akshare) for Eastmoney APIs, plus `data/providers/` (`tencent.py` / `sina.py` / `sohu.py` / `boardmap.py`). Degradation chains (local DB keys stay Eastmoney codes):
   - Stock K-line: Tencent `fqkline`/`mkline` (primary) → Eastmoney akshare → Sohu `hisHq` (unadjusted, last resort). This exists because `push2his` IP-bans are frequent; stock/multi-period K-lines keep working during a ban.
@@ -128,11 +133,11 @@ Settings resolve as **env var → `~/.eastmoney-quant/config.toml` → default**
 
 The Node shim sets `PYTHONPATH` to include `src/` automatically.
 
-## MCP tools (14 registered)
+## MCP tools (20 registered)
 
 | Tool | Module | Purpose |
 |------|--------|---------|
-| `init_full_data` | `data_manager` | First-time download to local SQLite (`quick=true` ≈ seconds; full ≈ minutes) |
+| `init_full_data` | `data_manager` | First-time local initialization: quick, research (320 daily bars/universe), or long-history full |
 | `update_daily_data` | `data_manager` | Incremental daily refresh (quotes / rankings / sectors) |
 | `get_data_status` | `data_manager` | Local DB status (row counts / last update / paths) |
 | `screen_stocks` | `data_manager` | Universal screening: 18 conditions + sector filter + name keyword + sort |
@@ -141,15 +146,21 @@ The Node shim sets `PYTHONPATH` to include `src/` automatically.
 | `get_rank_trend_data` | `data_manager` | Historical popularity ranking trend |
 | `get_sector_list` | `sector_data` | Concept/industry sector list with capital flow |
 | `get_stock_belong_sectors` | `data_manager` | Reverse lookup: stock → sectors |
+| `render_stock_charts` | `charting` | K线看图: 日/周/月K 蜡烛图 PNG (自动趋势线/颈线, chart extra) |
 | `generate_stock_report` | `analysis` | Technical report: trend / S&R / risk / position |
 | `scan_patterns` | `strategies/patterns` | Stock chart-pattern scan (full market or symbols, date, normal/strict) |
 | `scan_sector_patterns` | `strategies/patterns` | Sector chart-pattern scan (concept/industry or symbols) |
 | `get_pattern_history` | `strategies/patterns` | Historical pattern signals for one symbol (stock/sector) |
 | `get_key_levels` | `strategies/patterns` | Current key levels: MA system / Fibonacci / structure |
+| `sync_stock_kline_universe` | `data/sync` | Batch stock K-line/indicator synchronization with coverage and resume |
+| `screen_rising_candidates` | `tools/research` | Rank up to 20 rising-structure candidates and disclose coverage |
+| `prepare_stock_analysis` | `tools/research` | Build one stock's monthly/weekly/daily numeric and chart evidence packet |
+| `find_cross_timeframe_similar_patterns` | `strategies/similarity` | Cross-stock/timeframe normalized price-volume matching, latest scans, and historical outcomes |
+| `backtest_pattern_strategy` | `strategies/trading_backtest` | Event study and executable trading backtest; never mutates live rules |
 
 ## Local data workflow
 
-First-time use requires `init_full_data` — `quick=True` (~15s, stocks+quotes+ranks only, sector data lazy-loads on first use via `_ensure_sector_members`) or `quick=False` (full, a few minutes). Then use `update_daily_data` for incremental daily refresh. After initialization, most queries (search, K-line, rankings, sector members) work from local DB without network calls.
+Start with `get_data_status`. Reuse an existing database and incrementally update stale or missing coverage; initialize only an empty/incomplete store. `mode="quick"` loads list/quote/rank data, `mode="research"` targets at least 320 daily bars and indicators across the eligible universe, and `mode="full"` builds resumable long history for backtests. Normal maintenance uses `update_daily_data(stock_kline_mode="tracked")`. Compare freshness with the latest completed trading day and never claim full-market completion below 95% K-line coverage.
 
 Typical flow: `init_full_data` → `update_daily_data` → `screen_stocks` → `get_kline_local_or_net` / `generate_stock_report` / `get_rank_trend_data` / `get_stock_belong_sectors`.
 
@@ -164,15 +175,15 @@ Unregistered library helpers used by Skills/internal code: `get_sector_members_f
 
 ## Tool registration gotcha
 
-Tools are wired via the `@register(name, desc, schema)` decorator in `server.py` — exactly **14 tools** are registered (3 data management, 1 screening, 5 query, 1 report, 4 pattern). The 4 pattern tools (`scan_patterns` / `scan_sector_patterns` / `get_pattern_history` / `get_key_levels`) wrap the synchronous `strategies/patterns.py` functions with `asyncio.to_thread`. Other functions in `tools/` (`stock_rank`, `pattern_scan`, `sector_screen`, most of `sector_data`) are intentionally **not** registered — they are library code that Skills compose through the registered tools. When adding a tool, add both the import and the `@register` block; when removing, clean up both. Also keep the `mcp.tools` list in `package.json` and the tool tables in `README.md` in sync.
+Tools are wired via the `@register(name, desc, schema)` decorator in `server.py` — exactly **20 tools** are registered: the original 15 plus `sync_stock_kline_universe`, `screen_rising_candidates`, `prepare_stock_analysis`, `find_cross_timeframe_similar_patterns`, and `backtest_pattern_strategy`. The pattern and long-running research functions are dispatched with `asyncio.to_thread`. Keep `package.json`, README files, and Skill tool tables in sync with the registry.
 
 ## Skill format
 
-All 6 `SKILL.md` files use standard YAML frontmatter:
+All `skills/<id>/SKILL.md` files use standard YAML frontmatter:
 ```yaml
 ---
 name: skill-identifier
 description: What it does and when to trigger...
 ---
 ```
-This matches the [official skill-creator format](https://github.com/anthropics/claude-plugins-official). `lib/adapters.js` (invoked by `eastmoney-quant install`) copies them to `<agent>/skills/<name>/SKILL.md` for skill-aware agents — Claude Code: `~/.claude/skills/`, Codex: `~/.codex/skills/`, Qoder: `~/.qoder/skills/`. Cursor and VS Code Copilot only get the MCP server registration (they do not consume SKILL.md).
+This matches the [official skill-creator format](https://github.com/anthropics/claude-plugins-official). `lib/adapters.js` (invoked by `eastmoney-quant install`) copies them to `<agent>/skills/<skill-id>/SKILL.md` for skill-aware agents — Claude Code: `~/.claude/skills/`, Codex: `~/.codex/skills/`, Qoder: `~/.qoder/skills/`. Cursor and VS Code Copilot only get the MCP server registration (they do not consume SKILL.md).

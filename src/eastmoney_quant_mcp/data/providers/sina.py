@@ -14,6 +14,8 @@
 import json
 import re
 import threading
+
+from ..util import TtlCache
 import time
 
 from ..network import (
@@ -37,9 +39,6 @@ _SINA_HEADERS = {"Referer": "https://finance.sina.com.cn"}
 _PAGE_SIZE = 100
 _NODE_INDEX_TTL = 24 * 3600
 
-_NODE_INDEX_LOCK = threading.Lock()
-_node_index: dict[str, dict[str, str]] = {}
-_node_index_ts: float = 0.0
 
 
 def _f(val) -> float | None:
@@ -77,21 +76,17 @@ def fetch_node_maps() -> dict[str, dict[str, str]]:
     return maps
 
 
+def _fetch_node_index() -> dict[str, dict[str, str]] | None:
+    maps = fetch_node_maps()
+    return maps if maps["industry"] or maps["concept"] else None
+
+
+_node_index_cache = TtlCache(_NODE_INDEX_TTL)
+
+
 def get_name_node_index(refresh: bool = False) -> dict[str, dict[str, str]]:
     """进程内缓存 24h 的 {板块类型: {名: node}}"""
-    global _node_index, _node_index_ts
-    with _NODE_INDEX_LOCK:
-        if (not refresh and _node_index
-                and time.time() - _node_index_ts < _NODE_INDEX_TTL):
-            return _node_index
-    maps = fetch_node_maps()
-    if maps["industry"] or maps["concept"]:
-        with _NODE_INDEX_LOCK:
-            _node_index = maps
-            _node_index_ts = time.time()
-            return _node_index
-    with _NODE_INDEX_LOCK:
-        return _node_index or maps
+    return _node_index_cache.get(_fetch_node_index, refresh=refresh) or fetch_node_maps()
 
 
 # ── 板块成分股 ──

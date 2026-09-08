@@ -1,8 +1,7 @@
 """
 东方财富量化 MCP Server — 精简入口
-暴露 14 个核心工具: 10 个数据/分析工具 + 4 个形态工具 (scan_patterns / scan_sector_patterns /
-get_pattern_history / get_key_levels, 同步函数经 asyncio.to_thread 包装)。
-其余逻辑由 Skill 组合实现。
+暴露 20 个核心工具: 保留原15个兼容接口, 新增全市场同步、上涨候选、
+逐股分析数据包、跨周期相似形态与双层回测5个高级工具。
 """
 
 import asyncio
@@ -30,6 +29,10 @@ from .strategies.patterns import (
     get_pattern_history,
     get_key_levels,
 )
+from .data.sync import sync_stock_kline_universe
+from .tools.research import prepare_stock_analysis, screen_rising_candidates
+from .strategies.trading_backtest import backtest_pattern_strategy
+from .strategies.similarity import find_cross_timeframe_similar_patterns
 
 server = Server("eastmoney-quant-mcp")
 
@@ -38,6 +41,8 @@ TOOL_HANDLERS = {}
 
 def register(name, description, input_schema):
     def decorator(func):
+        if name in TOOL_HANDLERS:
+            raise ValueError(f"工具重复注册: {name}")
         TOOL_HANDLERS[name] = {"func": func, "description": description, "schema": input_schema}
         return func
     return decorator
@@ -47,28 +52,38 @@ def register(name, description, input_schema):
 
 @register("init_full_data", (
     "一次性下载数据到本地SQLite(首次必调)。quick=true为快速模式(秒级): 仅股票列表+实时行情+人气排名, "
-    "板块成分股在首次使用时自动下载缓存; quick=false为完整模式(含全部板块K线+成分股, 约1-2分钟)"
+    "板块成分股在首次使用时自动下载缓存; 显式mode=research同步320根全市场日K, "
+    "mode=full同步长历史; 省略mode时保持旧quick参数语义"
 ), {
     "type": "object",
     "properties": {
         "include_sector_members": {"type": "boolean", "description": "是否下载板块成分股(完整模式下耗时但完整),默认true"},
         "quick": {"type": "boolean", "description": "快速初始化模式(秒级可用),默认false"},
+        "mode": {"type": "string", "enum": ["quick", "research", "full"],
+                 "description": "初始化模式; 省略时兼容quick参数"},
+        "workers": {"type": "integer", "minimum": 1, "maximum": 16},
+        "resume": {"type": "boolean", "description": "按覆盖记录断点续传,默认true"},
     },
     "required": [],
 })
-async def _init(include_sector_members=True, quick=False) -> dict:
-    return await init_full_data(include_sector_members, quick)
+async def _init(include_sector_members=True, quick=False, mode=None, workers=8, resume=True) -> dict:
+    return await init_full_data(include_sector_members, quick, mode, workers, resume)
 
 
 @register("update_daily_data", "增量每日更新(建议收盘后运行)", {
     "type": "object",
     "properties": {
         "include_sector_members": {"type": "boolean", "description": "是否更新板块成分股,默认true"},
+        "stock_kline_mode": {"type": "string", "enum": ["none", "tracked", "all"],
+                             "description": "股票K线更新范围,默认tracked"},
+        "skip_non_trading_day": {"type": "boolean", "description": "非交易日跳过,默认true"},
     },
     "required": [],
 })
-async def _update(include_sector_members=True) -> dict:
-    return await update_daily_data(include_sector_members)
+async def _update(include_sector_members=True, stock_kline_mode="tracked",
+                  skip_non_trading_day=True) -> dict:
+    return await update_daily_data(include_sector_members, stock_kline_mode,
+                                   skip_non_trading_day)
 
 
 @register("get_data_status", "查看本地数据库状态(数据量/更新时间/路径)", {
@@ -120,12 +135,12 @@ async def _screen(conditions=None, top_n=50, sort_by="change_pct",
     "type": "object",
     "properties": {
         "symbol": {"type": "string", "description": "股票代码"},
-        "days": {"type": "integer", "minimum": 1, "description": "默认250个交易日"},
+        "days": {"type": "integer", "minimum": 1, "description": "默认300个交易日"},
         "adjust": {"type": "string", "enum": ["qfq", "hfq", ""], "description": "复权方式: qfq前复权/hfq后复权/空字符串不复权, 默认qfq"},
     },
     "required": ["symbol"],
 })
-async def _kline(symbol, days=250, adjust="qfq") -> list[dict]:
+async def _kline(symbol, days=300, adjust="qfq") -> list[dict]:
     return await get_kline_local_or_net(symbol, days, adjust)
 
 
@@ -287,6 +302,138 @@ async def _key_levels(universe="stocks", symbol=None) -> dict:
     return await asyncio.to_thread(get_key_levels, universe, symbol)
 
 
+# ═══════════════════ 图表渲染 (1) ═══════════════════
+
+@register("render_stock_charts", (
+    "个股K线看图: 生成 日K/周K/月K 三张蜡烛图 PNG(含自动趋势线/颈线/MA/成交量), "
+    "返回图片路径供 Read 读图做结构归因。需要 chart extra (pip install 'eastmoney-quant-mcp[chart]')"
+), {
+    "type": "object",
+    "properties": {
+        "symbol": {"type": "string", "description": "股票代码"},
+        "days": {"type": "integer", "minimum": 30, "description": "日K根数, 默认500"},
+    },
+    "required": ["symbol"],
+})
+async def _render_charts(symbol, days=500) -> dict:
+    from .charting import generate_analysis_charts
+    return await asyncio.to_thread(generate_analysis_charts, symbol, days=days)
+
+
+# ═══════════════════ 高级研究工作流 (5) ═══════════════════
+
+@register("sync_stock_kline_universe", "批量同步全市场或指定股票的日K与指标,支持覆盖率统计和断点续传", {
+    "type": "object", "properties": {
+        "symbols": {"type": "array", "items": {"type": "string"}, "description": "省略=全市场"},
+        "target_bars": {"type": "integer", "minimum": 260, "description": "目标交易日根数,默认320"},
+        "adjust": {"type": "string", "enum": ["qfq", "hfq", ""]},
+        "workers": {"type": "integer", "minimum": 1, "maximum": 16},
+        "resume": {"type": "boolean"},
+    }, "required": [],
+})
+async def _sync_universe(symbols=None, target_bars=320, adjust="qfq", workers=6, resume=True):
+    return await sync_stock_kline_universe(symbols, target_bars, adjust, workers, resume)
+
+
+@register("screen_rising_candidates", "六类上涨结构全市场初筛与综合评分;默认返回20只并披露数据覆盖率", {
+    "type": "object", "properties": {
+        "top_n": {"type": "integer", "minimum": 1, "maximum": 100},
+        "lookback_days": {"type": "integer", "minimum": 1, "maximum": 60},
+        "patterns": {"type": "array", "items": {"type": "string"}},
+        "min_score": {"type": "number", "minimum": 0, "maximum": 1},
+        "strict": {"type": "boolean"}, "workers": {"type": "integer", "minimum": 1, "maximum": 16},
+        "symbols": {"type": "array", "items": {"type": "string"}},
+    }, "required": [],
+})
+async def _rising_candidates(top_n=20, lookback_days=20, patterns=None, min_score=0.6,
+                             strict=True, workers=8, symbols=None):
+    return await asyncio.to_thread(screen_rising_candidates, top_n=top_n,
+                                   lookback_days=lookback_days, patterns=patterns,
+                                   min_score=min_score, strict=strict, workers=workers,
+                                   symbols=symbols)
+
+
+@register("prepare_stock_analysis", "组装逐股AI研判所需的月周日数值、形态、关键位、板块、人气和图表", {
+    "type": "object", "properties": {
+        "symbol": {"type": "string"},
+        "days": {"type": "integer", "minimum": 260},
+        "include_chart": {"type": "boolean"},
+        "refresh_if_stale": {"type": "boolean"},
+    }, "required": ["symbol"],
+})
+async def _prepare_analysis(symbol, days=500, include_chart=True, refresh_if_stale=True):
+    return await prepare_stock_analysis(symbol, days=days, include_chart=include_chart,
+                                        refresh_if_stale=refresh_if_stale)
+
+
+@register("find_cross_timeframe_similar_patterns", (
+    "用目标股票最近N根K线，与全市场所有股票的历史N根窗口比较。默认最近30根日K对全市场历史日K；"
+    "先向量化粗筛价格路径，再用价格、量、回撤、振幅和DTW完整评分并统计后续表现"
+), {
+    "type": "object", "properties": {
+        "symbol": {"type": "string", "description": "股票代码"},
+        "query_period": {"type": "string", "enum": ["1", "5", "15", "30", "60", "101", "102", "103"],
+                         "description": "当前形态周期,默认101(日K)"},
+        "candidate_periods": {"type": "array", "items": {"type": "string", "enum": ["1", "5", "15", "30", "60", "101", "102", "103"]},
+                              "description": "搜索周期,默认日/周/月"},
+        "query_bars": {"type": "integer", "minimum": 12, "maximum": 240, "description": "统一比较K线根数,默认30；日K时即最近30个交易日"},
+        "candidate_window_bars": {"type": "array", "items": {"type": "integer", "minimum": 12, "maximum": 240},
+                                  "description": "高级时间伸缩窗口；默认省略并严格等于query_bars"},
+        "search_bars": {"type": "integer", "minimum": 0, "maximum": 5000,
+                        "description": "每只股票历史K线范围；0表示本地全部历史,默认0"},
+        "top_n": {"type": "integer", "minimum": 1, "maximum": 30, "description": "返回数量,默认10"},
+        "min_score": {"type": "number", "minimum": 0, "maximum": 1, "description": "最低相似度,默认0.55"},
+        "adjust": {"type": "string", "enum": ["qfq", "hfq", ""], "description": "复权方式,默认qfq"},
+        "candidate_scope": {"type": "string", "enum": ["self", "symbols", "market"],
+                            "description": "候选范围: 单股历史/指定股票池/本地市场,默认market"},
+        "candidate_symbols": {"type": "array", "items": {"type": "string"},
+                              "description": "candidate_scope=symbols时的候选代码"},
+        "search_mode": {"type": "string", "enum": ["history", "latest"],
+                        "description": "history查所有历史窗口并统计后验,默认history; latest仅比较当前形态"},
+        "max_symbols": {"type": "integer", "minimum": 0, "maximum": 10000,
+                        "description": "股票池上限,0表示全部本地股票,默认0"},
+        "workers": {"type": "integer", "minimum": 1, "maximum": 16,
+                    "description": "本地数据读取并发,默认8"},
+        "probability_sample_size": {"type": "integer", "minimum": 10, "maximum": 500,
+                                    "description": "后续走势概率统计使用的相似样本数,默认100"},
+        "move_threshold_pct": {"type": "number", "minimum": 0, "maximum": 20,
+                               "description": "上涨/下跌分类阈值,默认正负2%"},
+    }, "required": ["symbol"],
+})
+async def _similar_patterns(symbol, query_period="101", candidate_periods=None,
+                            query_bars=30, candidate_window_bars=None,
+                            search_bars=0, top_n=10, min_score=0.55, adjust="qfq",
+                            candidate_scope="market", candidate_symbols=None,
+                            search_mode="history", max_symbols=0, workers=8,
+                            probability_sample_size=100, move_threshold_pct=2.0):
+    return await find_cross_timeframe_similar_patterns(
+        symbol, query_period, candidate_periods, query_bars,
+        candidate_window_bars, search_bars, top_n, min_score, adjust,
+        candidate_scope, candidate_symbols, search_mode, max_symbols, workers,
+        probability_sample_size, move_threshold_pct)
+
+
+@register("backtest_pattern_strategy", "形态信号5/10/20日事件研究 + 次日开盘/止损/2R/20日退出交易回测", {
+    "type": "object", "properties": {
+        "start": {"type": "string"}, "end": {"type": "string"},
+        "patterns": {"type": "array", "items": {"type": "string"}},
+        "sample": {"type": "integer", "minimum": 1},
+        "workers": {"type": "integer", "minimum": 1, "maximum": 16},
+        "mode": {"type": "string", "enum": ["event", "trading", "both"]},
+        "split": {"type": "string"},
+        "buy_cost_bps": {"type": "number", "minimum": 0},
+        "sell_cost_bps": {"type": "number", "minimum": 0},
+    }, "required": [],
+})
+async def _backtest_strategy(start="2010-01-01", end=None, patterns=None, sample=None,
+                             workers=8, mode="both", split="2022-01-01",
+                             buy_cost_bps=8.0, sell_cost_bps=13.0):
+    return await asyncio.to_thread(backtest_pattern_strategy, start=start, end=end,
+                                   patterns=patterns, sample=sample, workers=workers,
+                                   mode=mode, split=split, buy_cost_bps=buy_cost_bps,
+                                   sell_cost_bps=sell_cost_bps)
+
+
 # ═══════════════════ MCP 生命周期 ═══════════════════
 
 @server.list_tools()
@@ -297,26 +444,52 @@ async def list_tools() -> list[Tool]:
     ]
 
 
+def _validate_arguments(name: str, arguments, schema: dict) -> list[str]:
+    """轻量参数校验, 返回错误列表(空列表=通过)。只查必填与未知键, 不做类型深检。"""
+    errors = []
+    props = schema.get("properties", {}) if isinstance(schema, dict) else {}
+    args = arguments if isinstance(arguments, dict) else {}
+    for req in schema.get("required", []) or []:
+        if req not in args:
+            errors.append(f"缺少必填参数: {req}")
+    for key in args:
+        if props and key not in props:
+            errors.append(f"未知参数: {key}")
+    return errors
+
+
 @server.call_tool()
 async def call_tool(name, arguments) -> list[TextContent]:
     info = TOOL_HANDLERS.get(name)
     if not info:
         return [TextContent(type="text", text=f"未知工具: {name}")]
+    now = datetime.now(timezone.utc).isoformat()
+    errors = _validate_arguments(name, arguments, info["schema"])
+    if errors:
+        envelope = {"data": None, "meta": {"source": "eastmoney-quant", "fetched_at": now},
+                    "warnings": [], "error": {"code": "INVALID_PARAMS", "message": "; ".join(errors)}}
+        return [TextContent(type="text", text=json.dumps(envelope, ensure_ascii=False))]
     try:
-        result = await info["func"](**arguments)
+        args = arguments if isinstance(arguments, dict) else {}
+        result = await info["func"](**args)
         envelope = {
             "data": result,
             "meta": {
                 "source": "eastmoney-quant",
-                "fetched_at": datetime.now(timezone.utc).isoformat(),
-                "cache_status": "unknown",
+                "fetched_at": now,
             },
             "warnings": [],
             "error": None,
         }
         return [TextContent(type="text", text=json.dumps(envelope, ensure_ascii=False, default=str))]
     except Exception as e:
-        return [TextContent(type="text", text=json.dumps({"data": None, "meta": {}, "warnings": [], "error": {"code": "TOOL_ERROR", "message": str(e)}}, ensure_ascii=False))]
+        envelope = {
+            "data": None,
+            "meta": {"source": "eastmoney-quant", "fetched_at": now},
+            "warnings": [],
+            "error": {"code": "TOOL_ERROR", "message": str(e)},
+        }
+        return [TextContent(type="text", text=json.dumps(envelope, ensure_ascii=False))]
 
 
 def main():

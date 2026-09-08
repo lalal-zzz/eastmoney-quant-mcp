@@ -8,6 +8,7 @@
 import asyncio
 from urllib.parse import urlencode
 
+from ..data.paging import fetch_all_pages
 from ..data.network import http_get, normalize_symbol
 
 BASE_URL = "https://data.eastmoney.com/dataapi/xuangu/list"
@@ -55,37 +56,10 @@ def _extract_rank(payload: dict | None) -> tuple[list, int]:
 
 
 async def _fetch_all_rankings() -> list[dict]:
-    """分页拉取全部人气排名: 第1页拿 count, 剩余页并发; count 缺失时回退串行"""
-    rows, count = _extract_rank(await asyncio.to_thread(_rank_page_sync, 1))
-    if not rows:
-        return []
-
-    if count > len(rows):
-        import math
-        pages = math.ceil(count / _PAGE_SIZE)
-        sem = asyncio.Semaphore(16)
-
-        async def _page(p: int) -> list:
-            async with sem:
-                chunk, _ = _extract_rank(await asyncio.to_thread(_rank_page_sync, p))
-                return chunk
-
-        for chunk in await asyncio.gather(*(_page(p) for p in range(2, pages + 1))):
-            rows.extend(chunk)
-        return rows
-
-    # count 缺失: 串行翻页直至短页
-    page = 2
-    while len(rows) % _PAGE_SIZE == 0:
-        chunk, _ = _extract_rank(await asyncio.to_thread(_rank_page_sync, page))
-        if not chunk:
-            break
-        rows.extend(chunk)
-        if len(chunk) < _PAGE_SIZE:
-            break
-        page += 1
-
-    return rows
+    """统一分页 (data/paging): count 缺失时串行回退直至短页"""
+    return await fetch_all_pages(
+        _rank_page_sync, _extract_rank,
+        page_size=_PAGE_SIZE, concurrency=16, serial_fallback=True)
 
 
 def _format_rank_item(item: dict) -> dict:
@@ -106,13 +80,7 @@ def _format_rank_item(item: dict) -> dict:
     }
 
 
-def _safe_float(val) -> float | None:
-    if val is None or val == "-":
-        return None
-    try:
-        return float(val)
-    except (ValueError, TypeError):
-        return None
+from ..data.util import safe_float as _safe_float  # noqa: E402
 
 
 async def get_popularity_rankings(top_n: int = 50) -> list[dict]:

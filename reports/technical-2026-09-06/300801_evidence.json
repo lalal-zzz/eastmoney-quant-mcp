@@ -1,0 +1,768 @@
+{
+  "stock": {
+    "symbol": "300801",
+    "name": "泰和科技",
+    "latest_price": 23.26,
+    "change_pct": 0.56,
+    "change_amount": 0.13,
+    "volume": 39975.0,
+    "amount": 93004960.78,
+    "amplitude": 1.99,
+    "high": 23.47,
+    "low": 23.01,
+    "open": 23.1,
+    "pre_close": 23.13,
+    "volume_ratio": 0.94,
+    "turnover_rate": 2.91,
+    "pe_dynamic": 18.15,
+    "pb": 1.91,
+    "total_market_cap": 5080681800.0,
+    "float_market_cap": 3199328706.0,
+    "speed": null,
+    "sixty_day_change": -8.68,
+    "ytd_change": -15.51,
+    "updated_date": "2026-08-29"
+  },
+  "data_quality": {
+    "bars": 500,
+    "first_date": "2024-08-14",
+    "last_date": "2026-09-04",
+    "stale": false,
+    "adjust_type": "qfq"
+  },
+  "timeframes": {
+    "weekly": {
+      "period": "weekly",
+      "bars": 107,
+      "last_date": "2026-09-04",
+      "close": 21.85,
+      "trend": "down",
+      "moving_averages": {
+        "MA5": 23.13,
+        "MA10": 23.924,
+        "MA20": 26.363,
+        "MA60": 27.205
+      },
+      "recent_returns_pct": {
+        "return_5": -2.28,
+        "return_10": -27.82,
+        "return_20": -18.2
+      },
+      "range_20": {
+        "high": 36.12,
+        "low": 18.56
+      }
+    },
+    "monthly": {
+      "period": "monthly",
+      "bars": 26,
+      "last_date": "2026-09-30",
+      "close": 21.85,
+      "trend": "down",
+      "moving_averages": {
+        "MA5": 25.328,
+        "MA10": 27.132,
+        "MA20": 24.864
+      },
+      "recent_returns_pct": {
+        "return_5": -27.65,
+        "return_10": -27.12,
+        "return_20": 44.03
+      },
+      "range_20": {
+        "high": 43.28,
+        "low": 13.57
+      }
+    },
+    "daily": {
+      "period": "daily",
+      "bars": 500,
+      "last_date": "2026-09-04",
+      "close": 21.85,
+      "trend": "down",
+      "moving_averages": {
+        "MA5": 22.518,
+        "MA10": 22.657,
+        "MA20": 23.104,
+        "MA60": 25.033
+      },
+      "recent_returns_pct": {
+        "return_5": -6.06,
+        "return_10": -4.04,
+        "return_20": -9.11
+      },
+      "range_20": {
+        "high": 24.49,
+        "low": 21.72
+      }
+    }
+  },
+  "key_levels": {
+    "universe": "stocks",
+    "symbol": "300801",
+    "name": "泰和科技",
+    "date": "2026-09-04",
+    "close": 21.85,
+    "trend": "down",
+    "trend_cn": "下跌趋势",
+    "levels": [
+      {
+        "type": "前低(2026-08-25)",
+        "value": 21.81,
+        "distance_pct": -0.18
+      },
+      {
+        "type": "MA5",
+        "value": 22.518,
+        "distance_pct": 3.06
+      },
+      {
+        "type": "MA10",
+        "value": 22.657,
+        "distance_pct": 3.69
+      },
+      {
+        "type": "MA20",
+        "value": 23.104,
+        "distance_pct": 5.74
+      },
+      {
+        "type": "MA30",
+        "value": 23.174,
+        "distance_pct": 6.06
+      },
+      {
+        "type": "前高(2026-08-28)",
+        "value": 23.47,
+        "distance_pct": 7.41
+      },
+      {
+        "type": "MA60",
+        "value": 25.033,
+        "distance_pct": 14.57
+      },
+      {
+        "type": "MA120",
+        "value": 26.357,
+        "distance_pct": 20.62
+      },
+      {
+        "type": "MA250",
+        "value": 27.843,
+        "distance_pct": 27.43
+      },
+      {
+        "type": "MA200",
+        "value": 27.859,
+        "distance_pct": 27.5
+      },
+      {
+        "type": "反弹位382",
+        "value": 28.003,
+        "distance_pct": 28.16
+      },
+      {
+        "type": "反弹位500",
+        "value": 30.92,
+        "distance_pct": 41.51
+      },
+      {
+        "type": "反弹位618",
+        "value": 33.837,
+        "distance_pct": 54.86
+      }
+    ],
+    "resistance": [
+      {
+        "type": "MA5",
+        "value": 22.518,
+        "distance_pct": 3.06
+      },
+      {
+        "type": "MA10",
+        "value": 22.657,
+        "distance_pct": 3.69
+      },
+      {
+        "type": "MA20",
+        "value": 23.104,
+        "distance_pct": 5.74
+      },
+      {
+        "type": "MA30",
+        "value": 23.174,
+        "distance_pct": 6.06
+      },
+      {
+        "type": "前高(2026-08-28)",
+        "value": 23.47,
+        "distance_pct": 7.41
+      },
+      {
+        "type": "MA60",
+        "value": 25.033,
+        "distance_pct": 14.57
+      }
+    ],
+    "support": [
+      {
+        "type": "前低(2026-08-25)",
+        "value": 21.81,
+        "distance_pct": -0.18
+      }
+    ]
+  },
+  "patterns": [
+    {
+      "symbol": "300801",
+      "name": "泰和科技",
+      "date": "2026-08-28",
+      "pattern": "neckline_reclaim",
+      "pattern_cn": "M形颈线支撑",
+      "variant": "neckline_hold",
+      "close": 23.26,
+      "change_rate": 0.562,
+      "turnover": NaN,
+      "turnover_ma20": NaN,
+      "updown_ratio_20": 1.8571428571428572,
+      "up_days_ratio_20": 0.55,
+      "vol_ratio": 0.945648008402606,
+      "pullback_vol_shrink": 0.5948534199744961,
+      "rsi14": 47.94992540026272,
+      "ma_bull": 0,
+      "dif_above_zero": 0,
+      "bias60": -0.07947417369681209,
+      "hit_levels": "neckline",
+      "fib_level": "",
+      "resonance": 1,
+      "wave_phase": "later_pullback",
+      "break_days": 0,
+      "break_depth": 0.0,
+      "potential_gain": 0.09372312983662945,
+      "score": 50.89,
+      "trend": "up",
+      "macd_gold3": 0,
+      "dif_below0": 1,
+      "kdj_gold3": 1,
+      "kdj_j": 52.62726459586041,
+      "boll_pos": 0.478288536863732,
+      "boll_width": 0.1106228616404675,
+      "rsi6": 56.48608262102132,
+      "macd_div": 0,
+      "first_top_date": "2026-07-27",
+      "first_top_price": 25.44,
+      "second_top_date": "2026-08-17",
+      "second_top_price": 24.49,
+      "neckline_date": "2026-08-03",
+      "neckline_value": 21.88,
+      "top_deviation_pct": 3.73,
+      "raw_pattern": "m_neckline",
+      "signal_date": "2026-08-28",
+      "stage": "retesting",
+      "confirmed": true,
+      "entry_status": "actionable",
+      "trend_state": "up",
+      "support": 21.81,
+      "resistance": 22.518,
+      "neckline": 21.88,
+      "invalid_level": 21.442,
+      "fib_levels": {
+        "0.382": 28.003,
+        "0.5": 30.92,
+        "0.618": 33.837
+      },
+      "evidence": [
+        "形态标准度 0.91",
+        "日线趋势 up",
+        "共振数 1",
+        "量能倍率 0.95",
+        "命中关键位 neckline"
+      ],
+      "warnings": [
+        "确认信号量能不足"
+      ],
+      "score_raw": 0.91,
+      "score_breakdown": {
+        "pattern": 27.3,
+        "daily": 20.0,
+        "higher_timeframe": 3.0,
+        "volume": 7.09,
+        "sector": 0.0,
+        "confluence": 3.5,
+        "risk_penalty": 10.0
+      },
+      "factors": {
+        "change_rate": 0.562,
+        "turnover": NaN,
+        "vol_ratio": 0.945648008402606,
+        "bias60": -0.07947417369681209,
+        "rsi14": 47.94992540026272,
+        "resonance": 1,
+        "wave_phase": "later_pullback",
+        "potential_gain": 0.09372312983662945
+      }
+    }
+  ],
+  "sector_context": [
+    {
+      "sector_code": "BK0884",
+      "sector_name": "光刻机",
+      "sector_type": "concept",
+      "sector_change_pct": -2.98,
+      "latest_price": 24.04,
+      "change_pct": -2.95,
+      "turnover_rate": 6.01,
+      "volume_ratio": 1.63
+    },
+    {
+      "sector_code": "BK0864",
+      "sector_name": "氢能源",
+      "sector_type": "concept",
+      "sector_change_pct": -0.61,
+      "latest_price": 24.02,
+      "change_pct": -3.03,
+      "turnover_rate": 6.04,
+      "volume_ratio": 1.62
+    },
+    {
+      "sector_code": "BK0574",
+      "sector_name": "锂电池概念",
+      "sector_type": "concept",
+      "sector_change_pct": -1.42,
+      "latest_price": 24.02,
+      "change_pct": -3.03,
+      "turnover_rate": 6.04,
+      "volume_ratio": 1.62
+    },
+    {
+      "sector_code": "BK0494",
+      "sector_name": "节能环保",
+      "sector_type": "concept",
+      "sector_change_pct": -0.53,
+      "latest_price": 24.02,
+      "change_pct": -3.03,
+      "turnover_rate": 6.04,
+      "volume_ratio": 1.62
+    },
+    {
+      "sector_code": "BK1633",
+      "sector_name": "昨日高振幅",
+      "sector_type": "concept",
+      "sector_change_pct": -0.76,
+      "latest_price": 24.02,
+      "change_pct": -3.03,
+      "turnover_rate": 6.04,
+      "volume_ratio": 1.62
+    },
+    {
+      "sector_code": "BK0804",
+      "sector_name": "深股通",
+      "sector_type": "concept",
+      "sector_change_pct": -0.47,
+      "latest_price": 22.77,
+      "change_pct": -0.22,
+      "turnover_rate": 3.02,
+      "volume_ratio": 0.74
+    },
+    {
+      "sector_code": "BK1749",
+      "sector_name": "2026中报预增",
+      "sector_type": "concept",
+      "sector_change_pct": -1.11,
+      "latest_price": 22.77,
+      "change_pct": -0.22,
+      "turnover_rate": 3.02,
+      "volume_ratio": 0.74
+    },
+    {
+      "sector_code": "BK1648",
+      "sector_name": "电池技术",
+      "sector_type": "concept",
+      "sector_change_pct": -1.38,
+      "latest_price": 22.77,
+      "change_pct": -0.22,
+      "turnover_rate": 3.02,
+      "volume_ratio": 0.74
+    },
+    {
+      "sector_code": "BK0742",
+      "sector_name": "创业板综",
+      "sector_type": "concept",
+      "sector_change_pct": -0.64,
+      "latest_price": 22.77,
+      "change_pct": -0.22,
+      "turnover_rate": 3.02,
+      "volume_ratio": 0.74
+    },
+    {
+      "sector_code": "BK0832",
+      "sector_name": "工业互联网",
+      "sector_type": "concept",
+      "sector_change_pct": -0.45,
+      "latest_price": 22.77,
+      "change_pct": -0.22,
+      "turnover_rate": 3.02,
+      "volume_ratio": 0.74
+    },
+    {
+      "sector_code": "BK0917",
+      "sector_name": "半导体概念",
+      "sector_type": "concept",
+      "sector_change_pct": -2.43,
+      "latest_price": 22.77,
+      "change_pct": -0.22,
+      "turnover_rate": 3.02,
+      "volume_ratio": 0.74
+    },
+    {
+      "sector_code": "BK0706",
+      "sector_name": "脑机接口",
+      "sector_type": "concept",
+      "sector_change_pct": -0.18,
+      "latest_price": 22.77,
+      "change_pct": -0.22,
+      "turnover_rate": 3.02,
+      "volume_ratio": 0.74
+    },
+    {
+      "sector_code": "BK1095",
+      "sector_name": "钒电池",
+      "sector_type": "concept",
+      "sector_change_pct": 0.07,
+      "latest_price": 22.77,
+      "change_pct": -0.219,
+      "turnover_rate": 3.0246,
+      "volume_ratio": null
+    },
+    {
+      "sector_code": "BK1156",
+      "sector_name": "PEEK材料概念",
+      "sector_type": "concept",
+      "sector_change_pct": -1.39,
+      "latest_price": 22.77,
+      "change_pct": -0.22,
+      "turnover_rate": 3.02,
+      "volume_ratio": 0.74
+    },
+    {
+      "sector_code": "BK0538",
+      "sector_name": "化学制品",
+      "sector_type": "industry",
+      "sector_change_pct": -0.56,
+      "latest_price": 22.77,
+      "change_pct": -0.22,
+      "turnover_rate": 3.02,
+      "volume_ratio": 0.74
+    },
+    {
+      "sector_code": "BK1174",
+      "sector_name": "合成生物",
+      "sector_type": "concept",
+      "sector_change_pct": 0.07,
+      "latest_price": 22.77,
+      "change_pct": -0.22,
+      "turnover_rate": 3.02,
+      "volume_ratio": 0.74
+    },
+    {
+      "sector_code": "BK1010",
+      "sector_name": "磷化工",
+      "sector_type": "concept",
+      "sector_change_pct": -0.93,
+      "latest_price": 23.26,
+      "change_pct": 0.56,
+      "turnover_rate": 2.91,
+      "volume_ratio": 0.94
+    },
+    {
+      "sector_code": "BK1753",
+      "sector_name": "光刻胶",
+      "sector_type": "concept",
+      "sector_change_pct": -2.52,
+      "latest_price": 21.85,
+      "change_pct": -2.24,
+      "turnover_rate": 2.66,
+      "volume_ratio": 1.1
+    }
+  ],
+  "popularity": [
+    {
+      "rank_date": "2026-08-29",
+      "popularity_rank": 3336.0,
+      "change_pct": 0.56,
+      "latest_price": 23.26
+    },
+    {
+      "rank_date": "2026-08-21",
+      "popularity_rank": 3298.0,
+      "change_pct": -0.22,
+      "latest_price": 22.77
+    }
+  ],
+  "charts": {
+    "daily": "C:\\Users\\20127\\Desktop\\K线图片\\泰和科技_300801_daily.png",
+    "weekly": "C:\\Users\\20127\\Desktop\\K线图片\\泰和科技_300801_weekly.png",
+    "monthly": "C:\\Users\\20127\\Desktop\\K线图片\\泰和科技_300801_monthly.png",
+    "bars": {
+      "daily": 500,
+      "weekly": 107,
+      "monthly": 26
+    }
+  },
+  "warnings": [],
+  "review_metrics": {
+    "ma": {
+      "20": 23.104000000000003,
+      "60": 25.03266666666666,
+      "120": 26.3565,
+      "250": 27.84312
+    },
+    "ma20_change_5_pct": -0.9092468691027422,
+    "ma60_change_5_pct": -0.9320027175168,
+    "volume5_over20": 0.6689705071523588,
+    "last_volume_over_previous20": 0.7144573253508609,
+    "distance_ma20_pct": -5.427631578947379,
+    "distance_ma60_pct": -12.714053636581502,
+    "last20_high": 24.49,
+    "last20_low": 21.72,
+    "last60_high": 36.12,
+    "last60_low": 18.56,
+    "return20_pct": -9.109816971713801
+  },
+  "screen_signal": {
+    "symbol": "300801",
+    "name": "泰和科技",
+    "date": "2026-08-28",
+    "pattern": "neckline_reclaim",
+    "pattern_cn": "M形颈线支撑",
+    "variant": "neckline_hold",
+    "close": 23.26,
+    "change_rate": 0.562,
+    "turnover": NaN,
+    "turnover_ma20": NaN,
+    "updown_ratio_20": 1.8571428571428572,
+    "up_days_ratio_20": 0.55,
+    "vol_ratio": 0.945648008402606,
+    "pullback_vol_shrink": 0.5948534199744961,
+    "rsi14": 47.94992540026272,
+    "ma_bull": 0,
+    "dif_above_zero": 0,
+    "bias60": -0.07947417369681209,
+    "hit_levels": "neckline",
+    "fib_level": "",
+    "resonance": 1,
+    "wave_phase": "later_pullback",
+    "break_days": 0,
+    "break_depth": 0.0,
+    "potential_gain": 0.09372312983662945,
+    "score": 54.89,
+    "trend": "up",
+    "macd_gold3": 0,
+    "dif_below0": 1,
+    "kdj_gold3": 1,
+    "kdj_j": 52.62726459586041,
+    "boll_pos": 0.478288536863732,
+    "boll_width": 0.1106228616404675,
+    "rsi6": 56.48608262102132,
+    "macd_div": 0,
+    "first_top_date": "2026-07-27",
+    "first_top_price": 25.44,
+    "second_top_date": "2026-08-17",
+    "second_top_price": 24.49,
+    "neckline_date": "2026-08-03",
+    "neckline_value": 21.88,
+    "top_deviation_pct": 3.73,
+    "raw_pattern": "m_neckline",
+    "signal_date": "2026-08-28",
+    "stage": "retesting",
+    "confirmed": true,
+    "entry_status": "actionable",
+    "trend_state": "up",
+    "support": 21.81,
+    "resistance": 22.518,
+    "neckline": 21.88,
+    "invalid_level": 21.442,
+    "fib_levels": {
+      "0.382": 28.003,
+      "0.5": 30.92,
+      "0.618": 33.837
+    },
+    "evidence": [
+      "形态标准度 0.91",
+      "日线趋势 up",
+      "共振数 1",
+      "量能倍率 0.95",
+      "命中关键位 neckline"
+    ],
+    "warnings": [
+      "确认信号量能不足"
+    ],
+    "score_raw": 0.91,
+    "score_breakdown": {
+      "pattern": 27.3,
+      "daily": 20.0,
+      "higher_timeframe": 3.0,
+      "volume": 7.09,
+      "sector": 4.0,
+      "confluence": 3.5,
+      "risk_penalty": 10.0
+    },
+    "factors": {
+      "change_rate": 0.562,
+      "turnover": NaN,
+      "vol_ratio": 0.945648008402606,
+      "bias60": -0.07947417369681209,
+      "rsi14": 47.94992540026272,
+      "resonance": 1,
+      "wave_phase": "later_pullback",
+      "potential_gain": 0.09372312983662945
+    },
+    "higher_timeframe": {
+      "weekly": {
+        "period": "weekly",
+        "bars": 90,
+        "last_date": "2026-09-04",
+        "close": 21.85,
+        "trend": "down",
+        "moving_averages": {
+          "MA5": 23.13,
+          "MA10": 23.924,
+          "MA20": 26.363,
+          "MA60": 27.205
+        },
+        "recent_returns_pct": {
+          "return_5": -2.28,
+          "return_10": -27.82,
+          "return_20": -18.2
+        },
+        "range_20": {
+          "high": 36.12,
+          "low": 18.56
+        }
+      },
+      "monthly": {
+        "period": "monthly",
+        "bars": 22,
+        "last_date": "2026-09-30",
+        "close": 21.85,
+        "trend": "down",
+        "moving_averages": {
+          "MA5": 25.328,
+          "MA10": 27.132,
+          "MA20": 24.864
+        },
+        "recent_returns_pct": {
+          "return_5": -27.65,
+          "return_10": -27.12,
+          "return_20": 44.03
+        },
+        "range_20": {
+          "high": 43.28,
+          "low": 13.57
+        }
+      }
+    },
+    "sectors": [
+      {
+        "sector_code": "BK0884",
+        "sector_name": "光刻机",
+        "sector_type": "concept",
+        "sector_change_pct": -2.98,
+        "latest_price": 24.04,
+        "change_pct": -2.95,
+        "turnover_rate": 6.01,
+        "volume_ratio": 1.63
+      },
+      {
+        "sector_code": "BK0864",
+        "sector_name": "氢能源",
+        "sector_type": "concept",
+        "sector_change_pct": -0.61,
+        "latest_price": 24.02,
+        "change_pct": -3.03,
+        "turnover_rate": 6.04,
+        "volume_ratio": 1.62
+      },
+      {
+        "sector_code": "BK0574",
+        "sector_name": "锂电池概念",
+        "sector_type": "concept",
+        "sector_change_pct": -1.42,
+        "latest_price": 24.02,
+        "change_pct": -3.03,
+        "turnover_rate": 6.04,
+        "volume_ratio": 1.62
+      },
+      {
+        "sector_code": "BK0494",
+        "sector_name": "节能环保",
+        "sector_type": "concept",
+        "sector_change_pct": -0.53,
+        "latest_price": 24.02,
+        "change_pct": -3.03,
+        "turnover_rate": 6.04,
+        "volume_ratio": 1.62
+      },
+      {
+        "sector_code": "BK1633",
+        "sector_name": "昨日高振幅",
+        "sector_type": "concept",
+        "sector_change_pct": -0.76,
+        "latest_price": 24.02,
+        "change_pct": -3.03,
+        "turnover_rate": 6.04,
+        "volume_ratio": 1.62
+      },
+      {
+        "sector_code": "BK0804",
+        "sector_name": "深股通",
+        "sector_type": "concept",
+        "sector_change_pct": -0.47,
+        "latest_price": 22.77,
+        "change_pct": -0.22,
+        "turnover_rate": 3.02,
+        "volume_ratio": 0.74
+      },
+      {
+        "sector_code": "BK1749",
+        "sector_name": "2026中报预增",
+        "sector_type": "concept",
+        "sector_change_pct": -1.11,
+        "latest_price": 22.77,
+        "change_pct": -0.22,
+        "turnover_rate": 3.02,
+        "volume_ratio": 0.74
+      },
+      {
+        "sector_code": "BK1648",
+        "sector_name": "电池技术",
+        "sector_type": "concept",
+        "sector_change_pct": -1.38,
+        "latest_price": 22.77,
+        "change_pct": -0.22,
+        "turnover_rate": 3.02,
+        "volume_ratio": 0.74
+      },
+      {
+        "sector_code": "BK0742",
+        "sector_name": "创业板综",
+        "sector_type": "concept",
+        "sector_change_pct": -0.64,
+        "latest_price": 22.77,
+        "change_pct": -0.22,
+        "turnover_rate": 3.02,
+        "volume_ratio": 0.74
+      },
+      {
+        "sector_code": "BK0832",
+        "sector_name": "工业互联网",
+        "sector_type": "concept",
+        "sector_change_pct": -0.45,
+        "latest_price": 22.77,
+        "change_pct": -0.22,
+        "turnover_rate": 3.02,
+        "volume_ratio": 0.74
+      }
+    ]
+  }
+}

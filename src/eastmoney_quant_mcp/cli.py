@@ -10,6 +10,7 @@ eastmoney_rank_scheduler.py 的 CLI 部分)
     python -m eastmoney_quant_mcp.cli daily-capture              # 晚间采集(任务计划用)
     python -m eastmoney_quant_mcp.cli cleanup --dry-run
     python -m eastmoney_quant_mcp.cli pattern-scan --universe sectors --date 2026-08-14
+    python -m eastmoney_quant_mcp.cli wave-analysis --symbol 600000
     python -m eastmoney_quant_mcp.cli pattern-backtest --sample 300 --workers 8
     python -m eastmoney_quant_mcp.cli pattern-optimize --cache signals.csv --universe stocks
 """
@@ -84,11 +85,21 @@ def _build_parser() -> argparse.ArgumentParser:
                    help="板块类型 (仅 sectors 宇宙)")
     s.add_argument("--json", action="store_true", help="以 JSON 输出信号")
 
-    # ── pattern-backtest / pattern-optimize (转发) ──
-    pb = sub.add_parser("pattern-backtest", help="形态历史回测 (详见 strategies/pattern_backtest.py)")
-    pb.add_argument("args", nargs=argparse.REMAINDER)
-    po = sub.add_parser("pattern-optimize", help="形态参数优化 (详见 strategies/pattern_optimize.py)")
-    po.add_argument("args", nargs=argparse.REMAINDER)
+    # ── wave-analysis ──
+    w = sub.add_parser("wave-analysis", help="波浪/Fibonacci 结构分析 (单标的)")
+    w.add_argument("--universe", default="stocks", choices=("stocks", "sectors"))
+    w.add_argument("--symbol", required=True, help="股票/板块代码或名称")
+    w.add_argument("--start", default=None, help="起始日期, 默认 2010-01-01")
+    w.add_argument("--end", default=None, help="截止日期, 默认本地库最新")
+    w.add_argument("--tail", type=int, default=720, help="只分析最近 N 根K线")
+    w.add_argument("--pivot-left", type=int, default=5)
+    w.add_argument("--pivot-right", type=int, default=5)
+    w.add_argument("--swing-min", type=float, default=0.03, help="zigzag 最小摆动幅度")
+    w.add_argument("--json", action="store_true", help="以 JSON 输出完整结果")
+
+    # ── pattern-backtest / pattern-optimize (转发, 剩余参数原样透传) ──
+    sub.add_parser("pattern-backtest", help="形态历史回测 (详见 strategies/pattern_backtest.py)")
+    sub.add_parser("pattern-optimize", help="形态参数优化 (详见 strategies/pattern_optimize.py)")
 
     return p
 
@@ -130,11 +141,13 @@ def _cmd_backfill(a) -> int:
 
 def _cmd_daily_capture(a) -> int:
     from .data.build import daily_capture
-    return daily_capture(
+    daily_capture(
         save_spot=not a.no_spot, save_kline=not a.no_kline,
         save_indicators=not a.no_indicators,
         page_size=a.page_size, max_pages=a.max_pages,
         workers=a.workers, dry_run=a.dry_run)
+    # daily_capture 返回采集行数, 不能作为进程退出码(任务计划会误判失败)
+    return 0
 
 
 def _cmd_cleanup(a) -> int:
@@ -163,8 +176,59 @@ def _cmd_pattern_scan(a) -> int:
     return 0
 
 
+def _cmd_wave_analysis(a) -> int:
+    from .strategies.wave_analysis import analyze_wave
+    rep = analyze_wave(
+        a.universe, a.symbol, start=a.start or "2010-01-01", end=a.end, tail=a.tail,
+        pivot_left=a.pivot_left, pivot_right=a.pivot_right, swing_min=a.swing_min)
+    if a.json:
+        print(json.dumps(rep, ensure_ascii=False, indent=2))
+        return 0
+
+    print(f"{rep['date']} {rep['symbol']} {rep.get('name', '')} "
+          f"close={rep['close']} pivots={rep['pivot_count']}")
+    impulse = rep["elliott_like_impulse"]
+    correction = rep["abc_like_correction"]
+    print(f"5浪匹配: {impulse['structure']} direction={impulse.get('direction', '')} "
+          f"score={impulse['score']}")
+    for c in impulse.get("checks", [])[:6]:
+        print(f"  {c}")
+    print(f"ABC修正匹配: {correction['structure']} direction={correction.get('direction', '')} "
+          f"score={correction['score']}")
+    for c in correction.get("checks", [])[:4]:
+        print(f"  {c}")
+
+    print("Fibonacci 转折统计:")
+    labels = {"up_pullback": "上涨后回调", "down_rebound": "下跌后反弹"}
+    for key, title in labels.items():
+        item = rep["fib_summary"].get(key, {})
+        print(f"  {title}: 样本={item.get('total', 0)} "
+              f"均值={item.get('avg_ratio')} 常见={item.get('most_common', '')} "
+              f"分布={item.get('distribution', {})}")
+
+    if rep["fib_turns"]:
+        print("最近转折:")
+        for t in rep["fib_turns"][-6:]:
+            print(f"  {t['turn_date']} {labels.get(t['kind'], t['kind'])} "
+                  f"ratio={t['ratio']} near={t['nearest_fib']} price={t['turn_price']}")
+
+    active = rep.get("active_leg") or {}
+    if active:
+        print(f"当前段: {active['direction']} from {active['from_date']} "
+              f"{active['from_price']} -> {active['current_close']} "
+              f"({active['change_pct']}%), {active['status']}")
+        print(f"结束判定: {active['end_rule']}")
+        levels = active.get("reference_levels") or {}
+        if levels:
+            print(f"参考位: {levels}")
+    print("提示: Fibonacci/波浪只作结构证据, 需要和趋势、量能、失效位一起看。")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
-    args = _build_parser().parse_args(argv)
+    # parse_known_args: pattern-backtest/optimize 的选项原样透传给子模块
+    # (REMAINDER 对紧跟子命令的 --xxx 会被主解析器误吃, bpo-2962)
+    args, remaining = _build_parser().parse_known_args(argv)
     if getattr(args, "data_dir", None):          # 数据目录覆盖 (等价 EASTMONEY_DATA_DIR)
         os.environ["EASTMONEY_DATA_DIR"] = args.data_dir
 
@@ -174,18 +238,32 @@ def main(argv: list[str] | None = None) -> int:
         "daily-capture": _cmd_daily_capture,
         "cleanup": _cmd_cleanup,
         "pattern-scan": _cmd_pattern_scan,
+        "wave-analysis": _cmd_wave_analysis,
     }
     if args.command in handlers:
+        if remaining:
+            print(f"未知参数: {' '.join(remaining)}", file=sys.stderr)
+            return 2
         return handlers[args.command](args)
 
     if args.command == "pattern-backtest":
         from .strategies import pattern_backtest
-        pattern_backtest.main(args.args)
-        return 0
+        try:
+            pattern_backtest.main(remaining)
+            return 0
+        except SystemExit as e:            # argparse --help / 参数错误
+            return int(e.code or 0)
+        except Exception:
+            return 1
     if args.command == "pattern-optimize":
         from .strategies import pattern_optimize
-        pattern_optimize.main(args.args)
-        return 0
+        try:
+            pattern_optimize.main(remaining)
+            return 0
+        except SystemExit as e:
+            return int(e.code or 0)
+        except Exception:
+            return 1
     _build_parser().print_help()
     return 1
 

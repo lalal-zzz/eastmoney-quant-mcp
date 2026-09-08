@@ -1,0 +1,794 @@
+{
+  "stock": {
+    "symbol": "600674",
+    "name": "川投能源",
+    "latest_price": 15.39,
+    "change_pct": -1.03,
+    "change_amount": -0.16,
+    "volume": 154639.0,
+    "amount": 238124289.0,
+    "amplitude": 1.35,
+    "high": 15.54,
+    "low": 15.33,
+    "open": 15.54,
+    "pre_close": 15.55,
+    "volume_ratio": 0.68,
+    "turnover_rate": 0.32,
+    "pe_dynamic": 16.1,
+    "pb": 1.68,
+    "total_market_cap": 75020199083.0,
+    "float_market_cap": 75020199083.0,
+    "speed": null,
+    "sixty_day_change": 2.12,
+    "ytd_change": 14.85,
+    "updated_date": "2026-08-29"
+  },
+  "data_quality": {
+    "bars": 500,
+    "first_date": "2024-08-14",
+    "last_date": "2026-09-04",
+    "stale": false,
+    "adjust_type": "qfq"
+  },
+  "timeframes": {
+    "weekly": {
+      "period": "weekly",
+      "bars": 107,
+      "last_date": "2026-09-04",
+      "close": 15.76,
+      "trend": "up",
+      "moving_averages": {
+        "MA5": 15.28,
+        "MA10": 15.146,
+        "MA20": 14.837,
+        "MA60": 14.484
+      },
+      "recent_returns_pct": {
+        "return_5": -0.32,
+        "return_10": 16.22,
+        "return_20": 12.01
+      },
+      "range_20": {
+        "high": 16.2,
+        "low": 13.37
+      }
+    },
+    "monthly": {
+      "period": "monthly",
+      "bars": 26,
+      "last_date": "2026-09-30",
+      "close": 15.76,
+      "trend": "up",
+      "moving_averages": {
+        "MA5": 15.176,
+        "MA10": 14.611,
+        "MA20": 14.718
+      },
+      "recent_returns_pct": {
+        "return_5": 6.2,
+        "return_10": 11.54,
+        "return_20": 4.93
+      },
+      "range_20": {
+        "high": 16.73,
+        "low": 13.11
+      }
+    },
+    "daily": {
+      "period": "daily",
+      "bars": 500,
+      "last_date": "2026-09-04",
+      "close": 15.76,
+      "trend": "up",
+      "moving_averages": {
+        "MA5": 15.776,
+        "MA10": 15.664,
+        "MA20": 15.447,
+        "MA60": 14.969
+      },
+      "recent_returns_pct": {
+        "return_5": 2.4,
+        "return_10": 3.34,
+        "return_20": 5.28
+      },
+      "range_20": {
+        "high": 16.2,
+        "low": 14.9
+      }
+    }
+  },
+  "key_levels": {
+    "universe": "stocks",
+    "symbol": "600674",
+    "name": "川投能源",
+    "date": "2026-09-04",
+    "close": 15.76,
+    "trend": "up",
+    "trend_cn": "上涨趋势",
+    "levels": [
+      {
+        "type": "MA5",
+        "value": 15.776,
+        "distance_pct": 0.1
+      },
+      {
+        "type": "MA10",
+        "value": 15.664,
+        "distance_pct": -0.61
+      },
+      {
+        "type": "前高(2026-07-21)",
+        "value": 15.98,
+        "distance_pct": 1.4
+      },
+      {
+        "type": "MA30",
+        "value": 15.45,
+        "distance_pct": -1.97
+      },
+      {
+        "type": "MA20",
+        "value": 15.447,
+        "distance_pct": -1.99
+      },
+      {
+        "type": "MA60",
+        "value": 14.969,
+        "distance_pct": -5.02
+      },
+      {
+        "type": "回调位382",
+        "value": 14.915,
+        "distance_pct": -5.36
+      },
+      {
+        "type": "MA120",
+        "value": 14.827,
+        "distance_pct": -5.92
+      },
+      {
+        "type": "前低(2026-08-07)",
+        "value": 14.81,
+        "distance_pct": -6.03
+      },
+      {
+        "type": "回调位500",
+        "value": 14.57,
+        "distance_pct": -7.55
+      },
+      {
+        "type": "MA200",
+        "value": 14.476,
+        "distance_pct": -8.14
+      },
+      {
+        "type": "MA250",
+        "value": 14.443,
+        "distance_pct": -8.35
+      },
+      {
+        "type": "回调位618",
+        "value": 14.225,
+        "distance_pct": -9.74
+      },
+      {
+        "type": "回调位786",
+        "value": 13.735,
+        "distance_pct": -12.85
+      }
+    ],
+    "resistance": [
+      {
+        "type": "MA5",
+        "value": 15.776,
+        "distance_pct": 0.1
+      },
+      {
+        "type": "前高(2026-07-21)",
+        "value": 15.98,
+        "distance_pct": 1.4
+      }
+    ],
+    "support": [
+      {
+        "type": "MA10",
+        "value": 15.664,
+        "distance_pct": -0.61
+      },
+      {
+        "type": "MA30",
+        "value": 15.45,
+        "distance_pct": -1.97
+      },
+      {
+        "type": "MA20",
+        "value": 15.447,
+        "distance_pct": -1.99
+      },
+      {
+        "type": "MA60",
+        "value": 14.969,
+        "distance_pct": -5.02
+      },
+      {
+        "type": "回调位382",
+        "value": 14.915,
+        "distance_pct": -5.36
+      },
+      {
+        "type": "MA120",
+        "value": 14.827,
+        "distance_pct": -5.92
+      }
+    ]
+  },
+  "patterns": [
+    {
+      "symbol": "600674",
+      "name": "川投能源",
+      "date": "2026-09-02",
+      "pattern": "box_breakout",
+      "pattern_cn": "平台放量突破",
+      "variant": "box_breakout",
+      "close": 16.03,
+      "change_rate": 1.6487000634115567,
+      "turnover": 0.8247676872945947,
+      "turnover_ma20": 0.5463785642569982,
+      "updown_ratio_20": 1.8571428571428572,
+      "up_days_ratio_20": 0.6,
+      "vol_ratio": 1.60258118200486,
+      "pullback_vol_shrink": NaN,
+      "rsi14": 64.07303391255363,
+      "ma_bull": 1,
+      "dif_above_zero": 1,
+      "bias60": 0.07305426633345236,
+      "hit_levels": "box_high",
+      "fib_level": "",
+      "resonance": 1,
+      "wave_phase": "box_breakout",
+      "break_days": 0,
+      "break_depth": 0.0,
+      "potential_gain": 0.10355583281347447,
+      "score": 61.22,
+      "trend": "range",
+      "macd_gold3": 0,
+      "dif_below0": 0,
+      "kdj_gold3": 1,
+      "kdj_j": 94.20900400478018,
+      "boll_pos": 1.0640224833030982,
+      "boll_width": 0.07619327941209836,
+      "rsi6": 73.45024720734483,
+      "macd_div": 0,
+      "box_start_date": "2026-07-08",
+      "box_end_date": "2026-09-01",
+      "box_high": 15.86,
+      "box_low": 14.03,
+      "box_width_pct": 13.04,
+      "breakout_pct": 1.07,
+      "raw_pattern": "box_breakout",
+      "signal_date": "2026-09-02",
+      "stage": "confirmed",
+      "confirmed": true,
+      "entry_status": "actionable",
+      "trend_state": "range",
+      "support": 15.664,
+      "resistance": 15.776,
+      "neckline": null,
+      "invalid_level": 15.86,
+      "fib_levels": {
+        "0.382": 14.915,
+        "0.5": 14.57,
+        "0.618": 14.225,
+        "0.786": 13.735
+      },
+      "evidence": [
+        "形态标准度 0.69",
+        "日线趋势 range",
+        "共振数 1",
+        "量能倍率 1.60",
+        "命中关键位 box_high"
+      ],
+      "warnings": [],
+      "score_raw": 0.69,
+      "score_breakdown": {
+        "pattern": 20.7,
+        "daily": 10.0,
+        "higher_timeframe": 15.0,
+        "volume": 12.02,
+        "sector": 0.0,
+        "confluence": 3.5,
+        "risk_penalty": 0.0
+      },
+      "factors": {
+        "change_rate": 1.6487000634115567,
+        "turnover": 0.8247676872945947,
+        "vol_ratio": 1.60258118200486,
+        "bias60": 0.07305426633345236,
+        "rsi14": 64.07303391255363,
+        "resonance": 1,
+        "wave_phase": "box_breakout",
+        "potential_gain": 0.10355583281347447
+      }
+    }
+  ],
+  "sector_context": [
+    {
+      "sector_code": "BK1715",
+      "sector_name": "趋势股",
+      "sector_type": "concept",
+      "sector_change_pct": -1.53,
+      "latest_price": 16.1,
+      "change_pct": 0.81,
+      "turnover_rate": 0.38,
+      "volume_ratio": 0.99
+    },
+    {
+      "sector_code": "BK0718",
+      "sector_name": "证金持股",
+      "sector_type": "concept",
+      "sector_change_pct": 0.72,
+      "latest_price": 16.11,
+      "change_pct": 0.88,
+      "turnover_rate": 0.38,
+      "volume_ratio": 0.99
+    },
+    {
+      "sector_code": "BK0552",
+      "sector_name": "机构重仓",
+      "sector_type": "concept",
+      "sector_change_pct": -0.25,
+      "latest_price": 16.12,
+      "change_pct": 0.94,
+      "turnover_rate": 0.38,
+      "volume_ratio": 0.99
+    },
+    {
+      "sector_code": "BK0596",
+      "sector_name": "融资融券",
+      "sector_type": "concept",
+      "sector_change_pct": -0.42,
+      "latest_price": 15.25,
+      "change_pct": -1.613,
+      "turnover_rate": 0.32543,
+      "volume_ratio": null
+    },
+    {
+      "sector_code": "BK0821",
+      "sector_name": "MSCI中国",
+      "sector_type": "concept",
+      "sector_change_pct": -0.63,
+      "latest_price": 15.25,
+      "change_pct": -1.61,
+      "turnover_rate": 0.33,
+      "volume_ratio": 0.51
+    },
+    {
+      "sector_code": "BK1663",
+      "sector_name": "大盘股",
+      "sector_type": "concept",
+      "sector_change_pct": -0.55,
+      "latest_price": 15.25,
+      "change_pct": -1.61,
+      "turnover_rate": 0.33,
+      "volume_ratio": 0.51
+    },
+    {
+      "sector_code": "BK0500",
+      "sector_name": "HS300_",
+      "sector_type": "concept",
+      "sector_change_pct": 0.01,
+      "latest_price": 15.25,
+      "change_pct": -1.61,
+      "turnover_rate": 0.33,
+      "volume_ratio": 0.51
+    },
+    {
+      "sector_code": "BK0867",
+      "sector_name": "富时罗素",
+      "sector_type": "concept",
+      "sector_change_pct": 0.14,
+      "latest_price": 15.25,
+      "change_pct": -1.61,
+      "turnover_rate": 0.33,
+      "volume_ratio": 0.51
+    },
+    {
+      "sector_code": "BK0879",
+      "sector_name": "标准普尔",
+      "sector_type": "concept",
+      "sector_change_pct": 0.12,
+      "latest_price": 15.25,
+      "change_pct": -1.61,
+      "turnover_rate": 0.33,
+      "volume_ratio": 0.51
+    },
+    {
+      "sector_code": "BK0683",
+      "sector_name": "央国企改革",
+      "sector_type": "concept",
+      "sector_change_pct": 0.36,
+      "latest_price": 15.25,
+      "change_pct": -1.61,
+      "turnover_rate": 0.33,
+      "volume_ratio": 0.51
+    },
+    {
+      "sector_code": "BK0590",
+      "sector_name": "西部大开发",
+      "sector_type": "concept",
+      "sector_change_pct": 0.13,
+      "latest_price": 15.25,
+      "change_pct": -1.61,
+      "turnover_rate": 0.33,
+      "volume_ratio": 0.51
+    },
+    {
+      "sector_code": "BK0707",
+      "sector_name": "沪股通",
+      "sector_type": "concept",
+      "sector_change_pct": -0.44,
+      "latest_price": 15.25,
+      "change_pct": -1.61,
+      "turnover_rate": 0.33,
+      "volume_ratio": 0.51
+    },
+    {
+      "sector_code": "BK0535",
+      "sector_name": "QFII重仓",
+      "sector_type": "concept",
+      "sector_change_pct": -0.77,
+      "latest_price": 15.25,
+      "change_pct": -1.613,
+      "turnover_rate": 0.32543,
+      "volume_ratio": null
+    },
+    {
+      "sector_code": "BK0612",
+      "sector_name": "上证180_",
+      "sector_type": "concept",
+      "sector_change_pct": 0.0,
+      "latest_price": 15.25,
+      "change_pct": -1.61,
+      "turnover_rate": 0.33,
+      "volume_ratio": 0.51
+    },
+    {
+      "sector_code": "BK0534",
+      "sector_name": "成渝特区",
+      "sector_type": "concept",
+      "sector_change_pct": 0.15,
+      "latest_price": 15.25,
+      "change_pct": -1.613,
+      "turnover_rate": 0.32543,
+      "volume_ratio": null
+    },
+    {
+      "sector_code": "BK0588",
+      "sector_name": "光伏概念",
+      "sector_type": "concept",
+      "sector_change_pct": -0.58,
+      "latest_price": 15.25,
+      "change_pct": -1.613,
+      "turnover_rate": 0.32543,
+      "volume_ratio": null
+    },
+    {
+      "sector_code": "BK0493",
+      "sector_name": "新能源",
+      "sector_type": "concept",
+      "sector_change_pct": -0.25,
+      "latest_price": 15.25,
+      "change_pct": -1.613,
+      "turnover_rate": 0.32543,
+      "volume_ratio": null
+    },
+    {
+      "sector_code": "BK1024",
+      "sector_name": "绿色电力",
+      "sector_type": "concept",
+      "sector_change_pct": 0.1,
+      "latest_price": 15.25,
+      "change_pct": -1.61,
+      "turnover_rate": 0.33,
+      "volume_ratio": 0.51
+    },
+    {
+      "sector_code": "BK0428",
+      "sector_name": "电力",
+      "sector_type": "industry",
+      "sector_change_pct": 0.13,
+      "latest_price": 15.25,
+      "change_pct": -1.61,
+      "turnover_rate": 0.33,
+      "volume_ratio": 0.51
+    },
+    {
+      "sector_code": "BK1660",
+      "sector_name": "光纤概念",
+      "sector_type": "concept",
+      "sector_change_pct": -2.61,
+      "latest_price": 15.76,
+      "change_pct": -0.06,
+      "turnover_rate": 0.36,
+      "volume_ratio": 0.66
+    }
+  ],
+  "popularity": [
+    {
+      "rank_date": "2026-08-29",
+      "popularity_rank": 2163.0,
+      "change_pct": -1.03,
+      "latest_price": 15.39
+    },
+    {
+      "rank_date": "2026-08-21",
+      "popularity_rank": 2015.0,
+      "change_pct": -1.61,
+      "latest_price": 15.25
+    }
+  ],
+  "charts": {
+    "daily": "C:\\Users\\20127\\Desktop\\K线图片\\川投能源_600674_daily.png",
+    "weekly": "C:\\Users\\20127\\Desktop\\K线图片\\川投能源_600674_weekly.png",
+    "monthly": "C:\\Users\\20127\\Desktop\\K线图片\\川投能源_600674_monthly.png",
+    "bars": {
+      "daily": 500,
+      "weekly": 107,
+      "monthly": 26
+    }
+  },
+  "warnings": [],
+  "review_metrics": {
+    "ma": {
+      "20": 15.446999999999997,
+      "60": 14.969,
+      "120": 14.827500000000002,
+      "250": 14.4434
+    },
+    "ma20_change_5_pct": 0.9310986964618184,
+    "ma60_change_5_pct": 0.5981182795699036,
+    "volume5_over20": 1.0230284228433915,
+    "last_volume_over_previous20": 0.6477968985522797,
+    "distance_ma20_pct": 2.0262834207289693,
+    "distance_ma60_pct": 5.284254125192067,
+    "last20_high": 16.2,
+    "last20_low": 14.9,
+    "last60_high": 16.2,
+    "last60_low": 13.37,
+    "return20_pct": 5.277221108884422
+  },
+  "screen_signal": {
+    "symbol": "600674",
+    "name": "川投能源",
+    "date": "2026-09-02",
+    "pattern": "box_breakout",
+    "pattern_cn": "平台放量突破",
+    "variant": "box_breakout",
+    "close": 16.03,
+    "change_rate": 1.6487000634115567,
+    "turnover": 0.8247676872945947,
+    "turnover_ma20": 0.5463785642569982,
+    "updown_ratio_20": 1.8571428571428572,
+    "up_days_ratio_20": 0.6,
+    "vol_ratio": 1.60258118200486,
+    "pullback_vol_shrink": NaN,
+    "rsi14": 64.07303391255363,
+    "ma_bull": 1,
+    "dif_above_zero": 1,
+    "bias60": 0.07305426633345236,
+    "hit_levels": "box_high",
+    "fib_level": "",
+    "resonance": 1,
+    "wave_phase": "box_breakout",
+    "break_days": 0,
+    "break_depth": 0.0,
+    "potential_gain": 0.10355583281347447,
+    "score": 71.22,
+    "trend": "range",
+    "macd_gold3": 0,
+    "dif_below0": 0,
+    "kdj_gold3": 1,
+    "kdj_j": 94.20900400478018,
+    "boll_pos": 1.0640224833030982,
+    "boll_width": 0.07619327941209836,
+    "rsi6": 73.45024720734483,
+    "macd_div": 0,
+    "box_start_date": "2026-07-08",
+    "box_end_date": "2026-09-01",
+    "box_high": 15.86,
+    "box_low": 14.03,
+    "box_width_pct": 13.04,
+    "breakout_pct": 1.07,
+    "raw_pattern": "box_breakout",
+    "signal_date": "2026-09-02",
+    "stage": "confirmed",
+    "confirmed": true,
+    "entry_status": "actionable",
+    "trend_state": "range",
+    "support": 15.664,
+    "resistance": 15.776,
+    "neckline": null,
+    "invalid_level": 15.86,
+    "fib_levels": {
+      "0.382": 14.915,
+      "0.5": 14.57,
+      "0.618": 14.225,
+      "0.786": 13.735
+    },
+    "evidence": [
+      "形态标准度 0.69",
+      "日线趋势 range",
+      "共振数 1",
+      "量能倍率 1.60",
+      "命中关键位 box_high"
+    ],
+    "warnings": [],
+    "score_raw": 0.69,
+    "score_breakdown": {
+      "pattern": 20.7,
+      "daily": 10.0,
+      "higher_timeframe": 15.0,
+      "volume": 12.02,
+      "sector": 10.0,
+      "confluence": 3.5,
+      "risk_penalty": 0.0
+    },
+    "factors": {
+      "change_rate": 1.6487000634115567,
+      "turnover": 0.8247676872945947,
+      "vol_ratio": 1.60258118200486,
+      "bias60": 0.07305426633345236,
+      "rsi14": 64.07303391255363,
+      "resonance": 1,
+      "wave_phase": "box_breakout",
+      "potential_gain": 0.10355583281347447
+    },
+    "higher_timeframe": {
+      "weekly": {
+        "period": "weekly",
+        "bars": 90,
+        "last_date": "2026-09-04",
+        "close": 15.76,
+        "trend": "up",
+        "moving_averages": {
+          "MA5": 15.28,
+          "MA10": 15.146,
+          "MA20": 14.837,
+          "MA60": 14.484
+        },
+        "recent_returns_pct": {
+          "return_5": -0.32,
+          "return_10": 16.22,
+          "return_20": 12.01
+        },
+        "range_20": {
+          "high": 16.2,
+          "low": 13.37
+        }
+      },
+      "monthly": {
+        "period": "monthly",
+        "bars": 22,
+        "last_date": "2026-09-30",
+        "close": 15.76,
+        "trend": "up",
+        "moving_averages": {
+          "MA5": 15.176,
+          "MA10": 14.611,
+          "MA20": 14.718
+        },
+        "recent_returns_pct": {
+          "return_5": 6.2,
+          "return_10": 11.54,
+          "return_20": 4.93
+        },
+        "range_20": {
+          "high": 16.73,
+          "low": 13.11
+        }
+      }
+    },
+    "sectors": [
+      {
+        "sector_code": "BK1715",
+        "sector_name": "趋势股",
+        "sector_type": "concept",
+        "sector_change_pct": -1.53,
+        "latest_price": 16.1,
+        "change_pct": 0.81,
+        "turnover_rate": 0.38,
+        "volume_ratio": 0.99
+      },
+      {
+        "sector_code": "BK0718",
+        "sector_name": "证金持股",
+        "sector_type": "concept",
+        "sector_change_pct": 0.72,
+        "latest_price": 16.11,
+        "change_pct": 0.88,
+        "turnover_rate": 0.38,
+        "volume_ratio": 0.99
+      },
+      {
+        "sector_code": "BK0552",
+        "sector_name": "机构重仓",
+        "sector_type": "concept",
+        "sector_change_pct": -0.25,
+        "latest_price": 16.12,
+        "change_pct": 0.94,
+        "turnover_rate": 0.38,
+        "volume_ratio": 0.99
+      },
+      {
+        "sector_code": "BK0596",
+        "sector_name": "融资融券",
+        "sector_type": "concept",
+        "sector_change_pct": -0.42,
+        "latest_price": 15.25,
+        "change_pct": -1.613,
+        "turnover_rate": 0.32543,
+        "volume_ratio": null
+      },
+      {
+        "sector_code": "BK0821",
+        "sector_name": "MSCI中国",
+        "sector_type": "concept",
+        "sector_change_pct": -0.63,
+        "latest_price": 15.25,
+        "change_pct": -1.61,
+        "turnover_rate": 0.33,
+        "volume_ratio": 0.51
+      },
+      {
+        "sector_code": "BK1663",
+        "sector_name": "大盘股",
+        "sector_type": "concept",
+        "sector_change_pct": -0.55,
+        "latest_price": 15.25,
+        "change_pct": -1.61,
+        "turnover_rate": 0.33,
+        "volume_ratio": 0.51
+      },
+      {
+        "sector_code": "BK0500",
+        "sector_name": "HS300_",
+        "sector_type": "concept",
+        "sector_change_pct": 0.01,
+        "latest_price": 15.25,
+        "change_pct": -1.61,
+        "turnover_rate": 0.33,
+        "volume_ratio": 0.51
+      },
+      {
+        "sector_code": "BK0867",
+        "sector_name": "富时罗素",
+        "sector_type": "concept",
+        "sector_change_pct": 0.14,
+        "latest_price": 15.25,
+        "change_pct": -1.61,
+        "turnover_rate": 0.33,
+        "volume_ratio": 0.51
+      },
+      {
+        "sector_code": "BK0879",
+        "sector_name": "标准普尔",
+        "sector_type": "concept",
+        "sector_change_pct": 0.12,
+        "latest_price": 15.25,
+        "change_pct": -1.61,
+        "turnover_rate": 0.33,
+        "volume_ratio": 0.51
+      },
+      {
+        "sector_code": "BK0683",
+        "sector_name": "央国企改革",
+        "sector_type": "concept",
+        "sector_change_pct": 0.36,
+        "latest_price": 15.25,
+        "change_pct": -1.61,
+        "turnover_rate": 0.33,
+        "volume_ratio": 0.51
+      }
+    ]
+  }
+}

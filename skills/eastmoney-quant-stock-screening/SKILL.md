@@ -1,0 +1,57 @@
+---
+name: eastmoney-quant-stock-screening
+description: Screen Chinese A-shares by valuation, liquidity, momentum, name, sector, or programmatic chart-pattern conditions. Use for general 选股, 条件筛选, 板块选股, 排名, or building a reproducible candidate universe; use eastmoney-quant-rising-patterns when every top candidate needs chart-by-chart review.
+---
+
+# Reproducible stock screening
+
+Screening produces candidates, not recommendations. Record the data cutoff, universe, filters, sort field, result count, and coverage so the result can be reproduced.
+
+## Choose the correct entry point
+
+- Numeric/name/sector conditions: `screen_stocks`.
+- Raw five-family pattern scan for stocks: `scan_patterns`.
+- Raw pattern scan for sector indices: `scan_sector_patterns`.
+- Ranked rising-structure workflow with 20 deep reviews: `screen_rising_candidates` followed by `prepare_stock_analysis` for every result.
+
+Call `get_data_status` first for market-wide scans. Below 95% K-line coverage, label the scan partial and do not imply that omitted stocks failed the filter.
+
+## Numeric screening
+
+`screen_stocks` supports:
+
+- price: `min_price`, `max_price`
+- daily move: `min_change_pct`, `max_change_pct`
+- activity: `min_volume_ratio`, `min_turnover_rate`, `max_turnover_rate`
+- valuation: `min_pe`, `max_pe`, `min_pb`, `max_pb`
+- size: `min_market_cap`, `max_market_cap`, `min_float_market_cap`
+- trend: `min_sixty_day_change`, `min_ytd_change`
+- range: `min_amplitude`, `max_amplitude`
+
+Also use `sector_code`, `name_keyword`, `top_n`, and a supported `sort_by`. State units and missing-value behavior; valuation filters can systematically exclude loss-making or incomplete records.
+
+## Pattern taxonomy
+
+The low-level engine has five detectors:
+
+| Detector | High-level label | Required interpretation |
+|---|---|---|
+| `trend_pullback` | trend pullback | Existing uptrend must remain intact; compare pullback depth and volume contraction |
+| `w_bottom` | W-bottom | Distinguish forming right bottom, neckline approach, breakout, and retest |
+| `m_neckline` | `neckline_reclaim` | Below-neckline rejection is bearish; only a reclaim/hold supports a bullish thesis |
+| `box_breakout` | box breakout | Report box dates, upper boundary, breakout volume, and whether price fell back inside |
+| `ma_rebound` | `major_ma_rebound` | MA120/250 support is a rebound by default, not proof of trend reversal |
+
+`fibonacci_confluence` is a high-level evidence filter. It requires an actual 0.382/0.5/0.618/0.786 price near another MA, trendline, or structural level and must not stand alone.
+
+## Top-down workflow
+
+1. Use `get_sector_list` to identify sector direction and capital flow, while checking sector K-line freshness separately.
+2. Use `screen_stocks(sector_code=...)` or numeric conditions to define the universe.
+3. Use `scan_patterns(symbols=[...])` when structure is required.
+4. Check `get_stock_belong_sectors` and `get_rank_trend_data` as context, not causal proof.
+5. For finalists, call `prepare_stock_analysis` and inspect monthly, weekly, and daily evidence.
+
+## Output
+
+Return a sortable table containing code/name, cutoff date, filter values, pattern/stage if applicable, score components, support/resistance/invalidation, sector context, and warnings. Include rejected-count or missing-data notes when available. Do not invent enough names to fill `top_n`; fewer qualifying stocks is a valid result.

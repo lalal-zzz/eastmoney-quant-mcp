@@ -43,7 +43,7 @@ def _pct(val, sign=True):
 def _get_kline_data(symbol: str, days: int = 250):
     """获取K线原始数据(最近N天)"""
     rows = query_stock_db(
-        "SELECT * FROM stock_kline WHERE symbol=? ORDER BY date ASC",
+        "SELECT * FROM stock_kline WHERE symbol=? AND adjust_type='qfq' ORDER BY date ASC",
         (symbol,),
     )
     return rows[-days:] if len(rows) > days else rows
@@ -55,7 +55,8 @@ def _get_indicator_data(symbol: str, limit: int = 250):
         """SELECT i.*, k.close, k.high, k.low
            FROM stock_indicators i
            JOIN stock_kline k ON i.symbol = k.symbol AND i.date = k.date
-           WHERE i.symbol=? ORDER BY i.date DESC LIMIT ?""",
+                AND i.adjust_type = k.adjust_type
+           WHERE i.symbol=? AND i.adjust_type='qfq' ORDER BY i.date DESC LIMIT ?""",
         (symbol, limit),
     )
     return list(reversed(rows))

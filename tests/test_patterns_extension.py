@@ -75,7 +75,8 @@ def _seed_stock_lib(db_path: str, kline_df: pd.DataFrame, symbol: str = "600000"
 @pytest.fixture
 def stock_lib(tmp_path, monkeypatch):
     db = str(tmp_path / "stock.db")
-    monkeypatch.setattr(storage, "STOCK_DB", db)
+    monkeypatch.setitem(storage._path_overrides, "STOCK_DB", db)
+    monkeypatch.setitem(storage._path_overrides, "STOCK_DIR", str(tmp_path))
     _orig_universe_defs = patterns._universe_defs
 
     def _patched_defs():

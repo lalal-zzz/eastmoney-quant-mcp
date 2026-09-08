@@ -34,12 +34,20 @@ process.stdin.pipe(proc.stdin)
 proc.stdout.pipe(process.stdout)
 proc.stderr.pipe(process.stderr)
 
-proc.on("exit", (code) => {
-  process.exit(code ?? 1)
+proc.on("error", (err) => {
+  console.error(`[eastmoney-quant-mcp] failed to start Python (${PYTHON}): ${err.message}`)
+  console.error("[eastmoney-quant-mcp] run `eastmoney-quant doctor` or set EASTMONEY_PYTHON to a valid interpreter.")
+  process.exit(1)
 })
 
-process.on("SIGTERM", () => proc.kill())
-process.on("SIGINT", () => proc.kill())
+proc.on("exit", (code, signal) => {
+  process.exit(code ?? (signal ? 1 : 0))
+})
+
+// 转发原始信号, 让 Python 侧能优雅收尾 (SIGTERM/SIGINT 由信号名对应转发)
+for (const sig of ["SIGTERM", "SIGINT"]) {
+  process.on(sig, () => proc.kill(sig))
+}
 
 function cleanup() {
   try { proc.kill() } catch (_) { /* ignore */ }

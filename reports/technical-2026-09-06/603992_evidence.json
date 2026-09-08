@@ -1,0 +1,708 @@
+{
+  "stock": {
+    "symbol": "603992",
+    "name": "松霖科技",
+    "latest_price": 21.31,
+    "change_pct": 0.38,
+    "change_amount": 0.08,
+    "volume": 30745.0,
+    "amount": 65802432.0,
+    "amplitude": 2.5,
+    "high": 21.7,
+    "low": 21.17,
+    "open": 21.23,
+    "pre_close": 21.23,
+    "volume_ratio": 0.81,
+    "turnover_rate": 0.69,
+    "pe_dynamic": 30.52,
+    "pb": 2.62,
+    "total_market_cap": 9441221184.0,
+    "float_market_cap": 9441221184.0,
+    "speed": null,
+    "sixty_day_change": -28.49,
+    "ytd_change": -47.59,
+    "updated_date": "2026-08-29"
+  },
+  "data_quality": {
+    "bars": 500,
+    "first_date": "2024-08-14",
+    "last_date": "2026-09-04",
+    "stale": false,
+    "adjust_type": "qfq"
+  },
+  "timeframes": {
+    "weekly": {
+      "period": "weekly",
+      "bars": 107,
+      "last_date": "2026-09-04",
+      "close": 20.74,
+      "trend": "down",
+      "moving_averages": {
+        "MA5": 21.746,
+        "MA10": 23.445,
+        "MA20": 27.644,
+        "MA60": 30.793
+      },
+      "recent_returns_pct": {
+        "return_5": -9.98,
+        "return_10": -33.16,
+        "return_20": -38.69
+      },
+      "range_20": {
+        "high": 34.91,
+        "low": 20.43
+      }
+    },
+    "monthly": {
+      "period": "monthly",
+      "bars": 26,
+      "last_date": "2026-09-30",
+      "close": 20.74,
+      "trend": "down",
+      "moving_averages": {
+        "MA5": 25.232,
+        "MA10": 30.926,
+        "MA20": 28.125
+      },
+      "recent_returns_pct": {
+        "return_5": -34.39,
+        "return_10": -27.48,
+        "return_20": 7.91
+      },
+      "range_20": {
+        "high": 47.74,
+        "low": 16.72
+      }
+    },
+    "daily": {
+      "period": "daily",
+      "bars": 500,
+      "last_date": "2026-09-04",
+      "close": 20.74,
+      "trend": "down",
+      "moving_averages": {
+        "MA5": 21.228,
+        "MA10": 21.256,
+        "MA20": 21.643,
+        "MA60": 25.363
+      },
+      "recent_returns_pct": {
+        "return_5": -2.67,
+        "return_10": -0.1,
+        "return_20": -12.38
+      },
+      "range_20": {
+        "high": 24.1,
+        "low": 20.43
+      }
+    }
+  },
+  "key_levels": {
+    "universe": "stocks",
+    "symbol": "603992",
+    "name": "松霖科技",
+    "date": "2026-09-04",
+    "close": 20.74,
+    "trend": "down",
+    "trend_cn": "下跌趋势",
+    "levels": [
+      {
+        "type": "前低(2026-08-19)",
+        "value": 20.43,
+        "distance_pct": -1.49
+      },
+      {
+        "type": "MA5",
+        "value": 21.228,
+        "distance_pct": 2.35
+      },
+      {
+        "type": "MA10",
+        "value": 21.256,
+        "distance_pct": 2.49
+      },
+      {
+        "type": "MA20",
+        "value": 21.643,
+        "distance_pct": 4.35
+      },
+      {
+        "type": "MA30",
+        "value": 22.292,
+        "distance_pct": 7.48
+      },
+      {
+        "type": "前高(2026-08-05)",
+        "value": 24.85,
+        "distance_pct": 19.82
+      },
+      {
+        "type": "MA60",
+        "value": 25.363,
+        "distance_pct": 22.29
+      },
+      {
+        "type": "MA120",
+        "value": 28.843,
+        "distance_pct": 39.07
+      },
+      {
+        "type": "反弹位382",
+        "value": 30.862,
+        "distance_pct": 48.81
+      },
+      {
+        "type": "MA250",
+        "value": 31.167,
+        "distance_pct": 50.28
+      },
+      {
+        "type": "MA200",
+        "value": 31.636,
+        "distance_pct": 52.54
+      },
+      {
+        "type": "反弹位500",
+        "value": 34.085,
+        "distance_pct": 64.34
+      },
+      {
+        "type": "反弹位618",
+        "value": 37.308,
+        "distance_pct": 79.88
+      }
+    ],
+    "resistance": [
+      {
+        "type": "MA5",
+        "value": 21.228,
+        "distance_pct": 2.35
+      },
+      {
+        "type": "MA10",
+        "value": 21.256,
+        "distance_pct": 2.49
+      },
+      {
+        "type": "MA20",
+        "value": 21.643,
+        "distance_pct": 4.35
+      },
+      {
+        "type": "MA30",
+        "value": 22.292,
+        "distance_pct": 7.48
+      },
+      {
+        "type": "前高(2026-08-05)",
+        "value": 24.85,
+        "distance_pct": 19.82
+      },
+      {
+        "type": "MA60",
+        "value": 25.363,
+        "distance_pct": 22.29
+      }
+    ],
+    "support": [
+      {
+        "type": "前低(2026-08-19)",
+        "value": 20.43,
+        "distance_pct": -1.49
+      }
+    ]
+  },
+  "patterns": [
+    {
+      "symbol": "603992",
+      "name": "松霖科技",
+      "date": "2026-08-31",
+      "pattern": "w_bottom",
+      "pattern_cn": "W底右底",
+      "variant": "right_bottom",
+      "close": 21.92,
+      "change_rate": 2.862505865790732,
+      "turnover": 1.68481183108177,
+      "turnover_ma20": 0.9016450636646445,
+      "updown_ratio_20": 1.0,
+      "up_days_ratio_20": 0.6,
+      "vol_ratio": 1.697922773255749,
+      "pullback_vol_shrink": NaN,
+      "rsi14": 43.93485224020095,
+      "ma_bull": 0,
+      "dif_above_zero": 0,
+      "bias60": -0.15720940962365337,
+      "hit_levels": "second_bottom",
+      "fib_level": "",
+      "resonance": 1,
+      "wave_phase": "base_rebound",
+      "break_days": 0,
+      "break_depth": 0.0,
+      "potential_gain": 0.13366788321167888,
+      "score": 37.23,
+      "trend": "down",
+      "macd_gold3": 0,
+      "dif_below0": 1,
+      "kdj_gold3": 0,
+      "kdj_j": 71.32967373800534,
+      "boll_pos": 0.4282409349570147,
+      "boll_width": 0.23654483130437373,
+      "rsi6": 58.4129785064628,
+      "macd_div": 0,
+      "left_bottom_date": "2026-07-27",
+      "left_bottom_price": 21.01,
+      "right_bottom_date": "2026-08-19",
+      "right_bottom_price": 20.43,
+      "neckline_date": "2026-08-05",
+      "neckline_value": 24.85,
+      "bottom_deviation_pct": 2.76,
+      "raw_pattern": "w_bottom",
+      "signal_date": "2026-08-31",
+      "stage": "candidate",
+      "confirmed": false,
+      "entry_status": "wait_confirmation",
+      "trend_state": "down",
+      "support": 20.43,
+      "resistance": 21.228,
+      "neckline": 24.85,
+      "invalid_level": 20.021,
+      "fib_levels": {
+        "0.382": 30.862,
+        "0.5": 34.085,
+        "0.618": 37.308
+      },
+      "evidence": [
+        "形态标准度 1.00",
+        "日线趋势 down",
+        "共振数 1",
+        "量能倍率 1.70",
+        "命中关键位 second_bottom"
+      ],
+      "warnings": [
+        "日线趋势仍偏弱"
+      ],
+      "score_raw": 1.0,
+      "score_breakdown": {
+        "pattern": 30.0,
+        "daily": 3.0,
+        "higher_timeframe": 3.0,
+        "volume": 12.73,
+        "sector": 0.0,
+        "confluence": 3.5,
+        "risk_penalty": 15.0
+      },
+      "factors": {
+        "change_rate": 2.862505865790732,
+        "turnover": 1.68481183108177,
+        "vol_ratio": 1.697922773255749,
+        "bias60": -0.15720940962365337,
+        "rsi14": 43.93485224020095,
+        "resonance": 1,
+        "wave_phase": "base_rebound",
+        "potential_gain": 0.13366788321167888
+      }
+    }
+  ],
+  "sector_context": [
+    {
+      "sector_code": "BK0680",
+      "sector_name": "智能家居",
+      "sector_type": "concept",
+      "sector_change_pct": -0.83,
+      "latest_price": 22.72,
+      "change_pct": 0.84,
+      "turnover_rate": 0.31,
+      "volume_ratio": 1.06
+    },
+    {
+      "sector_code": "BK1090",
+      "sector_name": "机器人概念",
+      "sector_type": "concept",
+      "sector_change_pct": -1.03,
+      "latest_price": 22.72,
+      "change_pct": 0.84,
+      "turnover_rate": 0.31,
+      "volume_ratio": 1.06
+    },
+    {
+      "sector_code": "BK1633",
+      "sector_name": "昨日高振幅",
+      "sector_type": "concept",
+      "sector_change_pct": -0.76,
+      "latest_price": 22.72,
+      "change_pct": 0.84,
+      "turnover_rate": 0.31,
+      "volume_ratio": 1.06
+    },
+    {
+      "sector_code": "BK1749",
+      "sector_name": "2026中报预增",
+      "sector_type": "concept",
+      "sector_change_pct": -1.11,
+      "latest_price": 20.76,
+      "change_pct": 0.48,
+      "turnover_rate": 0.64,
+      "volume_ratio": 0.79
+    },
+    {
+      "sector_code": "BK0707",
+      "sector_name": "沪股通",
+      "sector_type": "concept",
+      "sector_change_pct": -0.44,
+      "latest_price": 20.76,
+      "change_pct": 0.48,
+      "turnover_rate": 0.64,
+      "volume_ratio": 0.79
+    },
+    {
+      "sector_code": "BK1643",
+      "sector_name": "小盘股",
+      "sector_type": "concept",
+      "sector_change_pct": -0.63,
+      "latest_price": 20.76,
+      "change_pct": 0.48,
+      "turnover_rate": 0.64,
+      "volume_ratio": 0.79
+    },
+    {
+      "sector_code": "BK1680",
+      "sector_name": "2026一季报预增",
+      "sector_type": "concept",
+      "sector_change_pct": -1.37,
+      "latest_price": 20.76,
+      "change_pct": 0.48,
+      "turnover_rate": 0.64,
+      "volume_ratio": 0.79
+    },
+    {
+      "sector_code": "BK1184",
+      "sector_name": "人形机器人",
+      "sector_type": "concept",
+      "sector_change_pct": -1.84,
+      "latest_price": 20.76,
+      "change_pct": 0.48,
+      "turnover_rate": 0.64,
+      "volume_ratio": 0.79
+    },
+    {
+      "sector_code": "BK1668",
+      "sector_name": "小盘价值",
+      "sector_type": "concept",
+      "sector_change_pct": 0.26,
+      "latest_price": 20.76,
+      "change_pct": 0.48,
+      "turnover_rate": 0.64,
+      "volume_ratio": 0.79
+    },
+    {
+      "sector_code": "BK1199",
+      "sector_name": "2025三季报预减",
+      "sector_type": "concept",
+      "sector_change_pct": -1.25,
+      "latest_price": 20.76,
+      "change_pct": 0.48,
+      "turnover_rate": 0.64,
+      "volume_ratio": 0.79
+    },
+    {
+      "sector_code": "BK0440",
+      "sector_name": "家居用品",
+      "sector_type": "industry",
+      "sector_change_pct": 0.28,
+      "latest_price": 20.76,
+      "change_pct": 0.48,
+      "turnover_rate": 0.64,
+      "volume_ratio": 0.79
+    },
+    {
+      "sector_code": "BK0955",
+      "sector_name": "C2M概念",
+      "sector_type": "concept",
+      "sector_change_pct": 0.41,
+      "latest_price": 21.31,
+      "change_pct": 0.38,
+      "turnover_rate": 0.69,
+      "volume_ratio": 0.81
+    }
+  ],
+  "popularity": [
+    {
+      "rank_date": "2026-08-29",
+      "popularity_rank": 3552.0,
+      "change_pct": 0.38,
+      "latest_price": 21.31
+    },
+    {
+      "rank_date": "2026-08-21",
+      "popularity_rank": 3607.0,
+      "change_pct": 0.48,
+      "latest_price": 20.76
+    }
+  ],
+  "charts": {
+    "daily": "C:\\Users\\20127\\Desktop\\K线图片\\松霖科技_603992_daily.png",
+    "weekly": "C:\\Users\\20127\\Desktop\\K线图片\\松霖科技_603992_weekly.png",
+    "monthly": "C:\\Users\\20127\\Desktop\\K线图片\\松霖科技_603992_monthly.png",
+    "bars": {
+      "daily": 500,
+      "weekly": 107,
+      "monthly": 26
+    }
+  },
+  "warnings": [],
+  "review_metrics": {
+    "ma": {
+      "20": 21.642999999999997,
+      "60": 25.363500000000002,
+      "120": 28.843500000000002,
+      "250": 31.16744
+    },
+    "ma20_change_5_pct": -3.437660338635218,
+    "ma60_change_5_pct": -3.1551683541323206,
+    "volume5_over20": 1.0340099904857383,
+    "last_volume_over_previous20": 0.7143835619707574,
+    "distance_ma20_pct": -4.172249688120866,
+    "distance_ma60_pct": -18.228951051708176,
+    "last20_high": 24.1,
+    "last20_low": 20.43,
+    "last60_high": 34.31,
+    "last60_low": 20.43,
+    "return20_pct": -12.37853823405155
+  },
+  "screen_signal": {
+    "symbol": "603992",
+    "name": "松霖科技",
+    "date": "2026-08-31",
+    "pattern": "w_bottom",
+    "pattern_cn": "W底右底",
+    "variant": "right_bottom",
+    "close": 21.92,
+    "change_rate": 2.862505865790732,
+    "turnover": 1.68481183108177,
+    "turnover_ma20": 0.9016450636646445,
+    "updown_ratio_20": 1.0,
+    "up_days_ratio_20": 0.6,
+    "vol_ratio": 1.697922773255749,
+    "pullback_vol_shrink": NaN,
+    "rsi14": 43.93485224020095,
+    "ma_bull": 0,
+    "dif_above_zero": 0,
+    "bias60": -0.15720940962365337,
+    "hit_levels": "second_bottom",
+    "fib_level": "",
+    "resonance": 1,
+    "wave_phase": "base_rebound",
+    "break_days": 0,
+    "break_depth": 0.0,
+    "potential_gain": 0.13366788321167888,
+    "score": 43.23,
+    "trend": "down",
+    "macd_gold3": 0,
+    "dif_below0": 1,
+    "kdj_gold3": 0,
+    "kdj_j": 71.32967373800534,
+    "boll_pos": 0.4282409349570147,
+    "boll_width": 0.23654483130437373,
+    "rsi6": 58.4129785064628,
+    "macd_div": 0,
+    "left_bottom_date": "2026-07-27",
+    "left_bottom_price": 21.01,
+    "right_bottom_date": "2026-08-19",
+    "right_bottom_price": 20.43,
+    "neckline_date": "2026-08-05",
+    "neckline_value": 24.85,
+    "bottom_deviation_pct": 2.76,
+    "raw_pattern": "w_bottom",
+    "signal_date": "2026-08-31",
+    "stage": "candidate",
+    "confirmed": false,
+    "entry_status": "wait_confirmation",
+    "trend_state": "down",
+    "support": 20.43,
+    "resistance": 21.228,
+    "neckline": 24.85,
+    "invalid_level": 20.021,
+    "fib_levels": {
+      "0.382": 30.862,
+      "0.5": 34.085,
+      "0.618": 37.308
+    },
+    "evidence": [
+      "形态标准度 1.00",
+      "日线趋势 down",
+      "共振数 1",
+      "量能倍率 1.70",
+      "命中关键位 second_bottom"
+    ],
+    "warnings": [
+      "日线趋势仍偏弱"
+    ],
+    "score_raw": 1.0,
+    "score_breakdown": {
+      "pattern": 30.0,
+      "daily": 3.0,
+      "higher_timeframe": 3.0,
+      "volume": 12.73,
+      "sector": 6.0,
+      "confluence": 3.5,
+      "risk_penalty": 15.0
+    },
+    "factors": {
+      "change_rate": 2.862505865790732,
+      "turnover": 1.68481183108177,
+      "vol_ratio": 1.697922773255749,
+      "bias60": -0.15720940962365337,
+      "rsi14": 43.93485224020095,
+      "resonance": 1,
+      "wave_phase": "base_rebound",
+      "potential_gain": 0.13366788321167888
+    },
+    "higher_timeframe": {
+      "weekly": {
+        "period": "weekly",
+        "bars": 90,
+        "last_date": "2026-09-04",
+        "close": 20.74,
+        "trend": "down",
+        "moving_averages": {
+          "MA5": 21.746,
+          "MA10": 23.445,
+          "MA20": 27.644,
+          "MA60": 30.793
+        },
+        "recent_returns_pct": {
+          "return_5": -9.98,
+          "return_10": -33.16,
+          "return_20": -38.69
+        },
+        "range_20": {
+          "high": 34.91,
+          "low": 20.43
+        }
+      },
+      "monthly": {
+        "period": "monthly",
+        "bars": 22,
+        "last_date": "2026-09-30",
+        "close": 20.74,
+        "trend": "down",
+        "moving_averages": {
+          "MA5": 25.232,
+          "MA10": 30.926,
+          "MA20": 28.125
+        },
+        "recent_returns_pct": {
+          "return_5": -34.39,
+          "return_10": -27.48,
+          "return_20": 7.91
+        },
+        "range_20": {
+          "high": 47.74,
+          "low": 16.72
+        }
+      }
+    },
+    "sectors": [
+      {
+        "sector_code": "BK0680",
+        "sector_name": "智能家居",
+        "sector_type": "concept",
+        "sector_change_pct": -0.83,
+        "latest_price": 22.72,
+        "change_pct": 0.84,
+        "turnover_rate": 0.31,
+        "volume_ratio": 1.06
+      },
+      {
+        "sector_code": "BK1090",
+        "sector_name": "机器人概念",
+        "sector_type": "concept",
+        "sector_change_pct": -1.03,
+        "latest_price": 22.72,
+        "change_pct": 0.84,
+        "turnover_rate": 0.31,
+        "volume_ratio": 1.06
+      },
+      {
+        "sector_code": "BK1633",
+        "sector_name": "昨日高振幅",
+        "sector_type": "concept",
+        "sector_change_pct": -0.76,
+        "latest_price": 22.72,
+        "change_pct": 0.84,
+        "turnover_rate": 0.31,
+        "volume_ratio": 1.06
+      },
+      {
+        "sector_code": "BK1749",
+        "sector_name": "2026中报预增",
+        "sector_type": "concept",
+        "sector_change_pct": -1.11,
+        "latest_price": 20.76,
+        "change_pct": 0.48,
+        "turnover_rate": 0.64,
+        "volume_ratio": 0.79
+      },
+      {
+        "sector_code": "BK0707",
+        "sector_name": "沪股通",
+        "sector_type": "concept",
+        "sector_change_pct": -0.44,
+        "latest_price": 20.76,
+        "change_pct": 0.48,
+        "turnover_rate": 0.64,
+        "volume_ratio": 0.79
+      },
+      {
+        "sector_code": "BK1643",
+        "sector_name": "小盘股",
+        "sector_type": "concept",
+        "sector_change_pct": -0.63,
+        "latest_price": 20.76,
+        "change_pct": 0.48,
+        "turnover_rate": 0.64,
+        "volume_ratio": 0.79
+      },
+      {
+        "sector_code": "BK1680",
+        "sector_name": "2026一季报预增",
+        "sector_type": "concept",
+        "sector_change_pct": -1.37,
+        "latest_price": 20.76,
+        "change_pct": 0.48,
+        "turnover_rate": 0.64,
+        "volume_ratio": 0.79
+      },
+      {
+        "sector_code": "BK1184",
+        "sector_name": "人形机器人",
+        "sector_type": "concept",
+        "sector_change_pct": -1.84,
+        "latest_price": 20.76,
+        "change_pct": 0.48,
+        "turnover_rate": 0.64,
+        "volume_ratio": 0.79
+      },
+      {
+        "sector_code": "BK1668",
+        "sector_name": "小盘价值",
+        "sector_type": "concept",
+        "sector_change_pct": 0.26,
+        "latest_price": 20.76,
+        "change_pct": 0.48,
+        "turnover_rate": 0.64,
+        "volume_ratio": 0.79
+      },
+      {
+        "sector_code": "BK1199",
+        "sector_name": "2025三季报预减",
+        "sector_type": "concept",
+        "sector_change_pct": -1.25,
+        "latest_price": 20.76,
+        "change_pct": 0.48,
+        "turnover_rate": 0.64,
+        "volume_ratio": 0.79
+      }
+    ]
+  }
+}

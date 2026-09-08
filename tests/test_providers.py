@@ -272,7 +272,7 @@ def test_sohu_bk_index_from_html(monkeypatch):
         return html
 
     monkeypatch.setattr(sohu, "http_get_text", fake_text)
-    sohu._bk_index.clear()
+    sohu._bk_index_cache._value = None   # 清空 TtlCache
     index = sohu.get_name_bk_index(refresh=True)
     assert index["食品饮料"] == "3122"
     assert index["银行"] == "3098"

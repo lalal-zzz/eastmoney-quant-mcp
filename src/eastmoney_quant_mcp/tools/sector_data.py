@@ -9,7 +9,6 @@ push2 clist 接口单页上限 100 条(pz>100 会被截断), 分页采用
 """
 
 import asyncio
-import math
 
 from ..data.network import http_get, normalize_sector_code, rotated
 
@@ -33,13 +32,8 @@ def _try_push2(params: dict, timeout: int = 15) -> dict | None:
     return None
 
 
-def _safe_float(val) -> float | None:
-    if val is None or val == "-" or val == "":
-        return None
-    try:
-        return float(val)
-    except (ValueError, TypeError):
-        return None
+from ..data.paging import fetch_all_pages
+from ..data.util import parse_em_kline_rows, safe_float as _safe_float  # noqa: E402
 
 
 # ── clist 并发分页 ──
@@ -59,29 +53,11 @@ def _extract_diff(payload: dict | None) -> tuple[list, int]:
 
 
 async def _fetch_all_pages(base_params: dict) -> list[dict]:
-    """先取第 1 页拿 total, 再并发拉取剩余页(单页请求各自含多 host 重试)"""
+    """统一分页 (data/paging): 单页请求各自含多 host 重试"""
     params = {**base_params, "pz": str(_PAGE_SIZE)}
-    first = await asyncio.to_thread(_try_push2, {**params, "pn": "1"})
-    recs, total = _extract_diff(first)
-    if not recs:
-        return []
-
-    pages = math.ceil(total / _PAGE_SIZE)
-    if pages <= 1:
-        return recs
-
-    sem = asyncio.Semaphore(_PAGE_CONCURRENCY)
-
-    async def _page(pn: int) -> list:
-        async with sem:
-            r = await asyncio.to_thread(_try_push2, {**params, "pn": str(pn)})
-            page_recs, _ = _extract_diff(r)
-            return page_recs
-
-    chunks = await asyncio.gather(*(_page(p) for p in range(2, pages + 1)))
-    for chunk in chunks:
-        recs.extend(chunk)
-    return recs
+    return await fetch_all_pages(
+        lambda pn: _try_push2({**params, "pn": str(pn)}), _extract_diff,
+        page_size=_PAGE_SIZE, concurrency=_PAGE_CONCURRENCY)
 
 
 # ── 板块列表 + 行情 ──
@@ -251,21 +227,10 @@ def _sector_kline_net_sync(sector_code: str, limit: int = 120, klt: int = 101,
     if not klines_list:
         return []
 
-    cols = ["trade_date", "open", "close", "high", "low", "volume", "turnover",
+    cols = ["open", "close", "high", "low", "volume", "turnover",
             "amplitude", "change_pct", "change_amount", "turnover_rate"]
-
-    items = []
-    for row_str in klines_list:
-        parts = row_str.split(",")
-        if len(parts) >= len(cols):
-            item = {"sector_code": code, "sector_name": sector_name or box.get("name", code)}
-            for i, c in enumerate(cols):
-                v = parts[i].strip()
-                try:
-                    item[c] = float(v) if v not in ("-", "") else None
-                except ValueError:
-                    item[c] = v
-            items.append(item)
-
-    return items
+    return parse_em_kline_rows(
+        klines_list,
+        {"sector_code": code, "sector_name": sector_name or box.get("name", code)},
+        "trade_date", cols)
 
