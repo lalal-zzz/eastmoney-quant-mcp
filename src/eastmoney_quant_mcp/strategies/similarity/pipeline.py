@@ -1,256 +1,28 @@
-"""Price-volume shape similarity across different K-line timeframes.
-
-The engine compares normalized paths rather than absolute prices or bar duration.
-It is intentionally descriptive: a high score means the shapes are alike, not
-that the historical outcome must repeat.
 """
+similarity/pipeline.py — IO/编排层: 候选池加载 + 粗筛 + 全量评分 + 对外入口
+
+compare_cross_timeframe_patterns      核心比对 (内存中的候选序列)
+find_cross_timeframe_similar_patterns 异步入口 (self / symbols / market 三种候选范围)
+"""
+
 from __future__ import annotations
 
 import asyncio
 import heapq
-import math
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Iterable
 
 import numpy as np
-import pandas as pd
 
-
-PERIOD_LABELS = {
-    "1": "1m", "5": "5m", "15": "15m", "30": "30m", "60": "60m",
-    "101": "daily", "102": "weekly", "103": "monthly",
-}
-DEFAULT_WEIGHTS = {
-    "price_path": 0.45,
-    "drawdown_path": 0.15,
-    "range_path": 0.10,
-    "volume_path": 0.15,
-    "turning_path": 0.15,
-}
-
-
-def _frame(rows: Iterable[dict]) -> pd.DataFrame:
-    df = pd.DataFrame(list(rows))
-    if df.empty:
-        return df
-    time_col = "datetime" if "datetime" in df.columns else "date"
-    required = {time_col, "high", "low", "close"}
-    missing = required.difference(df.columns)
-    if missing:
-        raise ValueError(f"K线缺少字段: {sorted(missing)}")
-    df = df.rename(columns={time_col: "timestamp"})
-    df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
-    for col in ("open", "high", "low", "close", "volume"):
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="coerce")
-    df = df.dropna(subset=["timestamp", "high", "low", "close"])
-    df = df[(df["close"] > 0) & (df["high"] > 0) & (df["low"] > 0)]
-    df = df[df["high"] >= df["low"]]
-    return (df.sort_values("timestamp")
-            .drop_duplicates("timestamp", keep="last")
-            .reset_index(drop=True))
-
-
-def _resample(values: np.ndarray, points: int) -> np.ndarray:
-    if len(values) == points:
-        return values.astype(float)
-    source = np.linspace(0.0, 1.0, len(values))
-    target = np.linspace(0.0, 1.0, points)
-    return np.interp(target, source, values).astype(float)
-
-
-def _standardize(values: np.ndarray) -> np.ndarray:
-    values = np.asarray(values, dtype=float)
-    scale = float(np.std(values))
-    if not math.isfinite(scale) or scale < 1e-12:
-        return np.zeros_like(values)
-    return (values - float(np.mean(values))) / scale
-
-
-def _relative_drawdown(close: np.ndarray) -> np.ndarray:
-    drawdown = close / np.maximum.accumulate(close) - 1.0
-    scale = abs(float(np.min(drawdown)))
-    return drawdown / scale if scale > 1e-12 else drawdown
-
-
-def _features(df: pd.DataFrame, points: int = 64) -> tuple[dict[str, np.ndarray], bool]:
-    close = df["close"].to_numpy(dtype=float)
-    high = df["high"].to_numpy(dtype=float)
-    low = df["low"].to_numpy(dtype=float)
-    log_close = np.log(close)
-
-    price = _standardize(_resample(log_close, points))
-    drawdown = _resample(_relative_drawdown(close), points)
-    intrabar_range = np.maximum(high - low, 0.0) / close
-    range_path = _standardize(_resample(intrabar_range, points))
-
-    # A smoothed first derivative encodes turning points without hard Elliott labels.
-    smooth = pd.Series(price).rolling(5, center=True, min_periods=1).mean().to_numpy()
-    turning = _standardize(np.gradient(smooth))
-
-    has_volume = "volume" in df.columns and int((df["volume"] > 0).sum()) >= len(df) // 2
-    if has_volume:
-        volume = _standardize(_resample(np.log1p(df["volume"].fillna(0).to_numpy()), points))
-    else:
-        volume = np.zeros(points)
-    return {
-        "price_path": price,
-        "drawdown_path": drawdown,
-        "range_path": range_path,
-        "volume_path": volume,
-        "turning_path": turning,
-    }, has_volume
-
-
-def _dtw_distance(left: np.ndarray, right: np.ndarray, band: int = 8) -> float:
-    """Banded DTW average absolute distance."""
-    n, m = len(left), len(right)
-    band = max(band, abs(n - m))
-    costs = np.full((n + 1, m + 1), np.inf)
-    steps = np.zeros((n + 1, m + 1), dtype=int)
-    costs[0, 0] = 0.0
-    for i in range(1, n + 1):
-        for j in range(max(1, i - band), min(m, i + band) + 1):
-            choices = ((costs[i - 1, j], steps[i - 1, j]),
-                       (costs[i, j - 1], steps[i, j - 1]),
-                       (costs[i - 1, j - 1], steps[i - 1, j - 1]))
-            prior_cost, prior_steps = min(choices, key=lambda item: item[0])
-            costs[i, j] = prior_cost + abs(float(left[i - 1] - right[j - 1]))
-            steps[i, j] = prior_steps + 1
-    return float(costs[n, m] / max(steps[n, m], 1))
-
-
-def _component_scores(query: dict[str, np.ndarray], candidate: dict[str, np.ndarray],
-                      use_volume: bool) -> tuple[float, dict[str, float]]:
-    weights = dict(DEFAULT_WEIGHTS)
-    if not use_volume:
-        removed = weights.pop("volume_path")
-        total = sum(weights.values())
-        weights = {key: value * (total + removed) / total for key, value in weights.items()}
-
-    scores = {}
-    for key in weights:
-        if key == "price_path":
-            distance = _dtw_distance(query[key], candidate[key])
-        else:
-            distance = float(np.sqrt(np.mean((query[key] - candidate[key]) ** 2)))
-        scores[key] = math.exp(-distance)
-    total_score = sum(scores[key] * weights[key] for key in weights)
-    return total_score, scores
-
-
-def _forward_stats(df: pd.DataFrame, end_idx: int, horizons: Iterable[int]) -> dict:
-    close = float(df.iloc[end_idx]["close"])
-    result = {}
-    for horizon in horizons:
-        future = df.iloc[end_idx + 1:end_idx + horizon + 1]
-        if len(future) < horizon:
-            continue
-        result[str(horizon)] = {
-            "return_pct": round((float(future.iloc[-1]["close"]) / close - 1.0) * 100.0, 2),
-            "max_gain_pct": round((float(future["high"].max()) / close - 1.0) * 100.0, 2),
-            "max_drawdown_pct": round((float(future["low"].min()) / close - 1.0) * 100.0, 2),
-        }
-    return result
-
-
-def _shape_metrics(df: pd.DataFrame) -> dict:
-    first = float(df.iloc[0]["close"])
-    last = float(df.iloc[-1]["close"])
-    close = df["close"].to_numpy(dtype=float)
-    drawdown = close / np.maximum.accumulate(close) - 1.0
-    return {
-        "return_pct": round((last / first - 1.0) * 100.0, 2),
-        "max_drawdown_pct": round(float(np.min(drawdown)) * 100.0, 2),
-        "range_pct": round((float(df["high"].max()) / float(df["low"].min()) - 1.0) * 100.0, 2),
-    }
-
-
-def _summarize_outcomes(matches: list[dict], horizons: Iterable[int]) -> dict:
-    summary = {}
-    for horizon in horizons:
-        values = [match["forward"][str(horizon)]["return_pct"] for match in matches
-                  if str(horizon) in match["forward"]]
-        drawdowns = [match["forward"][str(horizon)]["max_drawdown_pct"] for match in matches
-                     if str(horizon) in match["forward"]]
-        if values:
-            summary[str(horizon)] = {
-                "samples": len(values),
-                "average_return_pct": round(float(np.mean(values)), 2),
-                "median_return_pct": round(float(np.median(values)), 2),
-                "win_rate_pct": round(sum(value > 0 for value in values) / len(values) * 100.0, 2),
-                "worst_return_pct": round(min(values), 2),
-                "average_max_drawdown_pct": round(float(np.mean(drawdowns)), 2),
-            }
-    return summary
-
-
-def _outcome_probabilities(matches: list[dict], horizons: Iterable[int],
-                           move_threshold_pct: float) -> dict:
-    """Historical conditional frequencies, both equal- and similarity-weighted."""
-    result = {}
-    for horizon in horizons:
-        usable = [match for match in matches if str(horizon) in match["forward"]]
-        if not usable:
-            continue
-        returns = np.array(
-            [match["forward"][str(horizon)]["return_pct"] for match in usable], dtype=float)
-        weights = np.array([max(float(match["score"]), 1e-9) for match in usable])
-        weights /= weights.sum()
-        up = returns > move_threshold_pct
-        down = returns < -move_threshold_pct
-        sideways = ~(up | down)
-
-        def raw_pct(mask):
-            return round(float(np.mean(mask)) * 100.0, 2)
-
-        def weighted_pct(mask):
-            return round(float(weights[mask].sum()) * 100.0, 2)
-
-        gains = np.array(
-            [match["forward"][str(horizon)]["max_gain_pct"] for match in usable])
-        drawdowns = np.array(
-            [match["forward"][str(horizon)]["max_drawdown_pct"] for match in usable])
-        sample_size = len(usable)
-        result[str(horizon)] = {
-            "sample_size": sample_size,
-            "threshold_pct": move_threshold_pct,
-            "probability_pct": {
-                "up": raw_pct(up),
-                "sideways": raw_pct(sideways),
-                "down": raw_pct(down),
-                "positive_close": raw_pct(returns > 0),
-                "reached_plus_5": raw_pct(gains >= 5.0),
-                "touched_minus_5": raw_pct(drawdowns <= -5.0),
-            },
-            "similarity_weighted_probability_pct": {
-                "up": weighted_pct(up),
-                "sideways": weighted_pct(sideways),
-                "down": weighted_pct(down),
-            },
-            "average_return_pct": round(float(np.mean(returns)), 2),
-            "median_return_pct": round(float(np.median(returns)), 2),
-            "confidence": ("high" if sample_size >= 50 else
-                           "medium" if sample_size >= 20 else "low"),
-        }
-    return result
-
-
-def _coarse_price_scores(close: np.ndarray, window: int,
-                         query_price: np.ndarray) -> np.ndarray:
-    """Vectorized fixed-window price-path scores used before full DTW scoring."""
-    source = np.lib.stride_tricks.sliding_window_view(np.log(close), window)
-    positions = np.linspace(0.0, window - 1, len(query_price))
-    lower = np.floor(positions).astype(int)
-    upper = np.ceil(positions).astype(int)
-    fraction = positions - lower
-    sampled = source[:, lower] * (1.0 - fraction) + source[:, upper] * fraction
-    means = sampled.mean(axis=1, keepdims=True)
-    scales = sampled.std(axis=1, keepdims=True)
-    normalized = np.divide(sampled - means, scales,
-                           out=np.zeros_like(sampled), where=scales >= 1e-12)
-    distances = np.sqrt(np.mean((normalized - query_price) ** 2, axis=1))
-    return np.exp(-distances)
+from ...core.parallel import run_parallel
+from .features import (
+    DEFAULT_WEIGHTS,
+    PERIOD_LABELS,
+    _coarse_price_scores,
+    _component_scores,
+    _features,
+    _frame,
+)
+from .outcomes import _forward_stats, _outcome_probabilities, _shape_metrics, _summarize_outcomes
 
 
 def compare_cross_timeframe_patterns(
@@ -411,6 +183,9 @@ def compare_cross_timeframe_patterns(
     }
 
 
+# ── 本地候选池加载 ──
+
+
 def _period_rows(daily_rows: Iterable[dict], period: str, limit: int) -> list[dict]:
     df = _frame(daily_rows)
     if df.empty:
@@ -433,8 +208,8 @@ def _period_rows(daily_rows: Iterable[dict], period: str, limit: int) -> list[di
 
 def _candidate_universe(scope: str, symbols: list[str] | None,
                         max_symbols: int) -> list[dict]:
-    from ..data.network import normalize_symbol
-    from ..data.storage import query_stock_db
+    from ...data.network import normalize_symbol
+    from ...data.storage import query_stock_db
 
     if scope == "symbols":
         if not symbols:
@@ -466,7 +241,7 @@ def _candidate_universe(scope: str, symbols: list[str] | None,
 def _load_local_candidate_sets(items: list[dict], periods: list[str],
                                daily_limit: int, period_limit: int,
                                adjust: str, workers: int) -> tuple[dict, dict, list[str]]:
-    from ..data.search import get_stock_kline_local
+    from ...data.search import get_stock_kline_local
 
     sets = {}
     metadata = {}
@@ -479,25 +254,79 @@ def _load_local_candidate_sets(items: list[dict], periods: list[str],
                    for period in periods} if len(rows) >= 30 else {}
         return item, sampled
 
-    with ThreadPoolExecutor(max_workers=max(1, min(workers, 16))) as pool:
-        futures = [pool.submit(load, item) for item in items]
-        for future in as_completed(futures):
-            item, sampled = future.result()
-            if not sampled:
-                skipped.append(item["symbol"])
+    for _item, result in run_parallel(items, load, workers=max(1, min(workers, 16))):
+        if isinstance(result, Exception):
+            raise result
+        item, sampled = result
+        if not sampled:
+            skipped.append(item["symbol"])
+            continue
+        for period in periods:
+            rows = sampled[period]
+            if len(rows) < 12:
                 continue
-            for period in periods:
-                rows = sampled[period]
-                if len(rows) < 12:
-                    continue
-                key = f"{item['symbol']}:{period}"
-                sets[key] = rows
-                metadata[key] = {
-                    "symbol": item["symbol"],
-                    "name": item.get("name"),
-                    "period": period,
-                }
+            key = f"{item['symbol']}:{period}"
+            sets[key] = rows
+            metadata[key] = {
+                "symbol": item["symbol"],
+                "name": item.get("name"),
+                "period": period,
+            }
     return sets, metadata, skipped
+
+
+def _extract_coarse_records(query_rows: list[dict], candidate_sets: dict,
+                            metadata: dict, query_bars: int, windows: list[int],
+                            search_mode: str,
+                            per_series_limit: int = 10) -> tuple[list[dict], int]:
+    """Keep diverse coarse matches while the source history is still in memory."""
+    query_df = _frame(query_rows)
+    query_features, _ = _features(query_df.tail(query_bars))
+    query_start = query_df.tail(query_bars).iloc[0]["timestamp"]
+    forward_tail = 20 if search_mode == "history" else 0
+    records = []
+    evaluated = 0
+    for candidate_key, rows in candidate_sets.items():
+        candidate_df = _frame(rows)
+        if candidate_df.empty:
+            continue
+        latest_end = len(candidate_df) - forward_tail - 1
+        if search_mode == "history":
+            before_query = np.flatnonzero(candidate_df["timestamp"].to_numpy() < query_start)
+            if not len(before_query):
+                continue
+            latest_end = min(latest_end, int(before_query[-1]) - forward_tail)
+        for window in windows:
+            if latest_end < window - 1:
+                continue
+            close = candidate_df["close"].to_numpy(dtype=float)[:latest_end + 1]
+            scores = _coarse_price_scores(close, window, query_features["price_path"])
+            evaluated += len(scores)
+            if search_mode == "latest":
+                selected_indices = [len(scores) - 1]
+            else:
+                selected_indices = []
+                min_separation = max(1, window // 2)
+                for row_idx in np.argsort(scores)[::-1]:
+                    if all(abs(int(row_idx) - kept) >= min_separation
+                           for kept in selected_indices):
+                        selected_indices.append(int(row_idx))
+                    if len(selected_indices) >= per_series_limit:
+                        break
+            for row_idx in selected_indices:
+                end_idx = row_idx + window - 1
+                segment = candidate_df.iloc[
+                    row_idx:end_idx + forward_tail + 1].copy()
+                segment = segment.rename(columns={"timestamp": "date"})
+                records.append({
+                    "coarse_score": float(scores[row_idx]),
+                    "candidate_key": candidate_key,
+                    "period": metadata[candidate_key]["period"],
+                    "symbol": metadata[candidate_key].get("symbol"),
+                    "name": metadata[candidate_key].get("name"),
+                    "rows": segment.where(segment.notna(), None).to_dict(orient="records"),
+                })
+    return records, evaluated
 
 
 def _compare_local_batches(query_rows: list[dict], items: list[dict], periods: list[str],
@@ -505,15 +334,16 @@ def _compare_local_batches(query_rows: list[dict], items: list[dict], periods: l
                            workers: int, query_bars: int, windows: list[int],
                            top_n: int, min_score: float, search_mode: str,
                            probability_sample_size: int, move_threshold_pct: float,
-                           batch_size: int = 200) -> tuple[dict, dict]:
+                           batch_size: int = 50) -> tuple[dict, dict]:
     """Load and compare a large local universe in bounded-memory batches."""
-    all_matches = []
     all_skipped = []
     loaded_symbols = set()
     loaded_series = 0
     evaluated = 0
-    fully_scored = 0
-    base_result = None
+    pool_size = max(top_n, probability_sample_size)
+    global_prefilter_limit = max(1000, pool_size * 10)
+    coarse_heap = []
+    sequence = 0
     for offset in range(0, len(items), batch_size):
         batch = items[offset:offset + batch_size]
         sets, metadata, skipped = _load_local_candidate_sets(
@@ -523,40 +353,46 @@ def _compare_local_batches(query_rows: list[dict], items: list[dict], periods: l
             continue
         loaded_series += len(sets)
         loaded_symbols.update(item.get("symbol") for item in metadata.values())
-        pool_size = max(top_n, probability_sample_size)
-        partial = compare_cross_timeframe_patterns(
-            query_rows, sets, query_bars=query_bars,
-            candidate_window_bars=windows, top_n=pool_size, min_score=min_score,
-            cutoff_at_query_start=search_mode == "history",
-            candidate_metadata=metadata,
-            candidate_latest_only=search_mode == "latest",
-            require_forward=search_mode == "history",
-            probability_sample_size=pool_size,
-            move_threshold_pct=move_threshold_pct,
-        )
-        base_result = base_result or partial
-        evaluated += partial["evaluated_windows"]
-        fully_scored += partial["fully_scored_windows"]
-        all_matches.extend(partial["matches"])
-    if base_result is None:
+        records, batch_evaluated = _extract_coarse_records(
+            query_rows, sets, metadata, query_bars, windows, search_mode)
+        evaluated += batch_evaluated
+        for record in records:
+            entry = (record["coarse_score"], sequence, record)
+            sequence += 1
+            if len(coarse_heap) < global_prefilter_limit:
+                heapq.heappush(coarse_heap, entry)
+            elif entry[0] > coarse_heap[0][0]:
+                heapq.heapreplace(coarse_heap, entry)
+    if not coarse_heap:
         raise ValueError("候选股票没有足够的本地K线，请先运行sync_stock_kline_universe")
-    probability_pool = sorted(
-        all_matches, key=lambda item: item["score"], reverse=True)[:pool_size]
-    base_result["matches"] = probability_pool[:top_n]
-    base_result["outcome_summary"] = _summarize_outcomes(
-        probability_pool, (5, 10, 20))
-    base_result["outcome_probabilities"] = _outcome_probabilities(
-        probability_pool, (5, 10, 20), move_threshold_pct)
-    base_result["probability_sample_size"] = len(probability_pool)
-    base_result["evaluated_windows"] = evaluated
-    base_result["fully_scored_windows"] = fully_scored
+    retained = [entry[2] for entry in sorted(coarse_heap, reverse=True)]
+    compact_sets = {}
+    compact_metadata = {}
+    for index, record in enumerate(retained):
+        key = f"{record['candidate_key']}:{index}"
+        compact_sets[key] = record["rows"]
+        compact_metadata[key] = {
+            "period": record["period"], "symbol": record["symbol"],
+            "name": record["name"],
+        }
+    result = compare_cross_timeframe_patterns(
+        query_rows, compact_sets, query_bars=query_bars,
+        candidate_window_bars=windows, top_n=top_n, min_score=min_score,
+        cutoff_at_query_start=search_mode == "history",
+        candidate_metadata=compact_metadata, candidate_latest_only=True,
+        require_forward=search_mode == "history",
+        probability_sample_size=probability_sample_size,
+        move_threshold_pct=move_threshold_pct,
+        prefilter_limit=global_prefilter_limit,
+    )
+    result["evaluated_windows"] = evaluated
     stats = {
         "loaded_series": loaded_series,
         "loaded_symbols": len(loaded_symbols),
         "skipped_symbols": all_skipped[:50],
         "skipped_count": len(all_skipped),
     }
-    return base_result, stats
+    return result, stats
 
 
 async def find_cross_timeframe_similar_patterns(
@@ -578,8 +414,8 @@ async def find_cross_timeframe_similar_patterns(
     move_threshold_pct: float = 2.0,
 ) -> dict:
     """Search self, a symbol pool, or the local market across timeframes."""
-    from ..data.network import normalize_symbol
-    from ..tools.stock_data import get_stock_kline_period
+    from ...data.network import normalize_symbol
+    from ...tools.stock_data import get_stock_kline_period
 
     symbol = normalize_symbol(symbol)
     query_period = str(query_period)

@@ -2,12 +2,12 @@
 from __future__ import annotations
 
 from datetime import date, timedelta
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
 import pandas as pd
 
 from ..core.constants import DEFAULT_ANALYSIS_BARS, DEFAULT_RESEARCH_BARS, MIN_PATTERN_BARS
+from ..core.parallel import run_parallel
 from ..data.network import normalize_symbol
 from ..data.search import get_db_status, get_rank_trend, get_sectors_by_stock, get_stock_kline_local
 from ..data.storage import query_stock_db, save_pattern_signals
@@ -188,12 +188,12 @@ def screen_rising_candidates(*, top_n: int = 20, lookback_days: int = 20,
             return None
 
     candidates = []
-    with ThreadPoolExecutor(max_workers=max(1, min(int(workers), 16))) as pool:
-        futures = [pool.submit(_scan_one, row) for row in universe.itertuples(index=False)]
-        for future in as_completed(futures):
-            result = future.result()
-            if result:
-                candidates.append(result)
+    for _row, result in run_parallel(list(universe.itertuples(index=False)), _scan_one,
+                                     workers=max(1, min(int(workers), 16))):
+        if isinstance(result, Exception):
+            raise result
+        if result:
+            candidates.append(result)
     candidates.sort(key=lambda x: (x["score"], x["signal_date"]), reverse=True)
     results = candidates[:max(1, min(int(top_n), 100))]
     if results:

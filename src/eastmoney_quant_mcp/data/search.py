@@ -253,10 +253,6 @@ async def get_sector_to_stocks_flow(
 
 
 # ════════════════════════════════════════
-# 数据库状态查询
-# ════════════════════════════════════════
-
-# ════════════════════════════════════════
 # 多条件选股(本地)
 # ════════════════════════════════════════
 
@@ -396,6 +392,10 @@ def screen_stocks_local(
     all_params = params + [top_n]
     return query_stock_db(sql.format(where_sql=where_sql), tuple(all_params))
 
+
+# ════════════════════════════════════════
+# 数据库状态查询
+# ════════════════════════════════════════
 
 def get_db_status() -> dict:
     basic = query_stock_db("SELECT COUNT(*) AS n FROM stock_basic")[0]["n"]

@@ -72,6 +72,9 @@ def _get_name(symbol: str):
     return rows[0]["name"] if rows else symbol
 
 
+# ═══════════════════ 分析逻辑 ═══════════════════
+
+
 def _find_support_resistance(ind_rows: list[dict], latest_close: float, latest_atr: float = None) -> dict:
     """
     从指标数据(已排序升序)计算支撑/阻力位

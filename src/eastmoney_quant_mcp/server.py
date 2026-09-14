@@ -129,7 +129,7 @@ async def _screen(conditions=None, top_n=50, sort_by="change_pct",
     return await screen_stocks(conditions, top_n, sort_by, sector_code, name_keyword)
 
 
-# ═══════════════════ 数据查询 (4) ═══════════════════
+# ═══════════════════ 数据查询 (5) ═══════════════════
 
 @register("get_kline_local_or_net", "个股K线(本地优先,不足自动从网络下载并缓存技术指标)", {
     "type": "object",

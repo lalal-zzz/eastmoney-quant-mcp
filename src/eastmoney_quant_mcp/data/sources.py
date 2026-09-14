@@ -19,9 +19,9 @@ import json
 import math
 import re
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from .network import http_get, http_get_text, normalize_symbol, rotated
+from ..core.parallel import run_parallel
 
 # ==========================================
 # 数据源 1: 全市场实时行情 (push2 clist)
@@ -112,12 +112,15 @@ def fetch_full_spot(verbose: bool = False) -> list[dict]:
             print(f"[spot] {host_url.split('/')[2]} total={total}, pages={pages}")
 
         if pages > 1:
-            with ThreadPoolExecutor(max_workers=_SPOT_CONCURRENCY) as pool:
-                futures = {pool.submit(_spot_page, host_url, p): p for p in range(2, pages + 1)}
-                for fut in as_completed(futures):
-                    r = fut.result()
-                    d = (r or {}).get("data") or {}
-                    rows.extend(d.get("diff") or [])
+            def _page_fn(p: int):
+                return _spot_page(host_url, p)
+
+            for _p, r in run_parallel(list(range(2, pages + 1)), _page_fn,
+                                      workers=_SPOT_CONCURRENCY):
+                if isinstance(r, Exception):
+                    raise r
+                d = (r or {}).get("data") or {}
+                rows.extend(d.get("diff") or [])
 
         result = []
         for row in rows:

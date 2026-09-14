@@ -23,11 +23,12 @@ strategies/pattern_backtest.py — 形态信号历史回测 + 技术共性分析
 
 import argparse
 import sys
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+
+from ..core.parallel import run_parallel
 
 from .patterns import (
     BACKTEST_START, PATTERN_NAMES, detect_patterns, get_universe_list, prepare_df,
@@ -98,15 +99,17 @@ def collect_signals(universe: str, start: str, end: str | None,
     tasks = [(universe, row.symbol, row.name, start, end, patterns, ma_windows,
               tolerance) for row in stocks.itertuples()]
     all_sigs: list[dict] = []
-    done = 0
-    with ThreadPoolExecutor(max_workers=workers) as pool:
-        futures = {pool.submit(backtest_one, t): t[0] for t in tasks}
-        for fut in as_completed(futures):
-            all_sigs.extend(fut.result())
-            done += 1
-            if done % 200 == 0:
-                print(f"进度: {done}/{len(tasks)} ({done / len(tasks):.0%}) 信号={len(all_sigs)}",
-                      flush=True)
+
+    def _on_progress(done: int, total: int) -> None:
+        if done % 200 == 0:
+            print(f"进度: {done}/{total} ({done / total:.0%}) 信号={len(all_sigs)}",
+                  flush=True)
+
+    for _t, result in run_parallel(tasks, backtest_one, workers=workers,
+                                   on_progress=_on_progress):
+        if isinstance(result, Exception):
+            raise result
+        all_sigs.extend(result)
     label = "板块" if universe == "sectors" else "股票"
     print(f"检测完成: {len(stocks)} 个{label}, 共 {len(all_sigs)} 个信号")
     return pd.DataFrame(all_sigs)
