@@ -174,6 +174,10 @@ def get_key_levels(universe: str, symbol: str,
             bars.iloc[-1]["date"] > bars.iloc[-1]["source_date"]
         )
     trend_cn = {"up": "上涨趋势", "down": "下跌趋势", "range": "震荡"}[tc["trend"]]
+    sector_context = None
+    if universe == "stocks":
+        from ..sector_context import build_stock_sector_context
+        sector_context = build_stock_sector_context(sym, stock_trend=tc["trend"])
     return {
         "universe": universe,
         "symbol": sym,
@@ -187,6 +191,7 @@ def get_key_levels(universe: str, symbol: str,
         "support": [r for r in levels if r["distance_pct"] <= 0][:6],
         "market_structure": structure,
         "higher_timeframe_structure": higher_timeframes,
+        "sector_context": sector_context,
         "structure_engine_version": STRUCTURE_ENGINE_VERSION,
         "wave_analysis": None,
     }

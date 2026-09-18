@@ -46,6 +46,8 @@ The low-level engine has five detectors:
 
 `fibonacci_confluence` is a high-level evidence filter. It requires an actual 0.382/0.5/0.618/0.786 price near another MA, trendline, or structural level and must not stand alone.
 
+For stock finalists, read `get_key_levels.sector_context`. Report the primary industry before concepts, sector trend, breadth, capital-flow fields, data coverage, and whether stock/sector directions are aligned, mixed, or conflicting. Flow and breadth may strengthen an already aligned structure but cannot turn a range/opposite structure into directional alignment. Sector history shorter than 260 daily bars cannot support a long-cycle monthly conclusion.
+
 For finalist review, prefer directional position evidence in `market_structure.positions`: identify anchor scale and A/B, use A/B/C only for projection, distinguish retracement/position/projection ratios, and use independent dependency groups rather than raw line count. `market_structure.double_patterns` can contain non-symmetric `m_top`; do not confuse it with legacy bullish `m_neckline`/`neckline_reclaim`.
 
 ## Top-down workflow

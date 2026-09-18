@@ -141,7 +141,16 @@ def get_sectors_by_stock(stock_code: str) -> list[dict]:
     return query_sector_db(
         """SELECT m.sector_code, b.sector_name, b.sector_type,
                    b.change_pct as sector_change_pct,
+                   b.main_net_inflow, b.main_net_pct, b.updated_date,
                    m.latest_price, m.change_pct, m.turnover_rate, m.volume_ratio
+                   ,(SELECT COUNT(*) FROM sector_kline k
+                     WHERE k.sector_code=m.sector_code) AS kline_bars
+                   ,(SELECT MIN(trade_date) FROM sector_kline k
+                     WHERE k.sector_code=m.sector_code) AS kline_first_date
+                   ,(SELECT MAX(trade_date) FROM sector_kline k
+                     WHERE k.sector_code=m.sector_code) AS kline_last_date
+                   ,(SELECT COUNT(*) FROM sector_member sm
+                     WHERE sm.sector_code=m.sector_code) AS member_count
             FROM sector_member m
             LEFT JOIN sector_basic b ON m.sector_code = b.sector_code
             WHERE m.stock_code=?""",

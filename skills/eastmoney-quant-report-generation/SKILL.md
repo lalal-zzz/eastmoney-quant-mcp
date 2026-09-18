@@ -35,6 +35,7 @@ Check every MCP envelope for `error` and `warnings`. State the price-bar cutoff 
 - Quote every referenced MA, neckline, trendline, pivot, box boundary, and Fibonacci level as an actual price when available.
 - For trendlines, state scale, two anchors, third-touch confirmation, current status, and current line price. Keep two-point lines labeled candidate.
 - State the validity window. Converted long-span lines must be reported as horizontal support/resistance with their retained level, never as an active diagonal trendline.
+- For a stock report, include `sector_context`: primary industry, selected concepts, sector trend, breadth, flow, alignment label, and K-line coverage warning. Keep stock evidence and sector evidence in separate fields so sector strength does not overwrite a broken stock structure.
 - For channels/ranges, report both boundaries and each side's touch evidence. Do not infer a complete channel from one confirmed baseline.
 - For W/M, preserve unequal left/right durations and distinguish bearish `m_top` from legacy bullish `m_neckline`/`neckline_reclaim`.
 - For position evidence, name the A/B anchor and scale. Use C only for projection; distinguish retracement ratio, A-based position ratio, C-based projection ratio, and movement phase.
