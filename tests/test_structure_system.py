@@ -15,10 +15,12 @@ from eastmoney_quant_mcp.strategies.position import (
 from eastmoney_quant_mcp.strategies.structure import (
     analyze_market_structure,
     compact_market_structure,
+    detect_channels,
     detect_double_patterns,
     detect_horizontal_ranges,
     detect_trendlines,
 )
+from eastmoney_quant_mcp.strategies.structure.models import TrendLine
 from eastmoney_quant_mcp.strategies.structure.timeframes import resample_ohlcv
 
 
@@ -78,6 +80,64 @@ def test_old_slope_converts_to_horizontal_level_after_extension_window():
     assert converted[0].status == "converted"
     assert converted[0].valid_until_idx == 35
     assert converted[0].converted_level == pytest.approx(16.0)
+
+
+def test_trendline_is_broken_by_wick_even_when_close_stays_inside():
+    df = pd.DataFrame({
+        "date": pd.date_range("2026-01-01", periods=35, freq="D"),
+        "open": [15.0] * 35,
+        "high": [15.5] * 35,
+        "low": [14.5] * 35,
+        "close": [15.0] * 35,
+        "volume": [1000.0] * 35,
+    })
+    # Resistance through (5,20) and (15,18); the close remains below it, but
+    # the wick at 20 crosses it by more than the break buffer.
+    df.loc[20, "high"] = 18.5
+    pivots = [
+        Pivot(5, "H", 20.0, 7), Pivot(15, "H", 18.0, 17),
+        Pivot(25, "H", 16.0, 27),
+    ]
+    lines = detect_trendlines(
+        df, pivots, scale="medium", atr=pd.Series([1.0] * len(df)),
+        as_of_idx=30, tolerance_atr=0.01, break_atr=0.5,
+    )
+    line = next(x for x in lines if x.anchor1_idx == 5 and x.anchor2_idx == 15)
+    assert line.status == "broken"
+    assert line.broken_idx == 20
+
+
+def test_channel_is_broken_by_wick_even_when_close_stays_inside():
+    df = pd.DataFrame({
+        "date": pd.date_range("2026-01-01", periods=35, freq="D"),
+        "open": [15.0] * 35,
+        "high": [16.0] * 35,
+        "low": [14.0] * 35,
+        "close": [15.0] * 35,
+        "volume": [1000.0] * 35,
+    })
+    # Horizontal closes remain inside the rising channel; a single upper wick
+    # exits the fixed upper boundary after confirmation.
+    df.loc[26, "high"] = 20.0
+    line = TrendLine(
+        id="support", scale="medium", role="support", status="confirmed",
+        anchor1_idx=5, anchor1_price=10.5, anchor2_idx=15,
+        anchor2_price=11.5, slope=0.1, confirmation_idx=25,
+        touch_indices=(5, 15, 25), broken_idx=None, tolerance=0.1,
+        score=0.9,
+    )
+    pivots = [
+        Pivot(5, "L", 10.5, 7), Pivot(8, "H", 16.8, 10),
+        Pivot(15, "L", 11.5, 17), Pivot(18, "H", 17.8, 20),
+        Pivot(25, "L", 12.5, 27), Pivot(28, "H", 18.8, 30),
+    ]
+    channels = detect_channels(
+        df, pivots, [line], scale="medium", atr=pd.Series([1.0] * len(df)),
+        as_of_idx=30, tolerance_atr=0.01, break_atr=0.6,
+    )
+    assert channels
+    assert channels[0].status == "broken"
+    assert channels[0].broken_idx == 26
 
 
 def test_horizontal_range_requires_both_sides_retested():

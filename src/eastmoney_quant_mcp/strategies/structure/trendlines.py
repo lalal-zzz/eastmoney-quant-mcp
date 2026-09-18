@@ -26,7 +26,8 @@ def detect_trendlines(df: pd.DataFrame, pivots: list[Pivot], *, scale: str,
     if df.empty:
         return []
     end = len(df) - 1 if as_of_idx is None else min(as_of_idx, len(df) - 1)
-    close = df["close"].astype(float).to_numpy()
+    high = df["high"].astype(float).to_numpy()
+    low = df["low"].astype(float).to_numpy()
     output: list[TrendLine] = []
     for typ, role in (("L", "support"), ("H", "resistance")):
         # Long history remains represented by coarse-scale pivots, while an
@@ -60,10 +61,10 @@ def detect_trendlines(df: pd.DataFrame, pivots: list[Pivot], *, scale: str,
                 for idx in range(max(a.idx + 1, 0), end + 1):
                     expected = a.price + slope * (idx - a.idx)
                     av = float(atr.iloc[idx]) if pd.notna(atr.iloc[idx]) else abs(expected) * 0.02
-                    if role == "support" and close[idx] < expected - break_atr * av:
+                    if role == "support" and low[idx] < expected - break_atr * av:
                         broken = idx
                         break
-                    if role == "resistance" and close[idx] > expected + break_atr * av:
+                    if role == "resistance" and high[idx] > expected + break_atr * av:
                         broken = idx
                         break
                 status = "broken" if broken is not None else ("confirmed" if confirm_idx is not None else "candidate")

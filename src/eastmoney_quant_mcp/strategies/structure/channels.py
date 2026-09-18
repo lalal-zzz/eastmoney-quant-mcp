@@ -22,7 +22,8 @@ def detect_channels(df: pd.DataFrame, pivots: list[Pivot], lines: list[TrendLine
     if df.empty:
         return []
     end = len(df) - 1 if as_of_idx is None else min(as_of_idx, len(df) - 1)
-    close = df["close"].astype(float).to_numpy()
+    high = df["high"].astype(float).to_numpy()
+    low = df["low"].astype(float).to_numpy()
     result = []
     confirmed_lines = [x for x in lines if x.scale == scale and x.status == "confirmed" and x.kind == "trendline"]
     for line in confirmed_lines:
@@ -59,11 +60,12 @@ def detect_channels(df: pd.DataFrame, pivots: list[Pivot], lines: list[TrendLine
             confirmation = max(sorted(set(lower))[1], sorted(set(upper))[1])
         broken_idx = None
         for idx in range(confirmation or edge_pivot.confirm, end + 1):
-            av = float(atr.iloc[idx]) if pd.notna(atr.iloc[idx]) else close[idx] * 0.02
-            if close[idx] < lower_i + line.slope * idx - break_atr * av:
+            midline = (lower_i + upper_i) / 2 + line.slope * idx
+            av = float(atr.iloc[idx]) if pd.notna(atr.iloc[idx]) else abs(midline) * 0.02
+            if low[idx] < lower_i + line.slope * idx - break_atr * av:
                 broken_idx = idx
                 break
-            if close[idx] > upper_i + line.slope * idx + break_atr * av:
+            if high[idx] > upper_i + line.slope * idx + break_atr * av:
                 broken_idx = idx
                 break
         status = "broken" if broken_idx is not None else ("confirmed" if confirmation is not None else "candidate")

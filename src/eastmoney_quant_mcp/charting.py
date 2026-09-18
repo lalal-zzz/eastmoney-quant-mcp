@@ -154,6 +154,25 @@ def _draw_trendlines(ax, df: pd.DataFrame):
         ax.hlines([box["lower"], box["upper"]], box["start_idx"], x_end,
                   colors="#e67e22", linewidth=1.1, linestyles="--", alpha=0.8, zorder=3)
 
+    # Show at most one recent W and one recent M so visual QA can verify that
+    # the selected pivots and neckline match the candles without hiding price.
+    patterns = [x for x in snapshot["double_patterns"] if x["status"] != "invalidated"]
+    for pattern, color, label, text_offset in (("w_bottom", "#d35400", "W", (5, -18)),
+                                               ("m_top", "#34495e", "M", (5, 18))):
+        matches = [x for x in patterns if x["pattern"] == pattern]
+        if not matches:
+            continue
+        item = sorted(matches, key=lambda x: (-x["right_idx"], -x["score"]))[0]
+        xs = [item["left_idx"], item["middle_idx"], item["right_idx"]]
+        ys = [item["left_price"], item["middle_price"], item["right_price"]]
+        ax.plot(xs, ys, color=color, linewidth=1.4, alpha=0.9, zorder=5)
+        ax.scatter(xs, ys, color=color, s=22, zorder=6)
+        neck_end = item.get("breakout_idx") or x_end
+        ax.hlines(item["neckline"], item["middle_idx"], neck_end,
+                  colors=color, linewidth=1.0, linestyles="-.", alpha=0.8, zorder=4)
+        ax.annotate(f"{label}:{item['status']}", xy=(item["right_idx"], item["right_price"]),
+                    xytext=text_offset, textcoords="offset points", color=color, fontsize=8)
+
 
 def _date_ticks(ax, df: pd.DataFrame, step: int):
     ticks = list(range(0, len(df), step))
@@ -228,13 +247,15 @@ def generate_analysis_charts(symbol: str, days: int = 1200,
     klines 可注入已取好的日K列表(便于测试); 否则本地优先, 本地不足
     (少于请求的 8 成)时经腾讯链路 fetch_kline_history 拉取全量前复权历史。
     """
+    adjustment = "qfq"
     if klines is None:
         from .data.search import get_stock_kline_local
-        klines = get_stock_kline_local(normalize_symbol(symbol), days)
-        if len(klines) < days * 0.8:
+        history_days = max(days, 5000)
+        klines = get_stock_kline_local(normalize_symbol(symbol), history_days)
+        if len(klines) < min(days, history_days) * 0.8:
             try:
                 from .data.sources import fetch_kline_history
-                net = fetch_kline_history(symbol, adjust="qfq", limit=days)
+                net = fetch_kline_history(symbol, adjust="qfq", limit=history_days)
                 if len(net) > len(klines):
                     klines = net
             except Exception:
@@ -243,17 +264,33 @@ def generate_analysis_charts(symbol: str, days: int = 1200,
         raise RuntimeError(f"{symbol} 无可用日K数据, 请先 init_full_data/update_daily_data")
 
     df = _to_df(klines)
+    price_cols = ["open", "high", "low", "close"]
+    if (df[price_cols] <= 0).any().any():
+        try:
+            from .data.sources import fetch_kline_history
+            hfq = _to_df(fetch_kline_history(symbol, adjust="hfq", limit=max(days, 5000)))
+            if not hfq.empty and not (hfq[price_cols] <= 0).any().any():
+                df = hfq
+                adjustment = "hfq"
+            else:
+                last_bad = df.index[(df[price_cols] <= 0).any(axis=1)].max()
+                df = df.iloc[int(last_bad) + 1:].reset_index(drop=True)
+        except Exception:
+            last_bad = df.index[(df[price_cols] <= 0).any(axis=1)].max()
+            df = df.iloc[int(last_bad) + 1:].reset_index(drop=True)
     name = str(klines[-1].get("name") or _stock_name(symbol))
     out_dir = out_dir or _default_out_dir()
     stem = f"{name}_{normalize_symbol(symbol)}"
 
-    daily_path = render_kline_chart(df, f"{name}({symbol}) 日K ({len(df)}日)",
+    daily = df.tail(days).reset_index(drop=True)
+    daily_path = render_kline_chart(daily, f"{name}({symbol}) 日K ({len(daily)}日,{adjustment})",
                                     os.path.join(out_dir, f"{stem}_daily.png"))
-    weekly = resample_daily(df, "W-FRI")
-    weekly_path = render_kline_chart(weekly, f"{name}({symbol}) 周K ({len(weekly)}周)",
+    weekly = resample_daily(df, "W-FRI").tail(520).reset_index(drop=True)
+    weekly_path = render_kline_chart(weekly, f"{name}({symbol}) 周K ({len(weekly)}周,{adjustment})",
                                      os.path.join(out_dir, f"{stem}_weekly.png"))
-    monthly = resample_daily(df, "ME")
-    monthly_path = render_kline_chart(monthly, f"{name}({symbol}) 月K ({len(monthly)}月)",
+    monthly = resample_daily(df, "ME").tail(240).reset_index(drop=True)
+    monthly_path = render_kline_chart(monthly, f"{name}({symbol}) 月K ({len(monthly)}月,{adjustment})",
                                       os.path.join(out_dir, f"{stem}_monthly.png"))
     return {"daily": daily_path, "weekly": weekly_path, "monthly": monthly_path,
-            "bars": {"daily": len(df), "weekly": len(weekly), "monthly": len(monthly)}}
+            "bars": {"daily": len(daily), "weekly": len(weekly), "monthly": len(monthly)},
+            "history_bars": len(df), "adjustment": adjustment}

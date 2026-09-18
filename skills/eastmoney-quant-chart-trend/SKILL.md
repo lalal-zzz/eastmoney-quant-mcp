@@ -35,6 +35,7 @@ If chart rendering fails, do not claim visual confirmation. Continue with numeri
 
 - A line's apparent screen angle depends on chart aspect ratio and axis scaling. Do not classify strength from visual degrees such as 25° or 45°.
 - A two-point line is a candidate. Call it confirmed only when the snapshot records a third independent touch.
+- Check the full candle range from the first anchor through the cutoff. A wick crossing the ATR break buffer invalidates the geometric trendline or channel even when the close remains inside.
 - The new engine deliberately returns `wave_analysis=null`. Do not add Elliott labels from visual inspection. Describe observed Pivot/Leg/Segment structure instead.
 - Trendline, pattern, volume, volatility, and higher-timeframe structure are jointly evaluated; no single overlay is an absolute judge.
 
@@ -43,6 +44,7 @@ If chart rendering fails, do not claim visual confirmation. Continue with numeri
 Include symbol/name, chart cutoff, adjustment, observed monthly/weekly/daily structure, selected scale and pivots, program-versus-chart agreement, exact trendline/channel/range/neckline/Fibonacci zones, movement phase, independent evidence groups, volume evidence, confirmation, invalidation, nearby resistance, and confidence reasons.
 
 Treat a diagonal as local: two anchors define it and a later independent third touch confirms it. Respect its reported validity window and anchor span. Once the structure is `converted`/`horizontal_level`, stop describing or drawing it as a trendline; report the retained price as horizontal support or resistance.
+For weekly and monthly visual review, load the available long daily history before resampling. A short daily display window must not limit the higher-timeframe structure history.
 Evaluate each daily snapshot with its `as_of` cutoff. A touch that appears later cannot be used to confirm an earlier day's line. For channels, report `construction`: independently confirmed parallel trendlines or a fixed translation of one confirmed baseline with independent opposite-side tests.
 
 Use conditional language and include a non-advisory statement.
