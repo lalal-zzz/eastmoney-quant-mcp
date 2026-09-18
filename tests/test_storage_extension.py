@@ -25,7 +25,8 @@ def test_new_tables_created(dbs):
     with sqlite3.connect(dbs.STOCK_DB) as conn:
         tables = _tables(conn)
     for t in ("daily_stock_info", "stock_popularity_rank",
-              "stock_daily_combined", "rebuild_progress"):
+              "stock_daily_combined", "rebuild_progress", "alert_state",
+              "alert_events", "structure_snapshots"):
         assert t in tables
     with sqlite3.connect(dbs.SECTOR_DB) as conn:
         assert "sector_indicators" in _tables(conn)

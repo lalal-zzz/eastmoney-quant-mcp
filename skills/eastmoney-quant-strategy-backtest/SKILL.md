@@ -17,6 +17,8 @@ Backtests test a precisely defined rule under explicit assumptions. They do not 
 
 Use canonical high-level names in prose but pass detector names accepted by the engine when required: `trend_pullback`, `w_bottom`, `m_neckline`, `box_breakout`, `ma_rebound`.
 
+The callable/CLI backtests currently evaluate the legacy detector signals. The new three-touch trendlines, channels, horizontal ranges, non-symmetric `m_top`, directional position phases, projection zones, and alert episodes are not yet wired into this backtest. Do not present legacy results as validation of those new structures. Wave parsing is intentionally out of scope.
+
 ## Record the contract
 
 The callable trading simulation currently assumes:

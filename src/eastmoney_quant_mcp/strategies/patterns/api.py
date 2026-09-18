@@ -150,6 +150,29 @@ def get_key_levels(universe: str, symbol: str,
                        "distance_pct": round((ls[-1].price / close - 1) * 100, 2)})
     levels.sort(key=lambda r: abs(r["distance_pct"]))
 
+    # New structure/position evidence is additive.  Legacy flat levels remain
+    # intact for existing callers while all consumers migrate to the shared
+    # observation engine.
+    from ...core.constants import STRUCTURE_ENGINE_VERSION
+    from ..structure import analyze_market_structure, compact_market_structure, resample_ohlcv
+    structure = compact_market_structure(
+        analyze_market_structure(df), current_price=close,
+    )
+    higher_timeframes = {}
+    for timeframe in ("weekly", "monthly"):
+        bars = resample_ohlcv(df, timeframe)
+        if bars.empty:
+            continue
+        higher_timeframes[timeframe] = compact_market_structure(
+            analyze_market_structure(bars), current_price=float(bars.iloc[-1]["close"]),
+        )
+        higher_timeframes[timeframe]["bar_count"] = len(bars)
+        higher_timeframes[timeframe]["as_of_date"] = str(
+            bars.iloc[-1]["source_date"]
+        )[:10]
+        higher_timeframes[timeframe]["latest_bar_may_be_incomplete"] = bool(
+            bars.iloc[-1]["date"] > bars.iloc[-1]["source_date"]
+        )
     trend_cn = {"up": "上涨趋势", "down": "下跌趋势", "range": "震荡"}[tc["trend"]]
     return {
         "universe": universe,
@@ -162,4 +185,8 @@ def get_key_levels(universe: str, symbol: str,
         "levels": levels,
         "resistance": [r for r in levels if r["distance_pct"] > 0][:6],
         "support": [r for r in levels if r["distance_pct"] <= 0][:6],
+        "market_structure": structure,
+        "higher_timeframe_structure": higher_timeframes,
+        "structure_engine_version": STRUCTURE_ENGINE_VERSION,
+        "wave_analysis": None,
     }

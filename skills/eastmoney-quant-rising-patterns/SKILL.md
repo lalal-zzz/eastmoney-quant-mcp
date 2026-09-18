@@ -15,7 +15,8 @@ The program is a recall-and-ranking layer. The agent must independently interpre
 4. Call `prepare_stock_analysis(symbol, days=500, include_chart=true)` for every returned candidate.
 5. Actually inspect monthly → weekly → daily images for every candidate. If an image is unavailable, perform the numeric review and mark visual confirmation missing.
 6. Compare the detector output with the charts and exact values. State agreement, partial agreement, or conflict.
-7. Produce one analysis card per stock, then a 20-stock comparison and commonality analysis. If fewer than 20 qualify, analyze all returned names and do not pad the list.
+7. Read `get_key_levels`/the packet's current key-level output for the new `market_structure` snapshot when available. Keep this per-candidate structure review separate from the legacy detector score that produced the shortlist.
+8. Produce one analysis card per stock, then a 20-stock comparison and commonality analysis. If fewer than 20 qualify, analyze all returned names and do not pad the list.
 
 ## Structure lifecycle
 
@@ -28,6 +29,8 @@ Use `forming → candidate → triggered → confirmed → retesting`, with term
 - `major_ma_rebound`: canonical form of `ma_rebound`; identify MA120/250 price and call it a rebound unless weekly structure also reverses.
 - `fibonacci_confluence`: supporting evidence only; list the actual 0.382/0.5/0.618/0.786 prices and the independent level that creates confluence.
 
+The new structure snapshot may additionally show confirmed three-touch trendlines, parallel channels, horizontal ranges, and non-symmetric `w_bottom`/`m_top` skeletons with unequal durations. These refine the review; they are not yet the full-market shortlist engine. Keep bearish `m_top` separate from bullish legacy `neckline_reclaim`.
+
 ## Per-stock evidence card
 
 Each card must include:
@@ -36,13 +39,13 @@ Each card must include:
 - monthly/weekly/daily trend and the exact moving-average values used;
 - current phase: advancing, pullback, basing, rebound, distribution, or acceleration;
 - primary structure, lifecycle stage, program/chart agreement, and confidence with reasons;
-- latest meaningful swing-low/high dates and prices, swing return, and current retracement;
+- latest meaningful swing-low/high dates and prices, anchor scale, swing return, current retracement/position phase, and C-based projection only when C is confirmed;
 - MA20/60/120/250, trendline, neckline, structural high/low, and Fibonacci levels where available;
 - 5/20-day volume ratios and whether breakout expansion or pullback contraction is actually present;
 - nearest support, resistance, invalidation, and the confirmation still required;
 - sector trend/capital-flow freshness, popularity trend, 5–20-day risks, and chase distance.
 
-Never infer a precise line or wave point that is not supported by the packet or visible chart. When plausible pivot choices differ, show the main and alternate interpretation.
+Never infer a precise line not supported by the packet or chart. A two-anchor line remains a candidate until a third independent touch. Wave parsing is intentionally absent; do not add wave labels. When plausible pivot choices differ, show the main and alternate structure.
 
 ## Ranking and commonality
 

@@ -276,6 +276,52 @@ CREATE TABLE IF NOT EXISTS pattern_signals (
     PRIMARY KEY (universe, symbol, signal_date, pattern)
 );
 
+CREATE TABLE IF NOT EXISTS alert_state (
+    zone_id TEXT PRIMARY KEY,
+    symbol TEXT NOT NULL,
+    timeframe TEXT NOT NULL,
+    episode INTEGER NOT NULL,
+    relation TEXT NOT NULL,
+    emitted_json TEXT NOT NULL,
+    invalidated INTEGER NOT NULL DEFAULT 0,
+    last_timestamp TEXT,
+    updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS alert_events (
+    idempotency_key TEXT PRIMARY KEY,
+    zone_id TEXT NOT NULL,
+    symbol TEXT NOT NULL,
+    timeframe TEXT NOT NULL,
+    episode INTEGER NOT NULL,
+    event_type TEXT NOT NULL,
+    event_timestamp TEXT NOT NULL,
+    close REAL NOT NULL,
+    lower REAL NOT NULL,
+    upper REAL NOT NULL,
+    confirmed INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL,
+    acknowledged_at TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_alert_events_symbol_time
+    ON alert_events(symbol, event_timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_alert_events_type_time
+    ON alert_events(event_type, event_timestamp DESC);
+
+CREATE TABLE IF NOT EXISTS structure_snapshots (
+    snapshot_id TEXT PRIMARY KEY,
+    universe TEXT NOT NULL,
+    symbol TEXT NOT NULL,
+    timeframe TEXT NOT NULL,
+    as_of TEXT NOT NULL,
+    engine_version TEXT NOT NULL,
+    data_version TEXT,
+    snapshot_json TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_structure_snapshots_lookup
+    ON structure_snapshots(universe, symbol, timeframe, as_of DESC);
+
 CREATE TABLE IF NOT EXISTS daily_stock_info (
     trade_date   TEXT NOT NULL,
     capture_time TEXT NOT NULL,

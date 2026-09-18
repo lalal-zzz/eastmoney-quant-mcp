@@ -14,7 +14,7 @@ Prefer `prepare_stock_analysis(symbol, days=500, include_chart=true)` because it
 Supplement only when needed:
 
 - `generate_stock_report(symbol)`: legacy daily technical/risk summary.
-- `get_key_levels(universe="stocks", symbol=...)`: exact MA/Fibonacci/structure values.
+- `get_key_levels(universe="stocks", symbol=...)`: legacy flat levels plus the unified `market_structure` snapshot.
 - `get_pattern_history(universe="stocks", symbol=...)`: historical detector context.
 - `get_stock_kline_period`: live weekly/monthly or intraday timing data when the request requires it.
 
@@ -33,6 +33,12 @@ Check every MCP envelope for `error` and `warnings`. State the price-bar cutoff 
 ## Numeric requirements
 
 - Quote every referenced MA, neckline, trendline, pivot, box boundary, and Fibonacci level as an actual price when available.
+- For trendlines, state scale, two anchors, third-touch confirmation, current status, and current line price. Keep two-point lines labeled candidate.
+- State the validity window. Converted long-span lines must be reported as horizontal support/resistance with their retained level, never as an active diagonal trendline.
+- For channels/ranges, report both boundaries and each side's touch evidence. Do not infer a complete channel from one confirmed baseline.
+- For W/M, preserve unequal left/right durations and distinguish bearish `m_top` from legacy bullish `m_neckline`/`neckline_reclaim`.
+- For position evidence, name the A/B anchor and scale. Use C only for projection; distinguish retracement ratio, A-based position ratio, C-based projection ratio, and movement phase.
+- Describe confluence by deduplicated dependency groups/families, not the number of overlapping labels.
 - Give the dates/prices defining the selected swing and calculate its move and retracement.
 - Include MA20/60/120/250, 5/20-day volume ratios, ATR or ATR%, recent 5/10/20/60-day returns, and 20/60/120-day range where available.
 - If multiple pivot selections are plausible, provide the main and alternate level instead of claiming false precision.
@@ -59,3 +65,5 @@ Use:
 9. limitations and non-advisory statement.
 
 Every conclusion must be traceable to a date, price, calculated metric, or inspected chart feature.
+
+The new engine does not implement wave parsing, and current MCP tools do not start persistent alert monitoring. Do not include Elliott labels or claim that a report has scheduled future warnings.

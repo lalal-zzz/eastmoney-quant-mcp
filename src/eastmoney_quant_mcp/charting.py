@@ -101,43 +101,58 @@ def _pivots(df: pd.DataFrame, kind: str, k: int = 5) -> list[tuple[int, float]]:
 
 
 def _draw_trendlines(ax, df: pd.DataFrame):
-    """自动画 上升趋势线(最近两个抬高的波谷连线, 延长至右端) 与 颈线(最近显著波峰水平线)。
+    """Draw the same confirmed structures used by screening/key-level APIs."""
+    from .strategies.structure import analyze_market_structure
 
-    趋势线是个股结构归因的最高依据, 必须上图。
-    """
-    lows = _pivots(df, "low")
-    # 取最近两个"低点抬高"的波谷作上升趋势线; 允许中间隔一个未抬高的谷
-    anchor = None
-    for j in range(len(lows) - 1, 0, -1):
-        i2, p2 = lows[j]
-        for t in range(j - 1, max(-1, j - 4), -1):
-            i1, p1 = lows[t]
-            if p2 > p1 and i2 > i1:
-                slope = (p2 - p1) / (i2 - i1)
-                # 线段在两点之间不得明显跌破任何收盘价(否则不是有效趋势线)
-                mid = df.iloc[i1:i2 + 1]
-                if all(c >= p1 + slope * (idx - i1) - p1 * 0.02
-                       for idx, c in zip(mid.index, mid["close"])):
-                    anchor = (i1, p1, i2, p2, slope)
-                    break
-        if anchor:
-            break
-    if anchor:
-        i1, p1, i2, p2, slope = anchor
-        x_end = len(df) - 1
-        ax.plot([i1, x_end], [p1, p1 + slope * (x_end - i1)],
-                color="#c0392b", linewidth=1.6, linestyle="-", alpha=0.9, zorder=4)
-        ax.annotate("上升趋势线", xy=(x_end, p1 + slope * (x_end - i1)),
-                    xytext=(-70, 12), textcoords="offset points",
-                    color="#c0392b", fontsize=9, fontweight="bold")
-    # 颈线: 最近一个未被收复的显著波峰水平线
-    highs = _pivots(df, "high")
-    if highs:
-        i_h, p_h = highs[-1]
-        if df["close"].iloc[-1] < p_h:  # 尚未突破才画压力颈线
-            ax.axhline(p_h, color="#e67e22", linewidth=1.3, linestyle="--", alpha=0.85, zorder=4)
-            ax.annotate("颈线/前高", xy=(len(df) * 0.02, p_h), xytext=(0, 4),
-                        textcoords="offset points", color="#e67e22", fontsize=9)
+    snapshot = analyze_market_structure(
+        df, include_positions=False,
+        scales={"chart": {"left": 5, "right": 5, "swing_min": 0.03}},
+    )
+    x_end = len(df) - 1
+    active = [x for x in snapshot["trendlines"]
+              if x["status"] == "confirmed" and x.get("kind", "trendline") == "trendline"]
+    # Limit clutter while keeping the strongest current support and resistance.
+    for role, color, label in (("support", "#c0392b", "确认支撑线"),
+                               ("resistance", "#2980b9", "确认压力线")):
+        matches = [x for x in active if x["role"] == role]
+        if not matches:
+            continue
+        line = sorted(matches, key=lambda x: (-x["score"], -x["anchor2_idx"]))[0]
+        y1 = line["anchor1_price"]
+        draw_end = min(x_end, line.get("valid_until_idx") or x_end)
+        y2 = y1 + line["slope"] * (draw_end - line["anchor1_idx"])
+        ax.plot([line["anchor1_idx"], draw_end], [y1, y2], color=color,
+                linewidth=1.6, linestyle="-", alpha=0.9, zorder=4)
+        ax.scatter(list(line["touch_indices"]),
+                   [y1 + line["slope"] * (i - line["anchor1_idx"])
+                    for i in line["touch_indices"]],
+                   s=18, color=color, zorder=5)
+        ax.annotate(label, xy=(draw_end, y2), xytext=(-68, 10),
+                    textcoords="offset points", color=color, fontsize=8)
+
+    converted = [x for x in snapshot["trendlines"]
+                 if x.get("kind") == "horizontal_level" and x.get("converted_level") is not None]
+    for line in sorted(converted, key=lambda x: -x["score"])[:2]:
+        color = "#c0392b" if line["role"] == "support" else "#2980b9"
+        ax.axhline(line["converted_level"], color=color, linewidth=0.9,
+                   linestyle=":", alpha=0.65, zorder=2)
+
+    channels = [x for x in snapshot["channels"] if x["status"] == "confirmed"]
+    if channels:
+        channel = sorted(channels, key=lambda x: (-x["score"], -x["confirmation_idx"]))[0]
+        start = min((*channel["lower_touches"], *channel["upper_touches"]))
+        xs = list(range(start, x_end + 1))
+        lower = [channel["lower_intercept"] + channel["slope"] * i for i in xs]
+        upper = [channel["upper_intercept"] + channel["slope"] * i for i in xs]
+        ax.plot(xs, lower, color="#8e44ad", linewidth=1.0, alpha=0.75, zorder=3)
+        ax.plot(xs, upper, color="#8e44ad", linewidth=1.0, alpha=0.75, zorder=3)
+        ax.fill_between(xs, lower, upper, color="#8e44ad", alpha=0.05, zorder=1)
+
+    ranges = [x for x in snapshot["ranges"] if x["status"] == "confirmed"]
+    if ranges:
+        box = sorted(ranges, key=lambda x: (-x["score"], -x["end_idx"]))[0]
+        ax.hlines([box["lower"], box["upper"]], box["start_idx"], x_end,
+                  colors="#e67e22", linewidth=1.1, linestyles="--", alpha=0.8, zorder=3)
 
 
 def _date_ticks(ax, df: pd.DataFrame, step: int):

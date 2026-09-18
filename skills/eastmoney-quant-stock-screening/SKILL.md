@@ -14,6 +14,8 @@ Screening produces candidates, not recommendations. Record the data cutoff, univ
 - Raw pattern scan for sector indices: `scan_sector_patterns`.
 - Ranked rising-structure workflow with 20 deep reviews: `screen_rising_candidates` followed by `prepare_stock_analysis` for every result.
 
+The market-wide scanners currently use the legacy five-detector engine. The new trendline/channel/range/non-symmetric W/M engine is exposed per symbol through `get_key_levels.data.market_structure`; use it to review finalists and do not describe the initial scan as a full-market scan of the new structures.
+
 Call `get_data_status` first for market-wide scans. Below 95% K-line coverage, label the scan partial and do not imply that omitted stocks failed the filter.
 
 ## Numeric screening
@@ -44,6 +46,8 @@ The low-level engine has five detectors:
 
 `fibonacci_confluence` is a high-level evidence filter. It requires an actual 0.382/0.5/0.618/0.786 price near another MA, trendline, or structural level and must not stand alone.
 
+For finalist review, prefer directional position evidence in `market_structure.positions`: identify anchor scale and A/B, use A/B/C only for projection, distinguish retracement/position/projection ratios, and use independent dependency groups rather than raw line count. `market_structure.double_patterns` can contain non-symmetric `m_top`; do not confuse it with legacy bullish `m_neckline`/`neckline_reclaim`.
+
 ## Top-down workflow
 
 1. Use `get_sector_list` to identify sector direction and capital flow, while checking sector K-line freshness separately.
@@ -51,7 +55,10 @@ The low-level engine has five detectors:
 3. Use `scan_patterns(symbols=[...])` when structure is required.
 4. Check `get_stock_belong_sectors` and `get_rank_trend_data` as context, not causal proof.
 5. For finalists, call `prepare_stock_analysis` and inspect monthly, weekly, and daily evidence.
+6. When trendline/channel/W/M/Fibonacci structure affects the ranking, call `get_key_levels` for each finalist and state that this is finalist review rather than market-wide new-engine coverage.
 
 ## Output
 
 Return a sortable table containing code/name, cutoff date, filter values, pattern/stage if applicable, score components, support/resistance/invalidation, sector context, and warnings. Include rejected-count or missing-data notes when available. Do not invent enough names to fill `top_n`; fewer qualifying stocks is a valid result.
+
+Wave parsing and persistent real-time alert subscriptions are not exposed by current MCP tools. Do not rank by an inferred wave label or promise ongoing notification.
