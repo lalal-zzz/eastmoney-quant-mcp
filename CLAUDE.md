@@ -4,7 +4,7 @@ Essential guidance for Claude Code. See [AGENTS.md](AGENTS.md) for operational d
 
 ## Project
 
-Local-first A-share quantitative research MCP. A Node ESM shim launches the Python stdio server, which exposes 20 tools and stores user-owned stock/sector data in WAL-mode SQLite. Eight Agent Skills compose the tools into data maintenance, screening, chart review, single-stock analysis, multi-timeframe analysis, rising-pattern research, and backtesting.
+Local-first A-share intelligent research MCP. A Node ESM shim launches the Python stdio server, which exposes 20 tools and stores user-owned stock/sector data in WAL-mode SQLite. Eight Agent Skills compose the tools into data maintenance, screening, chart review, single-stock analysis, multi-timeframe analysis, rising-pattern research, and backtesting.
 
 ## Runtime
 

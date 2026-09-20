@@ -1,12 +1,12 @@
 [English](README.md) | [中文](README.zh-CN.md)
 
-# Eastmoney Quant Research MCP
+# Eastmoney Intelligent Research MCP
 
 [![npm version](https://img.shields.io/npm/v/eastmoney-quant-mcp.svg)](https://www.npmjs.com/package/eastmoney-quant-mcp)
 [![Python](https://img.shields.io/pypi/pyversions/eastmoney-quant-mcp.svg)](https://pypi.org/project/eastmoney-quant-mcp/)
 [![License](https://img.shields.io/github/license/lalal-zzz/eastmoney-quant-mcp)](LICENSE)
 
-**Eastmoney Quant Research MCP** is a local-first A-share research workbench for AI Agents. It turns Eastmoney public APIs and complementary market providers into reusable local SQLite evidence: market data, indicators, sector flow, chart structure, multi-timeframe review, research reports, and reproducible backtests.
+**Eastmoney Intelligent Research MCP** is a local-first A-share research workbench for AI Agents. It turns Eastmoney public APIs and complementary market providers into reusable local SQLite evidence: market data, indicators, sector flow, chart structure, multi-timeframe review, research reports, and reproducible backtests.
 
 It is designed for a complete research loop: **check data quality → build a candidate universe → inspect numeric and chart evidence → compare scenarios → validate rules with out-of-sample backtests**. It does not provide guaranteed predictions or automatic trading instructions.
 

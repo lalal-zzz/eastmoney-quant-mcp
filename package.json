@@ -1,7 +1,7 @@
 {
   "name": "eastmoney-quant-mcp",
   "version": "0.3.0",
-  "description": "Local-first A-share quantitative research MCP — Eastmoney data, screening, chart structure, reports, multi-timeframe analysis, and backtesting",
+  "description": "Local-first A-share intelligent research MCP — Eastmoney data, screening, chart structure, reports, multi-timeframe analysis, and backtesting",
   "type": "module",
   "main": "index.js",
   "bin": {

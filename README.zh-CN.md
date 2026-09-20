@@ -1,12 +1,12 @@
 [English](README.md) | [中文](README.zh-CN.md)
 
-# 东方财富量化投研 MCP
+# 东方财富智能投研 MCP
 
 [![npm version](https://img.shields.io/npm/v/eastmoney-quant-mcp.svg)](https://www.npmjs.com/package/eastmoney-quant-mcp)
 [![Python](https://img.shields.io/pypi/pyversions/eastmoney-quant-mcp.svg)](https://pypi.org/project/eastmoney-quant-mcp/)
 [![License](https://img.shields.io/github/license/lalal-zzz/eastmoney-quant-mcp)](LICENSE)
 
-**东方财富量化投研 MCP** 是一个面向 AI Agent 的本地优先 A 股投研工作台。它将**东方财富公开接口**与多源行情整合为可复用的本地 SQLite 证据库，覆盖行情、指标、板块资金、K 线结构、多周期研判、研究报告和可复现回测。
+**东方财富智能投研 MCP** 是一个面向 AI Agent 的本地优先 A 股投研工作台。它将**东方财富公开接口**与多源行情整合为可复用的本地 SQLite 证据库，覆盖行情、指标、板块资金、K 线结构、多周期研判、研究报告和可复现回测。
 
 它围绕一条完整投研链路工作：**检查数据质量 → 构建候选池 → 查看数值与图表证据 → 比较情景 → 用样本外回测验证规则**。项目不会给出收益保证，也不会自动发出交易指令。
 
