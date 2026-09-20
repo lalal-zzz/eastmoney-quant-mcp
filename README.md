@@ -12,6 +12,15 @@ It is designed for a complete research loop: **check data quality → build a ca
 
 See the [unified implementation plan](IMPLEMENTATION_PLAN.md) for the data, rising-pattern, per-stock AI review, and backtest contracts.
 
+## Roadmap / TODO
+
+- Financial analysis: statements, earnings quality, growth, solvency, cash flow, valuation, and peer comparison.
+- Latest global news search with timestamps, source links, and duplicate-event consolidation.
+- Stock and concept-related news mapped to companies, industries, themes, and event timelines.
+- Global market news covering major indices, rates, currencies, commodities, and overseas market moves.
+
+These capabilities are planned and are not part of the current release.
+
 ## Agent setup (npm)
 
 ```bash
