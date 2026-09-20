@@ -294,10 +294,9 @@ def rotated(hosts: list) -> list:
 def try_kline_hosts(params: dict, timeout: int = 15) -> dict | None:
     """K 线接口多 host 轮转重试, 成功返回 payload(data 非空), 全失败返回 None。
 
-    副作用: 记录 _last_kline_had_response, 供 fetch_em_kline 区分
-    "网络失败" 与 "网络正常但该标的无数据"。
+    副作用: 在线程局部状态中记录本次调用是否收到响应, 供 fetch_em_kline
+    区分“网络失败”与“网络正常但该标的无数据”。
     """
-    global _last_kline_had_response
     had_response = False
     for host in rotated(KLINE_HOSTS):
         r = http_get(host, params=params, retries=2, timeout=timeout)
@@ -305,7 +304,7 @@ def try_kline_hosts(params: dict, timeout: int = 15) -> dict | None:
             had_response = True
             if r.get("data"):  # 偶发空 data(null) 时继续尝试下一个 host
                 break
-    _last_kline_had_response = had_response
+    _kline_call_state.had_response = had_response
     return r if had_response and r and r.get("data") else None
 
 
@@ -315,7 +314,7 @@ def try_kline_hosts(params: dict, timeout: int = 15) -> dict | None:
 # 避免批量下载时对已被限流的服务商放大重试。
 
 EM_KLINE = "em_kline"
-_last_kline_had_response = False
+_kline_call_state = threading.local()
 
 
 def fetch_em_kline(params: dict, timeout: int = 15) -> dict | None:
@@ -324,11 +323,10 @@ def fetch_em_kline(params: dict, timeout: int = 15) -> dict | None:
     只有真正的网络/HTTP 失败才计入熔断; host 正常响应但 data 为空
     (退市股、无数据标的)不算失败, 否则批量下载会误熔断。
     """
-    global _last_kline_had_response
     if not provider_available(EM_KLINE):
         return None
     result = try_kline_hosts(params, timeout=timeout)
-    had_response = _last_kline_had_response
+    had_response = bool(getattr(_kline_call_state, "had_response", False))
     if result:
         mark_provider_ok(EM_KLINE)
     elif had_response:

@@ -171,6 +171,9 @@ def fetch_kline_history(symbol: str, adjust: str = "qfq", limit: int = None,
         start_date=start, end_date=end,
     )
     if rows:
+        for row in rows:
+            row.setdefault("source", "tencent")
+            row.setdefault("adjust_type", adjust)
         return _clip_and_sort(rows, start, end, limit)
 
     # 2. akshare 新浪 (stock_zh_a_daily, 带复权)。仅请求最近 N 根时，
@@ -194,12 +197,18 @@ def fetch_kline_history(symbol: str, adjust: str = "qfq", limit: int = None,
     if df is not None and not df.empty:
         rows = _akshare_df_rows(df, symbol, fallback_start, fallback_end)
         if rows:
+            for row in rows:
+                row.setdefault("source", "akshare")
+                row.setdefault("adjust_type", adjust)
             return _clip_and_sort(rows, start, end, limit)
 
     # 3. 搜狐兜底 (不复权, 仅有腾讯+akshare都不可用时才会走到)
     from ..data.providers import sohu
 
     rows = sohu.fetch_stock_kline_daily(symbol, start_date=start, end_date=end)
+    for row in rows:
+        row.setdefault("source", "sohu")
+        row["adjust_type"] = ""
     return _clip_and_sort(rows, start, end, limit)
 
 

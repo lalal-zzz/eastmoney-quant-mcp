@@ -1,12 +1,14 @@
 [English](README.md) | [中文](README.zh-CN.md)
 
-# Eastmoney Quant MCP Server
+# Eastmoney Quant Research MCP
 
 [![npm version](https://img.shields.io/npm/v/eastmoney-quant-mcp.svg)](https://www.npmjs.com/package/eastmoney-quant-mcp)
 [![Python](https://img.shields.io/pypi/pyversions/eastmoney-quant-mcp.svg)](https://pypi.org/project/eastmoney-quant-mcp/)
 [![License](https://img.shields.io/github/license/lalal-zzz/eastmoney-quant-mcp)](LICENSE)
 
-Local-first A-share data and research center powered by **Eastmoney** public APIs and multi-source market providers. It maintains daily stock and sector data in high-concurrency local SQLite databases (WAL mode), enabling AI Agents to compose professional screening, chart pattern scanning, and financial research workflows.
+**Eastmoney Quant Research MCP** is a local-first A-share research workbench for AI Agents. It turns Eastmoney public APIs and complementary market providers into reusable local SQLite evidence: market data, indicators, sector flow, chart structure, multi-timeframe review, research reports, and reproducible backtests.
+
+It is designed for a complete research loop: **check data quality → build a candidate universe → inspect numeric and chart evidence → compare scenarios → validate rules with out-of-sample backtests**. It does not provide guaranteed predictions or automatic trading instructions.
 
 See the [unified implementation plan](IMPLEMENTATION_PLAN.md) for the data, rising-pattern, per-stock AI review, and backtest contracts.
 
@@ -161,6 +163,10 @@ pip install eastmoney-quant-mcp
 | `find_cross_timeframe_similar_patterns` | `strategies/similarity` | Compare the latest N bars with all historical N-bar windows and estimate conditional outcome probabilities |
 | `backtest_pattern_strategy` | `strategies/trading_backtest` | Event study plus executable 5–20 day trading simulation |
 
+### MCP call contract
+
+Every tool publishes a JSON Schema. The server validates required and unknown fields, basic types, enum values, and numeric ranges. Results use `{data, meta, warnings, error}`: check `error` first, preserve `warnings`, and use both `meta` and the data cutoff date for freshness. The server does not provide persistent monitoring, push notifications, or deterministic buy/sell decisions.
+
 Ships with **8 Agent Skills** (installed automatically by `eastmoney-quant install`):
 
 | Skill | Purpose |
@@ -173,6 +179,33 @@ Ships with **8 Agent Skills** (installed automatically by `eastmoney-quant insta
 | `eastmoney-quant-strategy-backtest` | Chart pattern backtesting and parameter optimization |
 | `eastmoney-quant-chart-trend` | Per-stock visual structure attribution with pivot and line uncertainty checks |
 | `eastmoney-quant-rising-patterns` | Rank 20 candidates, deeply review every monthly/weekly/daily chart, and summarize common traits |
+
+### What each Skill delivers
+
+The Skills are output-oriented: each one turns MCP tool results into a consistent, reviewable artifact rather than a loose paragraph.
+
+| Skill | Result view | Typical result contents |
+|-------|-------------|-------------------------|
+| `eastmoney-quant` | Research route card | Chosen workflow, data-quality gate, tool chain, warnings, and next action |
+| `eastmoney-quant-data-init` | Data health report | Expected trading date, latest date, per-dataset coverage, successes/failures, provider warnings, remaining gaps |
+| `eastmoney-quant-stock-screening` | Sortable candidate table | Code/name, cutoff, filters, pattern/stage, score components, sector context, support/resistance/invalidation, rejected or missing-data notes |
+| `eastmoney-quant-report-generation` | Single-stock evidence report | Conclusion/confidence, data block, monthly/weekly/daily evidence, key-level table, scenarios, risks, limitations |
+| `eastmoney-quant-multi-timeframe` | Timeframe comparison matrix | Monthly/weekly/daily/intraday metrics, agreement/conflict matrix, primary/alternate view, exact confirmation and invalidation levels |
+| `eastmoney-quant-chart-trend` | Chart review card | Chart cutoff, pivots, trendlines/channels/ranges/W-M/Fibonacci zones, program-vs-chart agreement, volume evidence |
+| `eastmoney-quant-rising-patterns` | Candidate cards + comparison | One evidence card per returned stock, reviewed ranking, current-vs-history commonality, and coverage caveats |
+| `eastmoney-quant-strategy-backtest` | Backtest result pack | Universe/period, coverage, signal/trade counts, assumptions, event and portfolio metrics, train/test and yearly stability, report/CSV paths |
+
+Example compact result card:
+
+```text
+000001 平安银行 · 2026-09-17 · qfq · 486 daily bars
+Structure: weekly pullback / daily neckline reclaim (candidate → triggered)
+Evidence: close 12.34 | MA20 12.10 | neckline 12.28 | volume 1.42x
+Confirm: daily close above 12.28 and hold; Invalidate: close below 11.86
+Warnings: sector data delayed; chart confirmation available
+```
+
+Exact values, dates, coverage and warnings always come from the current MCP response; the example above only illustrates the presentation format.
 
 ---
 

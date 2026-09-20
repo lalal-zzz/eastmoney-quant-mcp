@@ -82,11 +82,14 @@ def _stock_history_sync(
 
     # 1. 腾讯主源(日K, qfq/hfq/不复权均支持)
     rows = tencent.fetch_stock_kline(
-        symbol, limit=1000, klt="101", adjust=adjust,
+        symbol, limit=5000, klt="101", adjust=adjust,
         start_date=start, end_date=end,
     )
     rows = _clip_kline_rows(rows, start, end)
     if rows:
+        for row in rows:
+            row.setdefault("source", "tencent")
+            row.setdefault("adjust_type", adjust)
         return rows
 
     # 2. 东财(akshare 直连 push2his)
@@ -94,11 +97,18 @@ def _stock_history_sync(
     if df is not None and not df.empty:
         rows = _akshare_df_rows(df, symbol, start, end)
         if rows:
+            for row in rows:
+                row.setdefault("source", "akshare")
+                row.setdefault("adjust_type", adjust)
             return rows
 
     # 3. 搜狐兜底(不复权, 仅有腾讯+东财都不可用时才会走到)
     rows = sohu.fetch_stock_kline_daily(symbol, start_date=start, end_date=end)
     rows = _clip_kline_rows(rows, start, end)
+    for row in rows:
+        # Sohu only provides unadjusted prices; never label these as qfq/hfq.
+        row.setdefault("source", "sohu")
+        row["adjust_type"] = ""
     return rows
 
 
@@ -226,10 +236,12 @@ def _extract_spot(payload: dict | None) -> tuple[list, int]:
 
 async def _spot_all_rows(host_url: str) -> list[dict] | None:
     """在指定 host 上拉取全部行情 (data/paging 统一分页; 失败返回 None 供上层换 host)"""
-    rows, total = await fetch_all_pages(
+    rows = await fetch_all_pages(
         lambda pn: _spot_page_sync(host_url, pn), _extract_spot,
         page_size=_SPOT_PAGE_SIZE, concurrency=_SPOT_PAGE_CONCURRENCY)
-    return rows if total >= 0 else None
+    # fetch_all_pages intentionally returns only rows.  An empty result is
+    # treated as a failed/empty host and lets the caller try the next mirror.
+    return rows or None
 
 
 async def get_latest_indicators() -> list[dict]:

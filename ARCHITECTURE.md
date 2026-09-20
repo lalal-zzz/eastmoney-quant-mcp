@@ -27,10 +27,10 @@ src/eastmoney_quant_mcp/
 │   ├── providers/             # Tencent, Sina, Sohu and board-name mapping adapters
 │   ├── network.py             # curl_cffi, cookies, IPv4, retries and circuit breakers
 │   ├── sources.py             # spot, daily K-line, popularity and trade-calendar sources
-│   ├── storage.py             # stock/sector SQLite schemas and idempotent migration
+│   ├── storage/               # stock/sector SQLite schemas, readers and writers
 │   ├── search.py              # local queries and coverage/status reporting
 │   ├── sync.py                # quick/research/full initialization and daily sync
-│   ├── build.py               # rebuild, backfill, capture, indicators and cleanup
+│   ├── build/                 # rebuild, backfill, capture, indicators and cleanup
 │   ├── indicators.py          # cached technical/factor calculations
 │   ├── paging.py              # bounded concurrent pagination
 │   ├── util.py                # parsers and shared conversion helpers
@@ -42,9 +42,12 @@ src/eastmoney_quant_mcp/
 │   ├── analysis.py            # legacy single-stock technical summary
 │   └── research.py            # top-20 ranking and per-stock evidence packet
 ├── strategies/
-│   ├── patterns.py            # pivots, key levels, five detectors and dual universe
+│   ├── patterns/              # pivots, key levels, detectors and dual universe
 │   ├── pattern_backtest.py    # event-signal collection and detailed CLI reports
 │   ├── pattern_optimize.py    # time-split beam-search candidates
+│   ├── similarity/             # cross-stock/timeframe normalized pattern matching
+│   ├── structure/              # structure and key-level primitives
+│   └── position/               # position/risk helpers
 │   └── trading_backtest.py    # callable event + executable trading backtest
 ├── charting.py                # daily/weekly/monthly PNG rendering
 ├── cli.py                     # maintenance and strategy CLI
@@ -79,6 +82,8 @@ providers
 - `data_coverage` records period, range, rows, source, status and last error.
 - `pattern_signals` caches normalized lifecycle/scoring evidence with engine version.
 - Schema, indicator and pattern-engine versions are independent. Indicator changes must not trigger K-line downloads.
+- Daily refresh is incremental: only stale symbols are fetched, with a short overlap window; indicators are recalculated from the merged local history.
+- Coverage is treated as a readiness contract: partial/degraded provider results never overwrite a healthy prior snapshot or claim full-market readiness.
 - WAL mode supports concurrent readers; writes remain serialized through the storage layer.
 
 ## Provider policy

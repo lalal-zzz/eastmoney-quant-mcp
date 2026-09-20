@@ -73,6 +73,95 @@ def test_toml_inline_comment_stripped(monkeypatch, tmp_path):
     assert s.data_root == Path("D:/quant/data")   # 不带 " # 主数据目录"
 
 
+@pytest.mark.asyncio
+async def test_spot_paging_returns_rows_without_unpacking(monkeypatch):
+    from eastmoney_quant_mcp.tools import stock_data
+
+    monkeypatch.setattr(
+        stock_data, "_spot_page_sync",
+        lambda host, page: {"data": {"diff": [{"f12": "000001"}], "total": 1}},
+    )
+    rows = await stock_data._spot_all_rows("https://example.invalid")
+    assert rows == [{"f12": "000001"}]
+
+
+def test_large_sector_filter_does_not_duplicate_bindings(monkeypatch):
+    from eastmoney_quant_mcp.data import search, storage
+
+    monkeypatch.setattr(
+        storage, "query_sector_db",
+        lambda *args: [{"stock_code": f"{i:06d}"} for i in range(901)],
+    )
+    calls = []
+
+    def query(sql, params=()):
+        calls.append((sql.count("?"), len(params)))
+        return []
+
+    monkeypatch.setattr(search, "query_stock_db", query)
+    search.screen_stocks_local(sector_code="BK0001")
+    assert calls and all(placeholders == bound for placeholders, bound in calls)
+
+
+@pytest.mark.asyncio
+async def test_incremental_sync_only_processes_stale_symbols(monkeypatch):
+    from datetime import date, timedelta
+    from eastmoney_quant_mcp.data import sync
+
+    today = date.today()
+    stale_date = today - timedelta(days=3)
+    query_count = 0
+
+    def query(sql, params=()):
+        nonlocal query_count
+        query_count += 1
+        if query_count == 1:
+            return [
+                {"symbol": "current", "last_date": today.isoformat(),
+                 "status": "ready", "row_count": 320},
+                {"symbol": "stale", "last_date": stale_date.isoformat(),
+                 "status": "ready", "row_count": 320},
+            ]
+        return [
+            {"symbol": symbol, "last_date": today.isoformat(),
+             "status": "ready", "row_count": 320}
+            for symbol in ("current", "stale")
+        ]
+
+    captured = []
+
+    async def download(symbol, **kwargs):
+        captured.append((symbol, kwargs))
+        return {"status": "ok", "symbol": symbol, "count": 5}
+
+    monkeypatch.setattr(sync, "query_stock_db", query)
+    monkeypatch.setattr(sync, "_download_one_kline", download)
+    result = await sync.sync_stock_kline_universe(
+        ["current", "stale"], target_bars=320,
+        resume=False, incremental=True,
+    )
+    assert result["processed"] == 1
+    assert captured[0][0] == "stale"
+    assert captured[0][1]["start_date"] == (stale_date - timedelta(days=10)).isoformat()
+
+
+@pytest.mark.asyncio
+async def test_incremental_empty_fetch_preserves_existing_coverage(monkeypatch):
+    from eastmoney_quant_mcp.data import sync
+    from eastmoney_quant_mcp.tools import stock_data
+
+    async def empty_history(*args, **kwargs):
+        return []
+
+    writes = []
+    monkeypatch.setattr(stock_data, "get_stock_history", empty_history)
+    monkeypatch.setattr(sync, "save_data_coverage", lambda *a, **k: writes.append((a, k)))
+    result = await sync._download_one_kline(
+        "000001", adjust="qfq", start_date="2026-09-01")
+    assert result["status"] == "empty"
+    assert writes == []
+
+
 # ── CLI: pattern-backtest 透传失败返回码 ──
 
 def test_cli_backtest_failure_returns_nonzero(monkeypatch):

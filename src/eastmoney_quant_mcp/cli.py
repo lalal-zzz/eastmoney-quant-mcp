@@ -24,7 +24,7 @@ import sys
 def _build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="eastmoney-quant",
-        description="东方财富量化: 本地库重建/回填/采集/清理 + 形态扫描与回测")
+        description="东方财富量化投研: 本地库重建/回填/采集/清理 + 形态扫描与回测")
     sub = p.add_subparsers(dest="command", required=True)
 
     def add_common(sp: argparse.ArgumentParser) -> None:

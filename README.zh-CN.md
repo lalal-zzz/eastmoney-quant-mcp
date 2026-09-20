@@ -1,12 +1,14 @@
 [English](README.md) | [中文](README.zh-CN.md)
 
-# 东方财富量化 MCP 服务
+# 东方财富量化投研 MCP
 
 [![npm version](https://img.shields.io/npm/v/eastmoney-quant-mcp.svg)](https://www.npmjs.com/package/eastmoney-quant-mcp)
 [![Python](https://img.shields.io/pypi/pyversions/eastmoney-quant-mcp.svg)](https://pypi.org/project/eastmoney-quant-mcp/)
 [![License](https://img.shields.io/github/license/lalal-zzz/eastmoney-quant-mcp)](LICENSE)
 
-基于**东方财富网**及多源公开行情的 A 股本地优先量化分析 MCP 服务，为 Claude Code / Codex / Cursor / VS Code Copilot / Qoder 等 AI 客户端与 Agent 提供专业的股票数据分析与形态选股能力。
+**东方财富量化投研 MCP** 是一个面向 AI Agent 的本地优先 A 股投研工作台。它将**东方财富公开接口**与多源行情整合为可复用的本地 SQLite 证据库，覆盖行情、指标、板块资金、K 线结构、多周期研判、研究报告和可复现回测。
+
+它围绕一条完整投研链路工作：**检查数据质量 → 构建候选池 → 查看数值与图表证据 → 比较情景 → 用样本外回测验证规则**。项目不会给出收益保证，也不会自动发出交易指令。
 
 数据、上涨形态、20只逐股分析和双层回测的统一约定见 [实施计划](IMPLEMENTATION_PLAN.md)。
 
@@ -161,6 +163,10 @@ pip install eastmoney-quant-mcp
 | `find_cross_timeframe_similar_patterns` | 目标取最近N根K线，与全市场全部历史N根窗口比较；返回相似片段及后续上涨/震荡/下跌概率 |
 | `backtest_pattern_strategy` | 事件研究与5～20日交易回测 |
 
+### MCP 调用约定
+
+每个工具都公开 JSON Schema；服务端会校验必填字段、未知字段、基础类型、枚举值和数值范围。调用结果统一为 `{data, meta, warnings, error}`：先检查 `error`，再保留 `warnings`，并以 `meta` 和数据自身的截止日期判断新鲜度。工具不会承诺持续监控、推送通知或确定性买卖结论。
+
 附带 **8 个 Agent Skill**（由 `eastmoney-quant install` 自动安装），教授 AI 如何组合使用这些工具完成复杂选股和报告工作流：
 
 | Skill | 用途 |
@@ -173,6 +179,33 @@ pip install eastmoney-quant-mcp
 | `eastmoney-quant-strategy-backtest` | 策略回测与参数调优指南 |
 | `eastmoney-quant-chart-trend` | K线图结构归因与趋势线分析 |
 | `eastmoney-quant-rising-patterns` | 20只上涨形态候选逐股月周日深度分析 |
+
+### 每个 Skill 的结果展示
+
+这些 Skill 都以“可复核结果”为目标：不是只返回一段结论，而是把 MCP 数据整理成固定的结果卡片、表格或回测结果包。
+
+| Skill | 结果视图 | 典型展示内容 |
+|-------|---------|-------------|
+| `eastmoney-quant` | 投研路由卡 | 选择的工作流、数据质量门槛、工具链、警告和下一步动作 |
+| `eastmoney-quant-data-init` | 数据健康报告 | 预期交易日、各数据集最新日期与覆盖率、成功/失败项、数据源警告、剩余缺口 |
+| `eastmoney-quant-stock-screening` | 可排序候选表 | 代码/名称、截止日期、筛选条件、形态阶段、评分构成、板块背景、支撑/阻力/失效位、淘汰与缺失数据说明 |
+| `eastmoney-quant-report-generation` | 单股证据研报 | 结论与置信度、数据质量、月/周/日证据、关键位表、牛/基准/熊情景、风险与局限 |
+| `eastmoney-quant-multi-timeframe` | 多周期对照矩阵 | 月/周/日/分时指标、周期一致/冲突矩阵、主次解释、精确确认位与失效位 |
+| `eastmoney-quant-chart-trend` | K 线看图卡 | 截止日期、枢轴点、趋势线/通道/箱体/W-M/斐波那契区域、程序与图表是否一致、量能证据 |
+| `eastmoney-quant-rising-patterns` | 候选卡片 + 对比表 | 每只返回股票一张证据卡、复核后排序、当前候选与历史样本共性、覆盖率限制 |
+| `eastmoney-quant-strategy-backtest` | 回测结果包 | 股票池/区间、覆盖率、信号与交易数、假设、事件和组合指标、训练/测试与年度稳定性、报告/CSV 路径 |
+
+示例结果卡片：
+
+```text
+000001 平安银行 · 2026-09-17 · 前复权 · 日线486根
+结构：周线回调 / 日线颈线收复（candidate → triggered）
+证据：收盘价 12.34｜MA20 12.10｜颈线 12.28｜量能 1.42 倍
+确认：日线收盘站上 12.28 并保持；失效：收盘跌破 11.86
+警告：板块数据有延迟；图表确认可用
+```
+
+具体数值、日期、覆盖率和警告始终以当前 MCP 返回为准；上例只用于说明结果的展示形式。
 
 ---
 

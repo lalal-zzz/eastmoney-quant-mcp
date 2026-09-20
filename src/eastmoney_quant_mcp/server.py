@@ -1,5 +1,5 @@
 """
-东方财富量化 MCP Server — 精简入口
+东方财富量化投研 MCP Server — 精简入口
 暴露 20 个核心工具: 保留原15个兼容接口, 新增全市场同步、上涨候选、
 逐股分析数据包、跨周期相似形态与双层回测5个高级工具。
 """
@@ -445,7 +445,7 @@ async def list_tools() -> list[Tool]:
 
 
 def _validate_arguments(name: str, arguments, schema: dict) -> list[str]:
-    """轻量参数校验, 返回错误列表(空列表=通过)。只查必填与未知键, 不做类型深检。"""
+    """轻量 JSON-Schema 校验, 返回错误列表(空列表=通过)。"""
     errors = []
     props = schema.get("properties", {}) if isinstance(schema, dict) else {}
     args = arguments if isinstance(arguments, dict) else {}
@@ -455,6 +455,28 @@ def _validate_arguments(name: str, arguments, schema: dict) -> list[str]:
     for key in args:
         if props and key not in props:
             errors.append(f"未知参数: {key}")
+            continue
+        rule = props.get(key, {})
+        value = args[key]
+        expected = rule.get("type")
+        valid_type = {
+            "string": lambda x: isinstance(x, str),
+            "integer": lambda x: isinstance(x, int) and not isinstance(x, bool),
+            "number": lambda x: isinstance(x, (int, float)) and not isinstance(x, bool),
+            "boolean": lambda x: isinstance(x, bool),
+            "array": lambda x: isinstance(x, list),
+            "object": lambda x: isinstance(x, dict),
+        }.get(expected)
+        if valid_type and not valid_type(value):
+            errors.append(f"参数 {key} 类型错误: 需要 {expected}")
+            continue
+        if "enum" in rule and value not in rule["enum"]:
+            errors.append(f"参数 {key} 值无效: 允许值为 {rule['enum']}")
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            if "minimum" in rule and value < rule["minimum"]:
+                errors.append(f"参数 {key} 不能小于 {rule['minimum']}")
+            if "maximum" in rule and value > rule["maximum"]:
+                errors.append(f"参数 {key} 不能大于 {rule['maximum']}")
     return errors
 
 
@@ -472,13 +494,16 @@ async def call_tool(name, arguments) -> list[TextContent]:
     try:
         args = arguments if isinstance(arguments, dict) else {}
         result = await info["func"](**args)
+        warnings = result.get("warnings", []) if isinstance(result, dict) else []
+        if not isinstance(warnings, list):
+            warnings = [str(warnings)]
         envelope = {
             "data": result,
             "meta": {
                 "source": "eastmoney-quant",
                 "fetched_at": now,
             },
-            "warnings": [],
+            "warnings": warnings,
             "error": None,
         }
         return [TextContent(type="text", text=json.dumps(envelope, ensure_ascii=False, default=str))]

@@ -1,6 +1,6 @@
 {
   "name": "eastmoney-quant-mcp",
-  "description": "A-share quantitative analysis MCP server — local SQLite storage, multi-condition stock screening, sector analysis, technical reports",
+  "description": "Local-first A-share quantitative research MCP — market evidence, screening, chart structure, multi-timeframe review, reports, and reproducible backtests",
   "category": "Finance",
   "tags": ["stock", "a-share", "china", "quant", "eastmoney", "finance", "screening"],
   "repository": "https://github.com/lalal-zzz/eastmoney-quant-mcp",

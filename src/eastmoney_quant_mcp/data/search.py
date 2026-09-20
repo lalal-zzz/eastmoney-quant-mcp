@@ -352,7 +352,6 @@ def screen_stocks_local(
         )
         if not member_rows:
             return []
-        params.extend(m["stock_code"] for m in member_rows)
         member_codes = [m["stock_code"] for m in member_rows]
 
     sort_col = sort_by if sort_by in _VALID_SORT_COLS else "change_pct"
@@ -398,7 +397,7 @@ def screen_stocks_local(
     if codes:
         where_sql += f" AND s.symbol IN ({','.join('?' for _ in codes)})"
 
-    all_params = params + [top_n]
+    all_params = params + (codes or []) + [top_n]
     return query_stock_db(sql.format(where_sql=where_sql), tuple(all_params))
 
 

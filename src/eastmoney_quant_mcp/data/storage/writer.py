@@ -58,7 +58,7 @@ def save_stock_basic(rows: list[dict]):
 
 def save_stock_kline(rows: list[dict]):
     now = datetime.now().isoformat()
-    payload = [{**r, "adjust_type": r.get("adjust_type") or "qfq",
+    payload = [{**r, "adjust_type": r["adjust_type"] if "adjust_type" in r and r["adjust_type"] is not None else "qfq",
                 "source": r.get("source") or "unknown",
                 "fetched_at": r.get("fetched_at") or now} for r in rows]
     if _table_has_adjust_pk("stock_kline"):
@@ -85,7 +85,7 @@ def save_stock_rank(rows: list[dict]):
 
 
 def save_stock_indicators(rows: list[dict]):
-    payload = [{**r, "adjust_type": r.get("adjust_type") or "qfq",
+    payload = [{**r, "adjust_type": r["adjust_type"] if "adjust_type" in r and r["adjust_type"] is not None else "qfq",
                 "indicator_version": r.get("indicator_version") or INDICATOR_VERSION} for r in rows]
     if _table_has_adjust_pk("stock_indicators"):
         return _save_rows(get_stock_db, "stock_indicators", _STOCK_INDICATOR_COLS, payload)

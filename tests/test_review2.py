@@ -112,6 +112,17 @@ async def test_server_call_tool_unknown_param():
 
 
 @pytest.mark.asyncio
+async def test_server_call_tool_validates_schema_types_and_ranges():
+    from eastmoney_quant_mcp.server import call_tool
+    wrong_type = await call_tool("get_kline_local_or_net", {"symbol": "000001", "days": "30"})
+    assert json.loads(wrong_type[0].text)["error"]["code"] == "INVALID_PARAMS"
+    out_of_range = await call_tool("get_stock_kline_period", {"symbol": "000001", "period": "999"})
+    envelope = json.loads(out_of_range[0].text)
+    assert envelope["error"]["code"] == "INVALID_PARAMS"
+    assert "允许值" in envelope["error"]["message"]
+
+
+@pytest.mark.asyncio
 async def test_server_error_envelope_has_meta():
     from eastmoney_quant_mcp.server import call_tool, TOOL_HANDLERS
     info = TOOL_HANDLERS["get_data_status"]
@@ -127,6 +138,24 @@ async def test_server_error_envelope_has_meta():
     env = json.loads(out[0].text)
     assert env["error"]["code"] == "TOOL_ERROR"
     assert env["meta"]["fetched_at"]  # 错误路径 meta 不再为空
+
+
+@pytest.mark.asyncio
+async def test_server_promotes_business_warnings_to_envelope():
+    from eastmoney_quant_mcp.server import call_tool, TOOL_HANDLERS
+    info = TOOL_HANDLERS["get_data_status"]
+
+    async def result_with_warning():
+        return {"warnings": ["stale data"], "value": 1}
+    orig = info["func"]
+    info["func"] = result_with_warning
+    try:
+        out = await call_tool("get_data_status", {})
+    finally:
+        info["func"] = orig
+    env = json.loads(out[0].text)
+    assert env["warnings"] == ["stale data"]
+    assert env["data"]["value"] == 1
 
 
 # ── pattern_scan ──

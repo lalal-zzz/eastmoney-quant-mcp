@@ -68,13 +68,13 @@ def _stocks_from_spot(spots: list[dict]) -> list[dict]:
 # ── 并发控制 ──
 
 
-async def _concurrent_map(items, async_fn, desc="", batch_size=30):
+async def _concurrent_map(items, async_fn, desc="", batch_size=30, concurrency=None):
     """
     信号量流水线: 任意时刻最多 _CONCURRENCY 个任务在飞, 一个完成立即补一个。
     desc 非空且任务数>=20 时自动显示动画进度条(仅 TTY, 写 stderr)。
     batch_size 为历史遗留参数, 已不生效。
     """
-    sem = asyncio.Semaphore(_CONCURRENCY)
+    sem = asyncio.Semaphore(max(1, int(concurrency or _CONCURRENCY)))
     show_bar = bool(desc) and len(items) >= 20
     progress = make_progress(total=len(items), desc=desc) if show_bar else None
 
@@ -155,6 +155,9 @@ async def init_all_data(include_sector_members: bool = True, quick: bool = False
     # 1. 全市场实时行情(分页并发)
     _step("下载全市场实时行情...")
     spots = await _with_spinner("下载全市场实时行情...", get_latest_indicators())
+    if not spots:
+        return {"status": "error", "mode": mode, "error": "全市场行情为空或网络请求失败",
+                "paths": get_db_paths()}
     for s in spots:
         s["updated_date"] = today
     save_stock_spot(spots)
@@ -172,15 +175,19 @@ async def init_all_data(include_sector_members: bool = True, quick: bool = False
     _step("下载人气排名...")
     raw_rank = await _with_spinner("下载人气排名...", _fetch_all_rankings())
     rank_rows = _format_rank_items(raw_rank)
-    for r in rank_rows:
-        r["rank_date"] = today
-    save_stock_rank(rank_rows)
-    set_meta_stock("rank_updated", today)
+    if rank_rows:
+        for r in rank_rows:
+            r["rank_date"] = today
+        save_stock_rank(rank_rows)
+        set_meta_stock("rank_updated", today)
+    else:
+        log[-1] += " [警告: 无数据，未更新排名时间]"
     log[-1] += f" {len(rank_rows)} 条"
 
     if quick:
         log.append("快速模式完成: 板块数据将在首次使用时自动下载")
-        return {"status": "ok", "mode": "quick", "log": log, "paths": get_db_paths()}
+        return {"status": "partial" if not rank_rows else "ok", "mode": "quick",
+                "log": log, "paths": get_db_paths()}
 
     if mode in {"research", "full"}:
         _step(f"同步全市场股票K线 ({mode})...")
@@ -200,8 +207,9 @@ async def init_all_data(include_sector_members: bool = True, quick: bool = False
     for s in all_sectors:
         s["updated_date"] = today
     save_sector_basic(all_sectors)
-    set_meta_sector("sector_count", str(len(all_sectors)))
-    set_meta_sector("sector_updated", today)
+    if all_sectors:
+        set_meta_sector("sector_count", str(len(all_sectors)))
+        set_meta_sector("sector_updated", today)
     log[-1] += f" 概念{len(concept)}+行业{len(industry)}={len(all_sectors)}"
 
     # 5. 板块 K 线(并发下载, 限300条; 形态引擎要求 >=260 根)
@@ -225,7 +233,7 @@ async def init_all_data(include_sector_members: bool = True, quick: bool = False
         t0 = time.perf_counter()
         member_results = await _concurrent_map(
             [(code, name_by_code.get(code)) for code in codes],
-            _fetch_members, desc="成分股",
+            _fetch_members, desc="成分股", concurrency=1,
         )
         member_total = 0
         for code, members in member_results:
@@ -269,12 +277,16 @@ async def update_daily_stocks() -> dict:
         if isinstance(result, Exception):
             log.append(f"{label}: FAIL {result}")
             continue
+        if not result:
+            log.append(f"{label}: FAIL 无数据，保留现有缓存")
+            continue
         try:
             ret = on_ok(result)  # 副作用只执行一次
             log.append(f"{label}: OK {ret[-1]}")
         except Exception as e:
             log.append(f"{label}: FAIL {e}")
-    return {"status": "ok", "log": log}
+    failed = any(": FAIL" in item for item in log)
+    return {"status": "partial" if failed else "ok", "log": log}
 
 
 async def update_daily_sectors(include_members: bool = True, top_n: int = 50) -> dict:
@@ -301,8 +313,9 @@ async def update_daily_sectors(include_members: bool = True, top_n: int = 50) ->
         except Exception as e:
             log.append(f"板块列表({st}): FAIL {e}")
     save_sector_basic(all_sectors)
-    set_meta_sector("sector_count", str(len(all_sectors)))
-    set_meta_sector("sector_updated", today)
+    if all_sectors:
+        set_meta_sector("sector_count", str(len(all_sectors)))
+        set_meta_sector("sector_updated", today)
 
     # 筛选活跃板块(top_n 按涨跌幅绝对值)
     active = sorted(
@@ -335,7 +348,7 @@ async def update_daily_sectors(include_members: bool = True, top_n: int = 50) ->
             log.append(f"成分股(Top{len(active_codes)}): 并发...")
             member_results = await _concurrent_map(
                 [(s["sector_code"], s.get("sector_name")) for s in active],
-                _fetch_members, desc="成分股更新",
+                _fetch_members, desc="成分股更新", concurrency=1,
             )
             member_total = 0
             for code, members in member_results:
@@ -351,7 +364,8 @@ async def update_daily_sectors(include_members: bool = True, top_n: int = 50) ->
         except Exception as e:
             log.append(f"成分股: FAIL {e}")
 
-    return {"status": "ok", "log": log}
+    failed = any(": FAIL" in item for item in log)
+    return {"status": "partial" if failed else "ok", "log": log}
 
 
 async def update_daily_all(include_sector_members: bool = True,
@@ -383,10 +397,17 @@ async def update_daily_all(include_sector_members: bool = True,
             rows = query_stock_db("SELECT symbol FROM stock_basic ORDER BY symbol")
         symbols = [r["symbol"] for r in rows]
         if symbols:
-            kline_result = await sync_stock_kline_universe(symbols=symbols, target_bars=320,
-                                                            workers=6, resume=False)
+            kline_result = await sync_stock_kline_universe(
+                symbols=symbols, target_bars=320, workers=6,
+                resume=False, incremental=True,
+            )
+    overall_status = "ok"
+    if stock_result.get("status") != "ok" or sector_result.get("status") != "ok":
+        overall_status = "partial"
+    if kline_result and kline_result.get("failed", 0):
+        overall_status = "partial"
     return {
-        "status": "ok",
+        "status": overall_status,
         "stock_log": stock_result["log"],
         "sector_log": sector_result["log"],
         "stock_kline": kline_result,
@@ -397,10 +418,13 @@ async def update_daily_all(include_sector_members: bool = True,
 
 # ═══════════════════ 个股 K 线(按需, 并发批量) ═══════════════════
 
-async def _download_one_kline(symbol: str, days: int = 560, adjust: str = "qfq") -> dict:
+async def _download_one_kline(symbol: str, days: int = 560, adjust: str = "qfq",
+                              ready_bars: int = 260,
+                              start_date: str | None = None) -> dict:
     end = date.today()
-    start = end - timedelta(days=days + 30)
     try:
+        start = (date.fromisoformat(start_date[:10]) if start_date
+                 else end - timedelta(days=days + 30))
         from ..tools.stock_data import get_stock_history
         klines = await get_stock_history(
             symbol, start_date=start.strftime("%Y%m%d"),
@@ -408,31 +432,56 @@ async def _download_one_kline(symbol: str, days: int = 560, adjust: str = "qfq")
         )
         if klines:
             for row in klines:
-                row["adjust_type"] = adjust
+                row.setdefault("adjust_type", adjust)
                 row.setdefault("source", "multi-provider")
             save_stock_kline(klines)
+            adjust_types = {r.get("adjust_type", adjust) for r in klines}
+            coverage_adjust = next(iter(adjust_types)) if len(adjust_types) == 1 else adjust
+            from .search import get_stock_kline_local
+            local_klines = get_stock_kline_local(
+                symbol, limit=max(320, int(ready_bars)), adjust=coverage_adjust)
+            if not local_klines:
+                local_klines = sorted(klines, key=lambda r: str(r.get("date", "")))
+            stats = query_stock_db(
+                """SELECT MIN(date) AS first_date, MAX(date) AS last_date, COUNT(*) AS row_count
+                   FROM (
+                       SELECT date FROM stock_kline WHERE symbol=? AND adjust_type=?
+                       UNION
+                       SELECT date FROM stock_kline_variants WHERE symbol=? AND adjust_type=?
+                   )""",
+                (symbol, coverage_adjust, symbol, coverage_adjust),
+            )[0]
+            first_date = stats.get("first_date") or str(local_klines[0].get("date", ""))[:10]
+            last_date = stats.get("last_date") or str(local_klines[-1].get("date", ""))[:10]
+            total_rows = int(stats.get("row_count") or len(local_klines))
+            sources = sorted({r.get("source", "multi-provider") for r in klines})
+            source = sources[0] if len(sources) == 1 else "mixed"
             try:
-                df = pd.DataFrame(klines).sort_values("date", ascending=True)
+                df = pd.DataFrame(local_klines).sort_values("date", ascending=True)
                 ind_rows = indicator_rows_from_df(df, index_cols=("symbol", "date", "adjust_type"))
                 if ind_rows:
                     save_stock_indicators(ind_rows)
             except Exception as ind_err:
                 # K线已保存; 指标失败不能无感知(下游形态引擎要求指标齐全)
                 print(f"[warn] {symbol} 指标计算失败: {ind_err}", file=sys.stderr)
-                save_data_coverage("stock_indicators", symbol, adjust_type=adjust,
-                                   first_date=klines[0]["date"], last_date=klines[-1]["date"],
-                                   row_count=len(klines), status="failed", last_error=str(ind_err))
+                save_data_coverage("stock_indicators", symbol, adjust_type=coverage_adjust,
+                                   first_date=first_date, last_date=last_date,
+                                   row_count=len(local_klines), status="failed", last_error=str(ind_err))
             else:
-                save_data_coverage("stock_indicators", symbol, adjust_type=adjust,
-                                   first_date=klines[0]["date"], last_date=klines[-1]["date"],
-                                   row_count=len(klines), status="ready")
-            save_data_coverage("stock_kline", symbol, adjust_type=adjust,
-                               first_date=klines[0]["date"], last_date=klines[-1]["date"],
-                               row_count=len(klines), source="multi-provider",
-                               status="ready" if len(klines) >= 260 else "partial")
-            return {"status": "ok", "symbol": symbol, "count": len(klines),
-                    "first_date": klines[0]["date"], "last_date": klines[-1]["date"]}
-        save_data_coverage("stock_kline", symbol, adjust_type=adjust, status="empty")
+                save_data_coverage("stock_indicators", symbol, adjust_type=coverage_adjust,
+                                   first_date=first_date, last_date=last_date,
+                                   row_count=len(local_klines), status="ready")
+            save_data_coverage("stock_kline", symbol, adjust_type=coverage_adjust,
+                               first_date=first_date, last_date=last_date,
+                               row_count=total_rows, source=source,
+                               status="ready" if total_rows >= ready_bars else "partial")
+            result_status = "ok" if coverage_adjust == adjust else "degraded"
+            return {"status": result_status, "symbol": symbol, "count": len(klines),
+                    "total_count": total_rows,
+                    "first_date": first_date, "last_date": last_date,
+                    "adjust_type": coverage_adjust}
+        if start_date is None:
+            save_data_coverage("stock_kline", symbol, adjust_type=adjust, status="empty")
         return {"status": "empty", "symbol": symbol}
     except Exception as e:
         save_data_coverage("stock_kline", symbol, adjust_type=adjust,
@@ -456,16 +505,26 @@ async def download_stocks_kline_batch(symbols: list[str], days: int = 560, adjus
 
 async def sync_stock_kline_universe(symbols: list[str] | None = None,
                                     target_bars: int = 320, adjust: str = "qfq",
-                                    workers: int = 6, resume: bool = True) -> dict:
+                                    workers: int = 6, resume: bool = True,
+                                    incremental: bool = False) -> dict:
     """Synchronize a stock universe and report honest data coverage."""
     if symbols is None:
         symbols = [r["symbol"] for r in query_stock_db("SELECT symbol FROM stock_basic ORDER BY symbol")]
     symbols = list(dict.fromkeys(symbols))
-    if resume:
-        ready = {r["symbol"] for r in query_stock_db(
-            """SELECT symbol FROM data_coverage
-               WHERE data_type='stock_kline' AND period='daily' AND adjust_type=?
-                 AND status='ready' AND row_count>=?""", (adjust, target_bars))}
+    coverage_rows = query_stock_db(
+        """SELECT symbol,last_date,status,row_count FROM data_coverage
+           WHERE data_type='stock_kline' AND period='daily' AND adjust_type=?""",
+        (adjust,),
+    )
+    coverage_by_symbol = {r["symbol"]: r for r in coverage_rows}
+    if incremental:
+        today = date.today().isoformat()
+        pending = [s for s in symbols
+                   if not coverage_by_symbol.get(s)
+                   or str(coverage_by_symbol[s].get("last_date") or "") < today]
+    elif resume:
+        ready = {s for s, r in coverage_by_symbol.items()
+                 if r.get("status") == "ready" and int(r.get("row_count") or 0) >= target_bars}
         pending = [s for s in symbols if s not in ready]
     else:
         pending = symbols
@@ -473,7 +532,14 @@ async def sync_stock_kline_universe(symbols: list[str] | None = None,
 
     async def _one(sym):
         async with sem:
-            return await _download_one_kline(sym, days=max(560, int(target_bars * 1.6)), adjust=adjust)
+            incremental_start = None
+            if incremental:
+                last_date = str((coverage_by_symbol.get(sym) or {}).get("last_date") or "")[:10]
+                if last_date:
+                    incremental_start = (date.fromisoformat(last_date) - timedelta(days=10)).isoformat()
+            return await _download_one_kline(sym, days=max(560, int(target_bars * 1.6)),
+                                             adjust=adjust, ready_bars=target_bars,
+                                             start_date=incremental_start)
 
     results = await asyncio.gather(*(_one(s) for s in pending), return_exceptions=True)
     detail = [r if isinstance(r, dict) else {"status": "error", "error": str(r)} for r in results]
@@ -481,10 +547,12 @@ async def sync_stock_kline_universe(symbols: list[str] | None = None,
         """SELECT symbol,status,row_count,last_date FROM data_coverage
            WHERE data_type='stock_kline' AND period='daily' AND adjust_type=?""", (adjust,))
     requested = set(symbols)
-    covered = [r for r in rows if r["symbol"] in requested and r["status"] in {"ready", "partial"}]
-    ready_count = sum(r["status"] == "ready" for r in covered)
-    failed = sum(1 for r in detail if r.get("status") in {"error", "empty"})
-    return {"status": "ok", "total": len(symbols), "processed": len(pending),
+    covered = [r for r in rows if r["symbol"] in requested and r["status"] == "ready"
+               and int(r.get("row_count") or 0) >= target_bars]
+    ready_count = len(covered)
+    failed = sum(1 for r in detail if r.get("status") in {"error", "empty", "degraded"})
+    status = "ok" if not failed and ready_count == len(symbols) else "partial"
+    return {"status": status, "total": len(symbols), "processed": len(pending),
             "ready": ready_count, "covered": len(covered), "failed": failed,
             "coverage_ratio": len(covered) / len(symbols) if symbols else 0.0,
             "detail": detail}
