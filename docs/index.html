@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="东方财富量化投研 MCP：面向 AI Agent 的本地优先 A 股投研工作台。" />
+    <title>东方财富量化投研 MCP</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="返回顶部">
+        <span class="brand-mark">东</span>
+        <span>东方财富量化投研 <em>MCP</em></span>
+      </a>
+      <nav aria-label="主导航">
+        <a href="#capabilities">能力</a>
+        <a href="#workflow">工作流</a>
+        <a href="#tools">工具</a>
+        <a href="#start">上手</a>
+      </nav>
+      <a class="github-link" href="https://github.com/lalal-zzz/eastmoney-quant-mcp" target="_blank" rel="noreferrer">GitHub ↗</a>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow"><span></span> LOCAL-FIRST A-SHARE RESEARCH</p>
+          <h1>把市场数据变成<br /><i>可复核的投研证据</i></h1>
+          <p class="lede">一个面向 AI Agent 的 A 股量化投研 MCP。整合公开行情与多源数据，沉淀为本地 SQLite 证据库，从筛选、结构研判到样本外回测形成完整闭环。</p>
+          <div class="hero-actions">
+            <a class="button primary" href="#start">快速安装 <span>↓</span></a>
+            <a class="button secondary" href="#workflow">查看投研流程</a>
+          </div>
+          <p class="disclaimer">仅提供研究工具与数据证据，不构成投资建议或收益承诺。</p>
+        </div>
+        <div class="terminal-card" aria-label="MCP 调用示例">
+          <div class="terminal-head"><span></span><span></span><span></span><code>research-session</code></div>
+          <div class="terminal-body">
+            <p><b>›</b> get_data_status()</p>
+            <p class="muted">  ✓ stock K 线覆盖率 96.4%</p>
+            <p class="muted">  ✓ 数据截至 2026-09-18</p>
+            <br />
+            <p><b>›</b> screen_rising_candidates(top_n=20)</p>
+            <p class="result">  → 20 个候选 · 6 类上涨结构评分</p>
+            <br />
+            <p><b>›</b> prepare_stock_analysis("000001")</p>
+            <p class="muted">  ✓ 月 / 周 / 日证据包已就绪</p>
+          </div>
+          <div class="chart-lines" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        </div>
+      </section>
+
+      <section class="metrics" aria-label="项目能力概览">
+        <div><strong>20</strong><span>MCP 工具</span></div>
+        <div><strong>8</strong><span>Agent Skills</span></div>
+        <div><strong>18</strong><span>选股条件</span></div>
+        <div><strong>3</strong><span>数据源降级链</span></div>
+      </section>
+
+      <section id="capabilities" class="section">
+        <div class="section-heading">
+          <p class="eyebrow">WHAT IT ENABLES</p>
+          <h2>从行情读取，到有边界的研究结论</h2>
+          <p>所有输出都附带截止日期、覆盖率与警告。先验证数据质量，再解释结果。</p>
+        </div>
+        <div class="capability-grid">
+          <article class="capability feature-large">
+            <span class="cap-num">01</span>
+            <div class="icon">⌁</div>
+            <h3>本地优先的数据底座</h3>
+            <p>行情、分复权 K 线、指标、人气、板块资金流统一进入 SQLite。WAL 并发读写，日常查询不依赖网络。</p>
+            <ul><li>自动增量刷新与缺口回填</li><li>多源行情降级与断路保护</li><li>覆盖率、日期和来源完整披露</li></ul>
+          </article>
+          <article class="capability">
+            <span class="cap-num">02</span>
+            <div class="icon">⌁</div>
+            <h3>多维选股与板块背景</h3>
+            <p>用价格、估值、量比、换手、波动、资金流和板块范围组合出候选池。</p>
+          </article>
+          <article class="capability">
+            <span class="cap-num">03</span>
+            <div class="icon">⌁</div>
+            <h3>结构化技术研判</h3>
+            <p>识别均线反弹、颈线收复、W 底、箱体突破与趋势回踩，并给出关键位与失效条件。</p>
+          </article>
+          <article class="capability feature-wide">
+            <span class="cap-num">04</span>
+            <div>
+              <div class="icon">⌁</div>
+              <h3>多周期证据与回测验证</h3>
+              <p>将月、周、日、分时信息并列解读；再用事件研究和含成本的交易模拟检查规则在样本外是否稳定。</p>
+            </div>
+            <div class="mini-report"><span>结构信号</span><b>neckline reclaim</b><span>确认位</span><b>12.28</b><span>失效位</span><b class="risk">11.86</b></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="workflow" class="section workflow-section">
+        <div class="section-heading split-heading">
+          <div><p class="eyebrow">RESEARCH LOOP</p><h2>为 Agent 设计的<br />投研工作流</h2></div>
+          <p>不是直接给结论，而是把每一步需要检查的证据、警告和下一步动作变成稳定的工具调用。</p>
+        </div>
+        <ol class="workflow">
+          <li><span>01</span><div><h3>检查数据状态</h3><p>读取库内数据日期、行数和 K 线覆盖率；缺失时只更新或回填必要部分。</p><code>get_data_status</code></div></li>
+          <li><span>02</span><div><h3>构建候选池</h3><p>用条件筛选、板块环境和上涨形态评分，得到可进一步验证的标的。</p><code>screen_stocks · screen_rising_candidates</code></div></li>
+          <li><span>03</span><div><h3>读取多周期证据</h3><p>对候选逐一比较月、周、日数值和 K 线图，定位趋势、关键位、确认与失效条件。</p><code>prepare_stock_analysis · render_stock_charts</code></div></li>
+          <li><span>04</span><div><h3>验证规则边界</h3><p>以历史事件研究和交易模拟衡量不同持有期、成本、训练/测试区间下的表现。</p><code>backtest_pattern_strategy</code></div></li>
+        </ol>
+      </section>
+
+      <section id="tools" class="section tool-section">
+        <div class="section-heading"><p class="eyebrow">MCP TOOLKIT</p><h2>20 个工具，覆盖研究全链路</h2></div>
+        <div class="tool-columns">
+          <div><h3>数据与市场</h3><p><code>init_full_data</code><span>初始化本地数据</span></p><p><code>update_daily_data</code><span>每日增量刷新</span></p><p><code>get_kline_local_or_net</code><span>本地优先 K 线</span></p><p><code>get_sector_list</code><span>概念与行业板块</span></p><p><code>get_rank_trend_data</code><span>人气排名趋势</span></p></div>
+          <div><h3>筛选与结构</h3><p><code>screen_stocks</code><span>18 条件组合选股</span></p><p><code>scan_patterns</code><span>个股形态扫描</span></p><p><code>scan_sector_patterns</code><span>板块形态扫描</span></p><p><code>get_key_levels</code><span>均线、斐波那契与结构位</span></p><p><code>find_cross_timeframe_similar_patterns</code><span>跨周期相似形态</span></p></div>
+          <div><h3>研判与验证</h3><p><code>generate_stock_report</code><span>趋势、风险与情景</span></p><p><code>render_stock_charts</code><span>日/周/月 K 线图</span></p><p><code>prepare_stock_analysis</code><span>逐股证据包</span></p><p><code>backtest_pattern_strategy</code><span>事件研究与交易模拟</span></p><p><code>sync_stock_kline_universe</code><span>批量同步与覆盖率</span></p></div>
+        </div>
+      </section>
+
+      <section id="start" class="start-section">
+        <div>
+          <p class="eyebrow">GET STARTED</p>
+          <h2>把投研能力接入<br />你的 AI Agent</h2>
+          <p>支持 Claude Code、Codex、Cursor、VS Code Copilot 与 Qoder。安装器会识别客户端、备份现有配置并安装对应 Skills。</p>
+        </div>
+        <div class="install-card">
+          <div class="install-tabs"><button class="active" data-command="npm install -g eastmoney-quant-mcp&#10;eastmoney-quant install --agents auto">npm</button><button data-command="pip install eastmoney-quant-mcp">pip</button></div>
+          <pre><code id="install-command">npm install -g eastmoney-quant-mcp
+eastmoney-quant install --agents auto</code></pre>
+          <button id="copy-button" class="copy" type="button">复制命令</button>
+        </div>
+      </section>
+    </main>
+
+    <footer><span>东方财富量化投研 MCP · MIT License</span><a href="https://github.com/lalal-zzz/eastmoney-quant-mcp" target="_blank" rel="noreferrer">查看源码 ↗</a></footer>
+    <script src="script.js"></script>
+  </body>
+</html>
