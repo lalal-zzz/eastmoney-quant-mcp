@@ -1,6 +1,6 @@
 import pandas as pd
 
-from eastmoney_quant_mcp.strategies.sector_context import (
+from stock_analysis_mcp.strategies.sector_context import (
     build_stock_sector_context,
     classify_sector_trend,
     score_sector_alignment,
@@ -38,7 +38,7 @@ def test_sector_alignment_keeps_structure_flow_and_breadth_separate():
 
 
 def test_stock_sector_context_prioritizes_industry_and_discloses_short_history(monkeypatch):
-    import eastmoney_quant_mcp.strategies.sector_context as module
+    import stock_analysis_mcp.strategies.sector_context as module
 
     memberships = [
         {"sector_code": "BK_C", "sector_name": "concept", "sector_type": "concept",

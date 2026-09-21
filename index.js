@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 /**
- * eastmoney-quant-mcp — Node.js shim
+ * stock-analysis-mcp — Node.js shim
  *
  * Invokes the Python MCP server via stdio.
- * Allows `npx eastmoney-quant-mcp` to work as an MCP server.
+ * Allows `npx stock-analysis-mcp` to work as an MCP server.
  */
 
 import { spawn } from "node:child_process"
@@ -15,7 +15,7 @@ import { resolveRuntimePython } from "./lib/installer.js"
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const PYTHON = resolveRuntimePython()
-const SERVER_MODULE = "eastmoney_quant_mcp.server"
+const SERVER_MODULE = "stock_analysis_mcp.server"
 
 const pySrc = join(__dirname, "src")
 // 使用平台对应的路径分隔符(Windows 为 ";", POSIX 为 ":")
@@ -35,8 +35,8 @@ proc.stdout.pipe(process.stdout)
 proc.stderr.pipe(process.stderr)
 
 proc.on("error", (err) => {
-  console.error(`[eastmoney-quant-mcp] failed to start Python (${PYTHON}): ${err.message}`)
-  console.error("[eastmoney-quant-mcp] run `eastmoney-quant doctor` or set EASTMONEY_PYTHON to a valid interpreter.")
+  console.error(`[stock-analysis-mcp] failed to start Python (${PYTHON}): ${err.message}`)
+  console.error("[stock-analysis-mcp] run `stock-analysis doctor` or set STOCK_ANALYSIS_PYTHON to a valid interpreter.")
   process.exit(1)
 })
 
@@ -54,7 +54,7 @@ function cleanup() {
 }
 process.on("exit", cleanup)
 process.on("uncaughtException", (err) => {
-  console.error("[eastmoney-quant-mcp] fatal:", err.message)
+  console.error("[stock-analysis-mcp] fatal:", err.message)
   cleanup()
   process.exit(1)
 })

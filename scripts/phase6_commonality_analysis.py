@@ -82,7 +82,7 @@ print("Step 2: 形态-板块交叉分析")
 print("=" * 60)
 
 # 从sector_db获取板块-个股映射
-from eastmoney_quant_mcp.data.storage import get_sector_db
+from stock_analysis_mcp.data.storage import get_sector_db
 sector_db_path = get_sector_db()
 conn_sector = sqlite3.connect(sector_db_path)
 sector_members = pd.read_sql("SELECT sector_code, stock_code, stock_name FROM sector_member", conn_sector)

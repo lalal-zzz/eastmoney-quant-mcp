@@ -46,13 +46,13 @@ async def test_all():
     print("Step 1: 数据库状态检查")
     print("=" * 60)
     await try_tool("get_data_status",
-        __import__("eastmoney_quant_mcp.tools.data_manager", fromlist=["get_data_status"]).get_data_status(),
+        __import__("stock_analysis_mcp.tools.data_manager", fromlist=["get_data_status"]).get_data_status(),
         expect_key="stock")
 
     print("\n" + "=" * 60)
     print("Step 2: 初始化数据库 (跳过成分股, 快速模式)")
     print("=" * 60)
-    dm = __import__("eastmoney_quant_mcp.tools.data_manager", fromlist=["init_full_data"])
+    dm = __import__("stock_analysis_mcp.tools.data_manager", fromlist=["init_full_data"])
     await try_tool("init_full_data(include_sector_members=False)",
         dm.init_full_data(include_sector_members=False),
         expect_key="status")
@@ -61,7 +61,7 @@ async def test_all():
     print("Step 3: 验证数据库状态")
     print("=" * 60)
     await try_tool("get_data_status (after init)",
-        __import__("eastmoney_quant_mcp.tools.data_manager", fromlist=["get_data_status"]).get_data_status(),
+        __import__("stock_analysis_mcp.tools.data_manager", fromlist=["get_data_status"]).get_data_status(),
         expect_key="stock")
 
     print("\n" + "=" * 60)
@@ -86,20 +86,20 @@ async def test_all():
     print("Step 6: generate_stock_report —— 分析报告")
     print("=" * 60)
     await try_tool("generate_stock_report(000001)",
-        __import__("eastmoney_quant_mcp.tools.analysis", fromlist=["generate_stock_report"]).generate_stock_report("000001"),
+        __import__("stock_analysis_mcp.tools.analysis", fromlist=["generate_stock_report"]).generate_stock_report("000001"),
         expect_key="basic_info")
 
     print("\n" + "=" * 60)
     print("Step 7: get_rank_trend_data —— 人气趋势")
     print("=" * 60)
     await try_tool("get_rank_trend_data(000001, days=10)",
-        __import__("eastmoney_quant_mcp.tools.data_manager", fromlist=["get_rank_trend_data"]).get_rank_trend_data("000001", days=10))
+        __import__("stock_analysis_mcp.tools.data_manager", fromlist=["get_rank_trend_data"]).get_rank_trend_data("000001", days=10))
 
     print("\n" + "=" * 60)
     print("Step 8: get_sector_list —— 板块列表")
     print("=" * 60)
     await try_tool("get_sector_list(concept)",
-        __import__("eastmoney_quant_mcp.tools.sector_data", fromlist=["get_sector_list"]).get_sector_list("concept"))
+        __import__("stock_analysis_mcp.tools.sector_data", fromlist=["get_sector_list"]).get_sector_list("concept"))
 
     print("\n" + "=" * 60)
     print("Step 9: get_stock_belong_sectors —— 反查(需成分股数据)")

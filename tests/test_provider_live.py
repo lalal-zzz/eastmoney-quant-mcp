@@ -11,7 +11,7 @@ pytestmark = pytest.mark.integration
 
 
 def test_tencent_stock_kline_daily_qfq():
-    from eastmoney_quant_mcp.data.providers import tencent
+    from stock_analysis_mcp.data.providers import tencent
 
     rows = tencent.fetch_stock_kline(
         "600000", limit=250, klt="101", adjust="qfq",
@@ -27,7 +27,7 @@ def test_tencent_stock_kline_daily_qfq():
 
 
 def test_tencent_stock_kline_minute():
-    from eastmoney_quant_mcp.data.providers import tencent
+    from stock_analysis_mcp.data.providers import tencent
 
     for klt in ("5", "60"):
         rows = tencent.fetch_stock_kline("600000", limit=100, klt=klt)
@@ -38,7 +38,7 @@ def test_tencent_stock_kline_minute():
 
 
 def test_tencent_board_rank_and_kline():
-    from eastmoney_quant_mcp.data.providers import tencent
+    from stock_analysis_mcp.data.providers import tencent
 
     rank = tencent.fetch_board_rank("hy")
     assert rank, "行业排行为空"
@@ -53,7 +53,7 @@ def test_tencent_board_rank_and_kline():
 
 
 def test_sina_nodes_and_members():
-    from eastmoney_quant_mcp.data.providers import sina
+    from stock_analysis_mcp.data.providers import sina
 
     maps = sina.get_name_node_index(refresh=True)
     assert maps["industry"], "新浪行业节点为空"
@@ -71,7 +71,7 @@ def _sohu_fetch_with_retry(symbol, start_date, attempts=2, wait=30):
     """搜狐对高频 IP 会间歇性 503, 失败后等待重试一次"""
     import time as _time
 
-    from eastmoney_quant_mcp.data.providers import sohu
+    from stock_analysis_mcp.data.providers import sohu
 
     for i in range(attempts):
         rows = sohu.fetch_stock_kline_daily(symbol, start_date=start_date)
@@ -83,7 +83,7 @@ def _sohu_fetch_with_retry(symbol, start_date, attempts=2, wait=30):
 
 
 def test_sohu_full_history_daily():
-    from eastmoney_quant_mcp.data.providers import sohu
+    from stock_analysis_mcp.data.providers import sohu
 
     rows = _sohu_fetch_with_retry("600000", "20240101")
     if not rows:
@@ -97,7 +97,7 @@ def test_sohu_full_history_daily():
 
 def test_close_price_cross_source_consistency():
     """腾讯(qfq) vs 搜狐(不复权) 最新收盘价一致性(近期无除权时应相等)"""
-    from eastmoney_quant_mcp.data.providers import tencent
+    from stock_analysis_mcp.data.providers import tencent
 
     t = tencent.fetch_stock_kline("600000", limit=5, klt="101", adjust="qfq")
     s = _sohu_fetch_with_retry("600000", "20260701")
@@ -115,7 +115,7 @@ def test_close_price_cross_source_consistency():
 
 async def test_stock_history_chain_live():
     """完整链路: 个股日K(应命中腾讯主源)"""
-    from eastmoney_quant_mcp.tools.stock_data import _stock_history_sync
+    from stock_analysis_mcp.tools.stock_data import _stock_history_sync
 
     rows = _stock_history_sync("000001", "20250601", "20261231")
     assert rows, "个股K线链路为空"
@@ -125,7 +125,7 @@ async def test_stock_history_chain_live():
 
 
 async def test_stock_kline_period_chain_live():
-    from eastmoney_quant_mcp.tools.stock_data import get_stock_kline_period
+    from stock_analysis_mcp.tools.stock_data import get_stock_kline_period
 
     for period in ("5", "101", "102"):
         rows = await get_stock_kline_period("600000", period=period, limit=60)
@@ -136,8 +136,8 @@ async def test_stock_kline_period_chain_live():
 
 
 async def test_sector_kline_chain_live():
-    from eastmoney_quant_mcp.data import network
-    from eastmoney_quant_mcp.tools.sector_data import _sector_kline_net_sync
+    from stock_analysis_mcp.data import network
+    from stock_analysis_mcp.tools.sector_data import _sector_kline_net_sync
 
     # 板块K线为东财单源(腾讯仅当日1根且口径不同); 东财被封时跳过
     network._provider_cooldown_until.pop("em_kline", None)
@@ -158,7 +158,7 @@ async def test_sector_kline_chain_live():
 
 
 async def test_sector_members_chain_live():
-    from eastmoney_quant_mcp.tools.sector_data import get_sector_members
+    from stock_analysis_mcp.tools.sector_data import get_sector_members
 
     items = await get_sector_members("BK0438", "食品饮料")
     assert items, "成分股链路为空"
@@ -174,8 +174,8 @@ def test_board_volume_unit_consistency():
     两家成分股集合不同, 聚合量有 ±20% 级差异属正常; 本测试只防
     单位量纲错误(手/股差 100 倍)。腾讯板块K线仅当日 1 根(实测限制)。
     """
-    from eastmoney_quant_mcp.data.network import http_get
-    from eastmoney_quant_mcp.data.providers import boardmap, tencent
+    from stock_analysis_mcp.data.network import http_get
+    from stock_analysis_mcp.data.providers import boardmap, tencent
 
     pt = boardmap.resolve_tencent_pt("BK1180", "华为海思")
     assert pt, "名称→pt 映射失败"

@@ -1,5 +1,5 @@
 ---
-name: eastmoney-quant-report-generation
+name: stock-analysis-report-generation
 description: Produce an evidence-based technical research report for one Chinese A-share using local data, monthly/weekly/daily structure, exact key levels, patterns, sector context, popularity, and risk scenarios. Use for 单股分析, 深度分析, 技术报告, 支撑阻力, 风险评估, or 研报.
 ---
 

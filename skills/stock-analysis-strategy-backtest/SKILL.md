@@ -1,6 +1,6 @@
 ---
-name: eastmoney-quant-strategy-backtest
-description: Run and interpret event studies, executable pattern-strategy backtests, factor commonality tests, and time-split validation for Eastmoney Quant. Use for 回测, 胜率, 历史验证, 参数优化, 共性检验, drawdown, Sharpe, or testing a proposed screening rule.
+name: stock-analysis-strategy-backtest
+description: Run and interpret event studies, executable pattern-strategy backtests, factor commonality tests, and time-split validation for Stock Analysis MCP. Use for 回测, 胜率, 历史验证, 参数优化, 共性检验, drawdown, Sharpe, or testing a proposed screening rule.
 ---
 
 # Pattern strategy backtesting

@@ -3,8 +3,8 @@ from dataclasses import asdict
 import pandas as pd
 import pytest
 
-from eastmoney_quant_mcp.strategies.patterns import Pivot
-from eastmoney_quant_mcp.strategies.position import (
+from stock_analysis_mcp.strategies.patterns import Pivot
+from stock_analysis_mcp.strategies.position import (
     FibAnchorCandidate,
     build_confluence_zones,
     evaluate_projection,
@@ -12,7 +12,7 @@ from eastmoney_quant_mcp.strategies.position import (
     fibonacci_zones,
     projection_targets,
 )
-from eastmoney_quant_mcp.strategies.structure import (
+from stock_analysis_mcp.strategies.structure import (
     analyze_market_structure,
     compact_market_structure,
     detect_channels,
@@ -20,8 +20,8 @@ from eastmoney_quant_mcp.strategies.structure import (
     detect_horizontal_ranges,
     detect_trendlines,
 )
-from eastmoney_quant_mcp.strategies.structure.models import TrendLine
-from eastmoney_quant_mcp.strategies.structure.timeframes import resample_ohlcv
+from stock_analysis_mcp.strategies.structure.models import TrendLine
+from stock_analysis_mcp.strategies.structure.timeframes import resample_ohlcv
 
 
 def _frame(n=60):

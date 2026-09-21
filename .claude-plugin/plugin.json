@@ -1,14 +1,14 @@
 {
-  "name": "eastmoney-quant-mcp",
-  "description": "Local-first A-share quantitative research MCP. Combines Eastmoney data, sector flow, technical indicators, chart structure, multi-timeframe review, evidence-based reports, and reproducible backtests in local SQLite.",
+  "name": "stock-analysis-mcp",
+  "description": "Local-first A-share stock analysis MCP with Agent Skills. Combines multi-source market data, sector flow, indicators, chart structure, reports, and reproducible backtests in local SQLite.",
   "author": {
     "name": "lalal-zzz",
     "email": "lalal-zzz@users.noreply.github.com"
   },
   "mcpServers": {
-    "eastmoney-quant": {
+    "stock-analysis": {
       "command": "npx",
-      "args": ["eastmoney-quant-mcp"]
+      "args": ["stock-analysis-mcp"]
     }
   }
 }

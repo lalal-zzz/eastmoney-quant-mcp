@@ -1,18 +1,18 @@
 """
 cli.py — 重建 / 回填 / 采集 / 清理 / 形态分析 统一命令行入口
 (移植自"股票信息"项目 rebuild_stock_db.py / backfill_daily_spot.py /
-eastmoney_rank_scheduler.py 的 CLI 部分)
+旧版行情采集脚本的 CLI 部分)
 
 用法:
-    python -m eastmoney_quant_mcp.cli rebuild --dry-run          # 预览步骤, 不联网
-    python -m eastmoney_quant_mcp.cli rebuild --workers 8 --with-sectors
-    python -m eastmoney_quant_mcp.cli backfill --start 2026-01-01
-    python -m eastmoney_quant_mcp.cli daily-capture              # 晚间采集(任务计划用)
-    python -m eastmoney_quant_mcp.cli cleanup --dry-run
-    python -m eastmoney_quant_mcp.cli pattern-scan --universe sectors --date 2026-08-14
-    python -m eastmoney_quant_mcp.cli wave-analysis --symbol 600000
-    python -m eastmoney_quant_mcp.cli pattern-backtest --sample 300 --workers 8
-    python -m eastmoney_quant_mcp.cli pattern-optimize --cache signals.csv --universe stocks
+    python -m stock_analysis_mcp.cli rebuild --dry-run          # 预览步骤, 不联网
+    python -m stock_analysis_mcp.cli rebuild --workers 8 --with-sectors
+    python -m stock_analysis_mcp.cli backfill --start 2026-01-01
+    python -m stock_analysis_mcp.cli daily-capture              # 晚间采集(任务计划用)
+    python -m stock_analysis_mcp.cli cleanup --dry-run
+    python -m stock_analysis_mcp.cli pattern-scan --universe sectors --date 2026-08-14
+    python -m stock_analysis_mcp.cli wave-analysis --symbol 600000
+    python -m stock_analysis_mcp.cli pattern-backtest --sample 300 --workers 8
+    python -m stock_analysis_mcp.cli pattern-optimize --cache signals.csv --universe stocks
 """
 
 import argparse
@@ -23,13 +23,13 @@ import sys
 
 def _build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        prog="eastmoney-quant",
-        description="东方财富智能投研: 本地库重建/回填/采集/清理 + 形态扫描与回测")
+        prog="stock-analysis",
+        description="股票分析 MCP + Skills: 本地库重建/回填/采集/清理 + 形态扫描与回测")
     sub = p.add_subparsers(dest="command", required=True)
 
     def add_common(sp: argparse.ArgumentParser) -> None:
         sp.add_argument("--data-dir", default=None,
-                        help="覆盖数据根目录 (等价 EASTMONEY_DATA_DIR)")
+                        help="覆盖数据根目录 (等价 STOCK_ANALYSIS_DATA_DIR)")
         sp.add_argument("--dry-run", action="store_true",
                         help="只打印执行计划, 不联网不写库")
 
@@ -229,8 +229,8 @@ def main(argv: list[str] | None = None) -> int:
     # parse_known_args: pattern-backtest/optimize 的选项原样透传给子模块
     # (REMAINDER 对紧跟子命令的 --xxx 会被主解析器误吃, bpo-2962)
     args, remaining = _build_parser().parse_known_args(argv)
-    if getattr(args, "data_dir", None):          # 数据目录覆盖 (等价 EASTMONEY_DATA_DIR)
-        os.environ["EASTMONEY_DATA_DIR"] = args.data_dir
+    if getattr(args, "data_dir", None):          # 数据目录覆盖 (等价 STOCK_ANALYSIS_DATA_DIR)
+        os.environ["STOCK_ANALYSIS_DATA_DIR"] = args.data_dir
 
     handlers = {
         "rebuild": _cmd_rebuild,

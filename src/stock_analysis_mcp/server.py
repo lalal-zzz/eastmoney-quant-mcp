@@ -1,5 +1,5 @@
 """
-东方财富智能投研 MCP Server — 精简入口
+股票分析 MCP Server — 精简入口
 暴露 20 个核心工具: 保留原15个兼容接口, 新增全市场同步、上涨候选、
 逐股分析数据包、跨周期相似形态与双层回测5个高级工具。
 """
@@ -34,7 +34,7 @@ from .tools.research import prepare_stock_analysis, screen_rising_candidates
 from .strategies.trading_backtest import backtest_pattern_strategy
 from .strategies.similarity import find_cross_timeframe_similar_patterns
 
-server = Server("eastmoney-quant-mcp")
+server = Server("stock-analysis-mcp")
 
 TOOL_HANDLERS = {}
 
@@ -306,7 +306,7 @@ async def _key_levels(universe="stocks", symbol=None) -> dict:
 
 @register("render_stock_charts", (
     "个股K线看图: 生成 日K/周K/月K 三张蜡烛图 PNG(含自动趋势线/颈线/MA/成交量), "
-    "返回图片路径供 Read 读图做结构归因。需要 chart extra (pip install 'eastmoney-quant-mcp[chart]')"
+    "返回图片路径供 Read 读图做结构归因。需要 chart extra (pip install 'stock-analysis-mcp[chart]')"
 ), {
     "type": "object",
     "properties": {
@@ -488,7 +488,7 @@ async def call_tool(name, arguments) -> list[TextContent]:
     now = datetime.now(timezone.utc).isoformat()
     errors = _validate_arguments(name, arguments, info["schema"])
     if errors:
-        envelope = {"data": None, "meta": {"source": "eastmoney-quant", "fetched_at": now},
+        envelope = {"data": None, "meta": {"source": "stock-analysis", "fetched_at": now},
                     "warnings": [], "error": {"code": "INVALID_PARAMS", "message": "; ".join(errors)}}
         return [TextContent(type="text", text=json.dumps(envelope, ensure_ascii=False))]
     try:
@@ -500,7 +500,7 @@ async def call_tool(name, arguments) -> list[TextContent]:
         envelope = {
             "data": result,
             "meta": {
-                "source": "eastmoney-quant",
+                "source": "stock-analysis",
                 "fetched_at": now,
             },
             "warnings": warnings,
@@ -510,7 +510,7 @@ async def call_tool(name, arguments) -> list[TextContent]:
     except Exception as e:
         envelope = {
             "data": None,
-            "meta": {"source": "eastmoney-quant", "fetched_at": now},
+            "meta": {"source": "stock-analysis", "fetched_at": now},
             "warnings": [],
             "error": {"code": "TOOL_ERROR", "message": str(e)},
         }

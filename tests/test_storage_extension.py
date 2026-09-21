@@ -4,7 +4,7 @@ import sqlite3
 
 import pytest
 
-from eastmoney_quant_mcp.data import storage
+from stock_analysis_mcp.data import storage
 
 
 @pytest.fixture

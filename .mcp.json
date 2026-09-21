@@ -1,12 +1,12 @@
 {
-  "name": "eastmoney-quant-mcp",
-  "description": "Local-first A-share quantitative research MCP — market evidence, screening, chart structure, multi-timeframe review, reports, and reproducible backtests",
+  "name": "stock-analysis-mcp",
+  "description": "Local-first A-share stock analysis MCP with Agent Skills, market evidence, screening, chart structure, reports, and reproducible backtests",
   "category": "Finance",
-  "tags": ["stock", "a-share", "china", "quant", "eastmoney", "finance", "screening"],
-  "repository": "https://github.com/lalal-zzz/eastmoney-quant-mcp",
+  "tags": ["stock", "stock-analysis", "a-share", "china", "mcp", "agent-skills", "finance", "screening"],
+  "repository": "https://github.com/lalal-zzz/stock-analysis-mcp",
   "entry": {
     "command": "npx",
-    "args": ["eastmoney-quant-mcp"]
+    "args": ["stock-analysis-mcp"]
   },
   "runtime": "node",
   "requires": ["python>=3.10"],

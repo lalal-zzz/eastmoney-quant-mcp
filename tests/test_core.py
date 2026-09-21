@@ -1,8 +1,8 @@
-"""Tests for eastmoney-quant-mcp"""
+"""Tests for stock-analysis-mcp"""
 
 import pytest
-from eastmoney_quant_mcp.data.network import normalize_symbol, to_prefixed_symbol, normalize_sector_code
-from eastmoney_quant_mcp.tools.pattern_scan import PATTERNS, PATTERN_DESCRIPTIONS
+from stock_analysis_mcp.data.network import normalize_symbol, to_prefixed_symbol, normalize_sector_code
+from stock_analysis_mcp.tools.pattern_scan import PATTERNS, PATTERN_DESCRIPTIONS
 
 
 def test_normalize_symbol():
@@ -31,7 +31,7 @@ def test_pattern_list():
 
 
 def test_normalize_klt():
-    from eastmoney_quant_mcp.tools.stock_data import _normalize_klt
+    from stock_analysis_mcp.tools.stock_data import _normalize_klt
 
     assert _normalize_klt("60") == "60"
     assert _normalize_klt(101) == "101"  # int 入参也可

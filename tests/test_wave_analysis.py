@@ -1,7 +1,7 @@
 import pytest
 
-from eastmoney_quant_mcp.strategies.patterns import Pivot
-from eastmoney_quant_mcp.strategies.wave_analysis import (
+from stock_analysis_mcp.strategies.patterns import Pivot
+from stock_analysis_mcp.strategies.wave_analysis import (
     analyze_pivots,
     build_confirmed_zigzag,
 )

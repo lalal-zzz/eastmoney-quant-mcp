@@ -8,10 +8,10 @@ from pathlib import Path
 
 
 def config_path() -> Path:
-    explicit = os.environ.get("EASTMONEY_CONFIG")
+    explicit = os.environ.get("STOCK_ANALYSIS_CONFIG") or os.environ.get("EASTMONEY_CONFIG")
     if explicit:
         return Path(explicit).expanduser()
-    return Path.home() / ".eastmoney-quant" / "config.toml"
+    return Path.home() / ".stock-analysis" / "config.toml"
 
 
 def _read_simple_toml(path: Path) -> dict[str, str]:
@@ -41,12 +41,13 @@ def _read_simple_toml(path: Path) -> dict[str, str]:
     return values
 
 
-def _env_path(name: str, fallback: Path) -> Path:
-    """环境变量路径; 空字符串视为未设置, 回退 fallback。"""
-    raw = os.environ.get(name, "").strip()
-    if not raw:
-        return fallback
-    return Path(raw).expanduser()
+def _env_path(names: str | tuple[str, ...], fallback: Path) -> Path:
+    """环境变量路径；优先新名称，并兼容旧版变量。"""
+    for name in (names,) if isinstance(names, str) else names:
+        raw = os.environ.get(name, "").strip()
+        if raw:
+            return Path(raw).expanduser()
+    return fallback
 
 
 @dataclass(frozen=True)
@@ -62,7 +63,7 @@ def _default_dirs() -> tuple[Path, Path, Path]:
     if os.name == "nt":
         root = Path.home() / "Desktop"
         return root, root / "股票信息", root / "分析板块"
-    root = Path.home() / ".eastmoney-quant" / "data"
+    root = Path.home() / ".stock-analysis" / "data"
     return root, root / "stocks", root / "sectors"
 
 
@@ -70,15 +71,16 @@ def get_settings() -> Settings:
     values = _read_simple_toml(config_path())
     default_root, default_stock, default_sector = _default_dirs()
     toml_root = values.get("data_root", "").strip()
-    root = _env_path("EASTMONEY_DATA_DIR", Path(toml_root).expanduser() if toml_root else default_root)
-    if toml_root or "EASTMONEY_DATA_DIR" in os.environ:
+    data_envs = ("STOCK_ANALYSIS_DATA_DIR", "EASTMONEY_DATA_DIR")
+    root = _env_path(data_envs, Path(toml_root).expanduser() if toml_root else default_root)
+    if toml_root or any(name in os.environ for name in data_envs):
         default_stock, default_sector = root / "股票信息", root / "分析板块"
 
-    def _dir(env_name: str, toml_key: str, default: Path) -> Path:
+    def _dir(env_name: str | tuple[str, ...], toml_key: str, default: Path) -> Path:
         toml_value = values.get(toml_key, "").strip()
         fallback = Path(toml_value).expanduser() if toml_value else default
         return _env_path(env_name, fallback)
 
-    stock_dir = _dir("EASTMONEY_STOCK_DATA_DIR", "stock_data_dir", default_stock)
-    sector_dir = _dir("EASTMONEY_SECTOR_DATA_DIR", "sector_data_dir", default_sector)
+    stock_dir = _dir(("STOCK_ANALYSIS_STOCK_DATA_DIR", "EASTMONEY_STOCK_DATA_DIR"), "stock_data_dir", default_stock)
+    sector_dir = _dir(("STOCK_ANALYSIS_SECTOR_DATA_DIR", "EASTMONEY_SECTOR_DATA_DIR"), "sector_data_dir", default_sector)
     return Settings(root, stock_dir, sector_dir, config_path())

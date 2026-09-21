@@ -1,24 +1,24 @@
 # Architecture
 
-`eastmoney-quant-mcp` is a local-first A-share data and research service. It separates deterministic data/calculation work from agent interpretation.
+`stock-analysis-mcp` is a local-first A-share data and research service. It separates deterministic data/calculation work from agent interpretation.
 
 ## Runtime boundary
 
 ```text
 MCP client
   → index.js (Node ESM stdio shim)
-  → python -m eastmoney_quant_mcp.server
+  → python -m stock_analysis_mcp.server
   → 20 registered MCP handlers
   → data / tools / strategies
   → user-owned SQLite databases and report/chart files
 ```
 
-The Node shim resolves Python from `EASTMONEY_PYTHON`, the managed runtime file, then `python`. The Python server owns MCP semantics and wraps every result in `{data, meta, warnings, error}`.
+The Node shim resolves Python from `STOCK_ANALYSIS_PYTHON`, the managed runtime file, then `python`. The Python server owns MCP semantics and wraps every result in `{data, meta, warnings, error}`.
 
 ## Source layout
 
 ```text
-src/eastmoney_quant_mcp/
+src/stock_analysis_mcp/
 ├── core/
 │   ├── config.py              # env → config.toml → defaults
 │   ├── constants.py           # schema/indicator/pattern versions and research defaults

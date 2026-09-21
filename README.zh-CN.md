@@ -1,12 +1,12 @@
 [English](README.md) | [中文](README.zh-CN.md)
 
-# 东方财富智能投研 MCP
+# 股票分析 MCP + Skills
 
-[![npm version](https://img.shields.io/npm/v/eastmoney-quant-mcp.svg)](https://www.npmjs.com/package/eastmoney-quant-mcp)
-[![Python](https://img.shields.io/pypi/pyversions/eastmoney-quant-mcp.svg)](https://pypi.org/project/eastmoney-quant-mcp/)
-[![License](https://img.shields.io/github/license/lalal-zzz/eastmoney-quant-mcp)](LICENSE)
+[![npm version](https://img.shields.io/npm/v/stock-analysis-mcp.svg)](https://www.npmjs.com/package/stock-analysis-mcp)
+[![Python](https://img.shields.io/pypi/pyversions/stock-analysis-mcp.svg)](https://pypi.org/project/stock-analysis-mcp/)
+[![License](https://img.shields.io/github/license/lalal-zzz/stock-analysis-mcp)](LICENSE)
 
-**东方财富智能投研 MCP** 是一个面向 AI Agent 的本地优先 A 股投研工作台。它将**东方财富公开接口**与多源行情整合为可复用的本地 SQLite 证据库，覆盖行情、指标、板块资金、K 线结构、多周期研判、研究报告和可复现回测。
+**股票分析 MCP + Skills** 是一个面向 AI Agent 的本地优先 A 股分析工作台。它将多个公开行情源整合为可复用的本地 SQLite 证据库，覆盖行情、指标、板块资金、K 线结构、多周期研判、研究报告和可复现回测。
 
 它围绕一条完整投研链路工作：**检查数据质量 → 构建候选池 → 查看数值与图表证据 → 比较情景 → 用样本外回测验证规则**。项目不会给出收益保证，也不会自动发出交易指令。
 
@@ -15,10 +15,10 @@
 ## Agent 一键配置（npm）
 
 ```bash
-npm install -g eastmoney-quant-mcp
-eastmoney-quant install --agents auto   # 自动检测并配置 Agent + 安装 Skill
-eastmoney-quant setup --data-root "D:/MarketData"   # 指定 SQLite 数据目录
-eastmoney-quant doctor                  # 检查运行时 / 配置 / Agent 状态
+npm install -g stock-analysis-mcp
+stock-analysis install --agents auto   # 自动检测并配置 Agent + 安装 Skill
+stock-analysis setup --data-root "D:/MarketData"   # 指定 SQLite 数据目录
+stock-analysis doctor                  # 检查运行时 / 配置 / Agent 状态
 ```
 
 **支持的 Agent**（`install --agents auto` 自动检测并配置）：
@@ -31,9 +31,9 @@ eastmoney-quant doctor                  # 检查运行时 / 配置 / Agent 状�
 | VS Code Copilot | VS Code 用户级 `mcp.json` | — |
 | Qoder | `~/.qoder/mcp.json` | ✅ `~/.qoder/skills/` |
 
-安装器使用 [`uv`](https://docs.astral.sh/uv/) 管理隔离的 Python 环境（需先安装 `uv`）。修改任何 Agent 配置前都会询问并自动备份，可通过 `eastmoney-quant uninstall` 还原。OpenCode 等其他 MCP 客户端的手动配置模板可通过 `eastmoney-quant install --agents auto --dry-run` 打印。
+安装器使用 [`uv`](https://docs.astral.sh/uv/) 管理隔离的 Python 环境（需先安装 `uv`）。修改任何 Agent 配置前都会询问并自动备份，可通过 `stock-analysis uninstall` 还原。OpenCode 等其他 MCP 客户端的手动配置模板可通过 `stock-analysis install --agents auto --dry-run` 打印。
 
-配置解析顺序为 **环境变量 → `~/.eastmoney-quant/config.toml` → 默认值**，已有的 `EASTMONEY_STOCK_DATA_DIR` 等环境变量继续生效并优先于配置文件。
+配置解析顺序为 **环境变量 → `~/.stock-analysis/config.toml` → 默认值**。推荐使用 `STOCK_ANALYSIS_DATA_DIR`、`STOCK_ANALYSIS_STOCK_DATA_DIR`、`STOCK_ANALYSIS_SECTOR_DATA_DIR` 和 `STOCK_ANALYSIS_PYTHON`；旧环境变量仍作为兼容别名生效。
 
 ## 核心能力
 
@@ -55,13 +55,13 @@ eastmoney-quant doctor                  # 检查运行时 / 配置 / Agent 状�
 
 ```bash
 # Claude Code 一键安装（推荐）
-claude mcp add eastmoney-quant -- npx eastmoney-quant-mcp
+claude mcp add stock-analysis -- npx stock-analysis-mcp
 
 # 或 npm 全局安装
-npm install -g eastmoney-quant-mcp
+npm install -g stock-analysis-mcp
 
 # 或 pip 安装
-pip install eastmoney-quant-mcp
+pip install stock-analysis-mcp
 ```
 
 **前置要求**: Python >= 3.10 | Node.js >= 18
@@ -167,18 +167,18 @@ pip install eastmoney-quant-mcp
 
 每个工具都公开 JSON Schema；服务端会校验必填字段、未知字段、基础类型、枚举值和数值范围。调用结果统一为 `{data, meta, warnings, error}`：先检查 `error`，再保留 `warnings`，并以 `meta` 和数据自身的截止日期判断新鲜度。工具不会承诺持续监控、推送通知或确定性买卖结论。
 
-附带 **8 个 Agent Skill**（由 `eastmoney-quant install` 自动安装），教授 AI 如何组合使用这些工具完成复杂选股和报告工作流：
+附带 **8 个 Agent Skill**（由 `stock-analysis install` 自动安装），教授 AI 如何组合使用这些工具完成复杂选股和报告工作流：
 
 | Skill | 用途 |
 |-------|------|
-| `eastmoney-quant` | 主索引 — 先查数据状态再开展研究的工作流 |
-| `eastmoney-quant-data-init` | 复用已有数据、初始化、覆盖率更新与故障排查 |
-| `eastmoney-quant-stock-screening` | 选股条件组合与筛选套路 |
-| `eastmoney-quant-report-generation` | 基于证据的单股报告与条件情景 |
-| `eastmoney-quant-multi-timeframe` | 月周日与分时联立、周期冲突解释 |
-| `eastmoney-quant-strategy-backtest` | 策略回测与参数调优指南 |
-| `eastmoney-quant-chart-trend` | K线图结构归因与趋势线分析 |
-| `eastmoney-quant-rising-patterns` | 20只上涨形态候选逐股月周日深度分析 |
+| `stock-analysis` | 主索引 — 先查数据状态再开展研究的工作流 |
+| `stock-analysis-data-init` | 复用已有数据、初始化、覆盖率更新与故障排查 |
+| `stock-analysis-stock-screening` | 选股条件组合与筛选套路 |
+| `stock-analysis-report-generation` | 基于证据的单股报告与条件情景 |
+| `stock-analysis-multi-timeframe` | 月周日与分时联立、周期冲突解释 |
+| `stock-analysis-strategy-backtest` | 策略回测与参数调优指南 |
+| `stock-analysis-chart-trend` | K线图结构归因与趋势线分析 |
+| `stock-analysis-rising-patterns` | 20只上涨形态候选逐股月周日深度分析 |
 
 ### 每个 Skill 的结果展示
 
@@ -186,14 +186,14 @@ pip install eastmoney-quant-mcp
 
 | Skill | 结果视图 | 典型展示内容 |
 |-------|---------|-------------|
-| `eastmoney-quant` | 投研路由卡 | 选择的工作流、数据质量门槛、工具链、警告和下一步动作 |
-| `eastmoney-quant-data-init` | 数据健康报告 | 预期交易日、各数据集最新日期与覆盖率、成功/失败项、数据源警告、剩余缺口 |
-| `eastmoney-quant-stock-screening` | 可排序候选表 | 代码/名称、截止日期、筛选条件、形态阶段、评分构成、板块背景、支撑/阻力/失效位、淘汰与缺失数据说明 |
-| `eastmoney-quant-report-generation` | 单股证据研报 | 结论与置信度、数据质量、月/周/日证据、关键位表、牛/基准/熊情景、风险与局限 |
-| `eastmoney-quant-multi-timeframe` | 多周期对照矩阵 | 月/周/日/分时指标、周期一致/冲突矩阵、主次解释、精确确认位与失效位 |
-| `eastmoney-quant-chart-trend` | K 线看图卡 | 截止日期、枢轴点、趋势线/通道/箱体/W-M/斐波那契区域、程序与图表是否一致、量能证据 |
-| `eastmoney-quant-rising-patterns` | 候选卡片 + 对比表 | 每只返回股票一张证据卡、复核后排序、当前候选与历史样本共性、覆盖率限制 |
-| `eastmoney-quant-strategy-backtest` | 回测结果包 | 股票池/区间、覆盖率、信号与交易数、假设、事件和组合指标、训练/测试与年度稳定性、报告/CSV 路径 |
+| `stock-analysis` | 投研路由卡 | 选择的工作流、数据质量门槛、工具链、警告和下一步动作 |
+| `stock-analysis-data-init` | 数据健康报告 | 预期交易日、各数据集最新日期与覆盖率、成功/失败项、数据源警告、剩余缺口 |
+| `stock-analysis-stock-screening` | 可排序候选表 | 代码/名称、截止日期、筛选条件、形态阶段、评分构成、板块背景、支撑/阻力/失效位、淘汰与缺失数据说明 |
+| `stock-analysis-report-generation` | 单股证据研报 | 结论与置信度、数据质量、月/周/日证据、关键位表、牛/基准/熊情景、风险与局限 |
+| `stock-analysis-multi-timeframe` | 多周期对照矩阵 | 月/周/日/分时指标、周期一致/冲突矩阵、主次解释、精确确认位与失效位 |
+| `stock-analysis-chart-trend` | K 线看图卡 | 截止日期、枢轴点、趋势线/通道/箱体/W-M/斐波那契区域、程序与图表是否一致、量能证据 |
+| `stock-analysis-rising-patterns` | 候选卡片 + 对比表 | 每只返回股票一张证据卡、复核后排序、当前候选与历史样本共性、覆盖率限制 |
+| `stock-analysis-strategy-backtest` | 回测结果包 | 股票池/区间、覆盖率、信号与交易数、假设、事件和组合指标、训练/测试与年度稳定性、报告/CSV 路径 |
 
 示例结果卡片：
 
@@ -239,22 +239,22 @@ get_data_status
 
 ```bash
 # 数据全量重建预览与执行
-python -m eastmoney_quant_mcp.cli rebuild --dry-run
-python -m eastmoney_quant_mcp.cli rebuild --workers 8 --with-sectors
+python -m stock_analysis_mcp.cli rebuild --dry-run
+python -m stock_analysis_mcp.cli rebuild --workers 8 --with-sectors
 
 # 历史数据缺口自动检测与回填
-python -m eastmoney_quant_mcp.cli backfill --start 2026-01-01
+python -m stock_analysis_mcp.cli backfill --start 2026-01-01
 
 # 收盘后晚间自动采集
-python -m eastmoney_quant_mcp.cli daily-capture
+python -m stock_analysis_mcp.cli daily-capture
 
 # 数据库冗余清理与 VACUUM 压缩
-python -m eastmoney_quant_mcp.cli cleanup
+python -m stock_analysis_mcp.cli cleanup
 
 # 形态扫描与策略回测
-python -m eastmoney_quant_mcp.cli pattern-scan --universe sectors --date 2026-08-14
-python -m eastmoney_quant_mcp.cli pattern-backtest --universe stocks --sample 300
-python -m eastmoney_quant_mcp.cli pattern-optimize --cache signals.csv
+python -m stock_analysis_mcp.cli pattern-scan --universe sectors --date 2026-08-14
+python -m stock_analysis_mcp.cli pattern-backtest --universe stocks --sample 300
+python -m stock_analysis_mcp.cli pattern-optimize --cache signals.csv
 ```
 
 ---
@@ -265,24 +265,24 @@ python -m eastmoney_quant_mcp.cli pattern-optimize --cache signals.csv
 
 | 数据库 | 默认路径（Windows）| 默认路径（Linux/macOS）| 内容 |
 |--------|-------------------|----------------------|------|
-| 股票数据库 | `~/Desktop/股票信息/stock_data.db` | `~/.eastmoney-quant/data/stocks/stock_data.db` | 行情、分复权K线、人气、指标、综合表、覆盖率与形态信号 |
-| 板块数据库 | `~/Desktop/分析板块/sector_data.db` | `~/.eastmoney-quant/data/sectors/sector_data.db` | 板块行情、资金流、东财单源K线、成分股和指标 |
+| 股票数据库 | `~/Desktop/股票信息/stock_data.db` | `~/.stock-analysis/data/stocks/stock_data.db` | 行情、分复权K线、人气、指标、综合表、覆盖率与形态信号 |
+| 板块数据库 | `~/Desktop/分析板块/sector_data.db` | `~/.stock-analysis/data/sectors/sector_data.db` | 板块行情、资金流、东财单源K线、成分股和指标 |
 
-可通过环境变量 `EASTMONEY_STOCK_DATA_DIR` 和 `EASTMONEY_SECTOR_DATA_DIR` 自定义路径。
+可通过环境变量 `STOCK_ANALYSIS_STOCK_DATA_DIR` 和 `STOCK_ANALYSIS_SECTOR_DATA_DIR` 自定义路径。
 
 ---
 
 ## 环境变量
 
-解析顺序：**环境变量 → `~/.eastmoney-quant/config.toml` → 默认值**。
+解析顺序：**环境变量 → `~/.stock-analysis/config.toml` → 默认值**。
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
-| `EASTMONEY_PYTHON` | 托管运行时 → `python` | Node 入口使用的 Python 解释器路径 |
-| `EASTMONEY_DATA_DIR` | Win: `~/Desktop`；Linux/macOS: `~/.eastmoney-quant/data` | 两个数据库的根目录 |
-| `EASTMONEY_STOCK_DATA_DIR` | `<data_root>/股票信息`（Linux/macOS 默认为 `stocks`）| 股票数据库目录 |
-| `EASTMONEY_SECTOR_DATA_DIR` | `<data_root>/分析板块`（Linux/macOS 默认为 `sectors`）| 板块数据库目录 |
-| `EASTMONEY_CONFIG` | `~/.eastmoney-quant/config.toml` | 覆盖配置文件路径 |
+| `STOCK_ANALYSIS_PYTHON` | 托管运行时 → `python` | Node 入口使用的 Python 解释器路径 |
+| `STOCK_ANALYSIS_DATA_DIR` | Win: `~/Desktop`；Linux/macOS: `~/.stock-analysis/data` | 两个数据库的根目录 |
+| `STOCK_ANALYSIS_STOCK_DATA_DIR` | `<data_root>/股票信息`（Linux/macOS 默认为 `stocks`）| 股票数据库目录 |
+| `STOCK_ANALYSIS_SECTOR_DATA_DIR` | `<data_root>/分析板块`（Linux/macOS 默认为 `sectors`）| 板块数据库目录 |
+| `STOCK_ANALYSIS_CONFIG` | `~/.stock-analysis/config.toml` | 覆盖 config.toml 路径 |
 | `EASTMONEY_COOKIE` | 自动从 Edge 提取 | 东方财富 API Cookie（提升请求成功率） |
 
 ---
@@ -292,7 +292,7 @@ python -m eastmoney_quant_mcp.cli pattern-optimize --cache signals.csv
 ### Claude Desktop / Claude Code
 
 ```bash
-claude mcp add eastmoney-quant -- npx eastmoney-quant-mcp
+claude mcp add stock-analysis -- npx stock-analysis-mcp
 ```
 
 或手动编辑 `claude_desktop_config.json`：
@@ -300,9 +300,9 @@ claude mcp add eastmoney-quant -- npx eastmoney-quant-mcp
 ```json
 {
   "mcpServers": {
-    "eastmoney-quant": {
+    "stock-analysis": {
       "command": "npx",
-      "args": ["eastmoney-quant-mcp"]
+      "args": ["stock-analysis-mcp"]
     }
   }
 }
@@ -310,29 +310,29 @@ claude mcp add eastmoney-quant -- npx eastmoney-quant-mcp
 
 ### Codex
 
-运行 `eastmoney-quant install --agents codex`，或在 `~/.codex/config.toml` 中添加：
+运行 `stock-analysis install --agents codex`，或在 `~/.codex/config.toml` 中添加：
 
 ```toml
-[mcp_servers.eastmoney-quant]
+[mcp_servers.stock-analysis]
 command = "npx"
-args = ["eastmoney-quant-mcp"]
+args = ["stock-analysis-mcp"]
 ```
 
 ### Cursor
 
-运行 `eastmoney-quant install --agents cursor`，或将同样的 JSON 块加入 `~/.cursor/mcp.json`。
+运行 `stock-analysis install --agents cursor`，或将同样的 JSON 块加入 `~/.cursor/mcp.json`。
 
 ### VS Code Copilot
 
-运行 `eastmoney-quant install --agents copilot`，或编辑 VS Code 用户级 `mcp.json`（Windows：`%APPDATA%\Code\User\mcp.json`，Linux：`~/.config/Code/User/mcp.json`）：
+运行 `stock-analysis install --agents copilot`，或编辑 VS Code 用户级 `mcp.json`（Windows：`%APPDATA%\Code\User\mcp.json`，Linux：`~/.config/Code/User/mcp.json`）：
 
 ```json
 {
   "servers": {
-    "eastmoney-quant": {
+    "stock-analysis": {
       "type": "stdio",
       "command": "npx",
-      "args": ["eastmoney-quant-mcp"]
+      "args": ["stock-analysis-mcp"]
     }
   }
 }
@@ -340,16 +340,16 @@ args = ["eastmoney-quant-mcp"]
 
 ### Qoder
 
-运行 `eastmoney-quant install --agents qoder`，或在 `~/.qoder/mcp.json` 中添加标准 `mcpServers` 配置块。
+运行 `stock-analysis install --agents qoder`，或在 `~/.qoder/mcp.json` 中添加标准 `mcpServers` 配置块。
 
 ### OpenCode / 其他 MCP 客户端
 
 ```json
 {
   "mcpServers": {
-    "eastmoney-quant": {
+    "stock-analysis": {
       "command": "npx",
-      "args": ["eastmoney-quant-mcp"]
+      "args": ["stock-analysis-mcp"]
     }
   }
 }
@@ -360,9 +360,9 @@ args = ["eastmoney-quant-mcp"]
 ```json
 {
   "mcpServers": {
-    "eastmoney-quant": {
+    "stock-analysis": {
       "command": "python",
-      "args": ["-m", "eastmoney_quant_mcp.server"]
+      "args": ["-m", "stock_analysis_mcp.server"]
     }
   }
 }
@@ -420,8 +420,8 @@ backtest_pattern_strategy(mode="both", split="2022-01-01")
 ## 开发
 
 ```bash
-git clone https://github.com/lalal-zzz/eastmoney-quant-mcp.git
-cd eastmoney-quant-mcp
+git clone https://github.com/lalal-zzz/stock-analysis-mcp.git
+cd stock-analysis-mcp
 pip install -e ".[dev]"
 pytest                    # Python 单元测试
 npm run test:node         # Node 安装器测试

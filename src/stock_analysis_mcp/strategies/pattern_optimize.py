@@ -9,10 +9,10 @@ strategies/pattern_optimize.py — 形态信号"优中选优"深度搜索 + 标�
 报告 train/test 两段胜率差距; 全部尝试（每层 top 候选）写入 --md 指定文件。
 
 用法:
-    python -m eastmoney_quant_mcp.strategies.pattern_optimize --cache signals.csv
-    python -m eastmoney_quant_mcp.strategies.pattern_optimize --cache signals.csv \\
+    python -m stock_analysis_mcp.strategies.pattern_optimize --cache signals.csv
+    python -m stock_analysis_mcp.strategies.pattern_optimize --cache signals.csv \\
         --universe sectors --target 0.75 --min-samples 80
-    python -m eastmoney_quant_mcp.strategies.pattern_optimize --cache signals.csv --md trials.md
+    python -m stock_analysis_mcp.strategies.pattern_optimize --cache signals.csv --md trials.md
 """
 
 import argparse
@@ -144,7 +144,7 @@ def eval_rules(df: pd.DataFrame, rules: list[Rule]) -> dict:
 
 def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(
-        prog="eastmoney-quant pattern-optimize",
+        prog="stock-analysis pattern-optimize",
         description="形态信号优中选优 beam search")
     ap.add_argument("--cache", default="signals_full.csv")
     ap.add_argument("--universe", default=None, choices=("stocks", "sectors"),

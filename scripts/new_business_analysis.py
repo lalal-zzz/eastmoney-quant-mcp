@@ -14,8 +14,8 @@ import traceback
 
 sys.path.insert(0, 'src')
 
-from eastmoney_quant_mcp.tools.sector_data import get_sector_list, get_sector_kline
-from eastmoney_quant_mcp.tools.sector_screen import (
+from stock_analysis_mcp.tools.sector_data import get_sector_list, get_sector_kline
+from stock_analysis_mcp.tools.sector_screen import (
     screen_top_sectors,
     screen_main_inflow_sectors,
     screen_sector_by_capital_flow,

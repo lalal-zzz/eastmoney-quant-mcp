@@ -9,8 +9,8 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from eastmoney_quant_mcp.data.paging import fetch_all_pages
-from eastmoney_quant_mcp.data.util import TtlCache
+from stock_analysis_mcp.data.paging import fetch_all_pages
+from stock_analysis_mcp.data.util import TtlCache
 
 
 REPO = Path(__file__).resolve().parents[1]
@@ -94,14 +94,14 @@ def test_ttl_cache_expiry():
 def test_skills_layout():
     skills = sorted(d.name for d in (REPO / "skills").iterdir() if d.is_dir())
     assert skills == [
-        "eastmoney-quant",
-        "eastmoney-quant-chart-trend",
-        "eastmoney-quant-data-init",
-            "eastmoney-quant-multi-timeframe",
-            "eastmoney-quant-report-generation",
-            "eastmoney-quant-rising-patterns",
-            "eastmoney-quant-stock-screening",
-        "eastmoney-quant-strategy-backtest",
+        "stock-analysis",
+        "stock-analysis-chart-trend",
+        "stock-analysis-data-init",
+            "stock-analysis-multi-timeframe",
+            "stock-analysis-report-generation",
+            "stock-analysis-rising-patterns",
+            "stock-analysis-stock-screening",
+        "stock-analysis-strategy-backtest",
     ]
     for d in skills:
         assert (REPO / "skills" / d / "SKILL.md").exists(), d

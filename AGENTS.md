@@ -2,11 +2,11 @@
 
 ## Architecture
 
-- **Dual-runtime**: `index.js` (Node shim, ESM) spawns `python -m eastmoney_quant_mcp.server` via stdio and proxies I/O. The Python server is the real MCP implementation. Python interpreter resolution: `EASTMONEY_PYTHON` env → `~/.eastmoney-quant/runtime.json` (uv-managed venv) → `python`.
-- **Entrypoint**: `src/eastmoney_quant_mcp/server.py` — uses `mcp.server.stdio` and a `@register(name, desc, schema)` decorator to wire exactly 20 tools to MCP handlers; every result is wrapped in a `{data, meta, warnings, error}` envelope. The dispatcher validates required/unknown fields, basic JSON types, enum values, and numeric ranges, and promotes handler warnings to the outer envelope.
-- **Node CLI**: `bin/eastmoney-quant.js` + `lib/` — installer commands `install` / `setup` / `doctor` / `uninstall` / `config show`. `lib/installer.js` creates a `uv` venv under `~/.eastmoney-quant/runtime/` and writes `config.toml` / `runtime.json` / `install-state.json`; `lib/adapters.js` auto-configures 5 agents with backups — Claude Code (`~/.claude.json`), Codex (`~/.codex/config.toml`), Cursor (`~/.cursor/mcp.json`), VS Code Copilot (user `mcp.json`, `servers` key + `type: stdio`), Qoder (`~/.qoder/mcp.json`) — and copies the skills from root `skills/` to skill-aware agents (Claude Code / Codex / Qoder); skill ids = `skills/` directory names, discovered dynamically (no mapping table); `lib/paths.js` centralizes `~/.eastmoney-quant` paths.
+- **Dual-runtime**: `index.js` (Node shim, ESM) spawns `python -m stock_analysis_mcp.server` via stdio and proxies I/O. The Python server is the real MCP implementation. Python interpreter resolution: `STOCK_ANALYSIS_PYTHON` env → `~/.stock-analysis/runtime.json` (uv-managed venv) → `python`.
+- **Entrypoint**: `src/stock_analysis_mcp/server.py` — uses `mcp.server.stdio` and a `@register(name, desc, schema)` decorator to wire exactly 20 tools to MCP handlers; every result is wrapped in a `{data, meta, warnings, error}` envelope. The dispatcher validates required/unknown fields, basic JSON types, enum values, and numeric ranges, and promotes handler warnings to the outer envelope.
+- **Node CLI**: `bin/stock-analysis.js` + `lib/` — installer commands `install` / `setup` / `doctor` / `uninstall` / `config show`. `lib/installer.js` creates a `uv` venv under `~/.stock-analysis/runtime/` and writes `config.toml` / `runtime.json` / `install-state.json`; `lib/adapters.js` auto-configures 5 agents with backups — Claude Code (`~/.claude.json`), Codex (`~/.codex/config.toml`), Cursor (`~/.cursor/mcp.json`), VS Code Copilot (user `mcp.json`, `servers` key + `type: stdio`), Qoder (`~/.qoder/mcp.json`) — and copies the skills from root `skills/` to skill-aware agents (Claude Code / Codex / Qoder); skill ids = `skills/` directory names, discovered dynamically (no mapping table); `lib/paths.js` centralizes `~/.stock-analysis` paths.
 - **Source layout**:
-  - `core/config.py` — settings resolution: env vars → `~/.eastmoney-quant/config.toml` → defaults (`get_settings()`)
+  - `core/config.py` — settings resolution: env vars → `~/.stock-analysis/config.toml` → defaults (`get_settings()`)
   - `core/constants.py` — schema/indicator/pattern engine versions, research bar and coverage defaults
   - `core/registry.py` — provider/feature registries reserved for future extensions
   - `data/network.py` — HTTP client (curl_cffi) + Edge cookie extraction + symbol normalization + K-line host rotation (`try_kline_hosts`)
@@ -31,8 +31,8 @@
   - `strategies/pattern_optimize.py` — beam search 多因子规则搜索 + train/test 时间切分防过拟合, 尝试记录 markdown 输出
   - `strategies/trading_backtest.py` — callable 事件研究 + 次日开盘/止损/2R/20日退出交易回测，输出 Markdown/CSV 且不自动改规则
   - `strategies/similarity.py` — 价格成交量跨股票/跨周期相似形态引擎: 固定长度归一化、DTW价格路径、回撤/振幅/量能/Pivot转向评分及历史后验统计；全市场候选复用本地日K并重采样
-  - `cli.py` — 统一 CLI 入口 `python -m eastmoney_quant_mcp.cli`: rebuild / backfill / daily-capture / cleanup / pattern-scan / pattern-backtest / pattern-optimize, 通用 `--data-dir` (等价 EASTMONEY_DATA_DIR) 与 `--dry-run`
-  - Root `skills/` follows `skills/<skill-id>/SKILL.md`: `eastmoney-quant` plus data-init, stock-screening, report-generation, multi-timeframe, strategy-backtest, chart-trend and rising-patterns. Skill ids = directory names; `lib/adapters.js` discovers them dynamically.
+  - `cli.py` — 统一 CLI 入口 `python -m stock_analysis_mcp.cli`: rebuild / backfill / daily-capture / cleanup / pattern-scan / pattern-backtest / pattern-optimize, 通用 `--data-dir` (等价 STOCK_ANALYSIS_DATA_DIR) 与 `--dry-run`
+  - Root `skills/` follows `skills/<skill-id>/SKILL.md`: `stock-analysis` plus data-init, stock-screening, report-generation, multi-timeframe, strategy-backtest, chart-trend and rising-patterns. Skill ids = directory names; `lib/adapters.js` discovers them dynamically.
 - **Progress display**: Uses standard `tqdm` directly for progress display across sync/cli operations (stderr-only, auto-silent on non-TTY).
 - **Data sources (multi-provider)**: [akshare](https://github.com/akfamily/akshare) for Eastmoney APIs, plus `data/providers/` (`tencent.py` / `sina.py` / `sohu.py` / `boardmap.py`). Degradation chains (local DB keys stay Eastmoney codes):
   - Stock K-line: Tencent `fqkline`/`mkline` (primary) → Eastmoney akshare → Sohu `hisHq` (unadjusted, last resort). This exists because `push2his` IP-bans are frequent; stock/multi-period K-lines keep working during a ban.
@@ -64,17 +64,17 @@ python tests/test_smoke.py
 npm run test:node
 
 # 数据重建/回填/采集/清理 + 形态 CLI (统一入口 cli.py)
-python -m eastmoney_quant_mcp.cli rebuild --dry-run          # 预览重建步骤, 不联网不写库
-python -m eastmoney_quant_mcp.cli rebuild --workers 8 --with-sectors
-python -m eastmoney_quant_mcp.cli backfill --start 2026-01-01
-python -m eastmoney_quant_mcp.cli daily-capture              # 晚间采集 (任务计划用)
-python -m eastmoney_quant_mcp.cli cleanup --dry-run
-python -m eastmoney_quant_mcp.cli pattern-scan --universe sectors --date 2026-08-14
-python -m eastmoney_quant_mcp.cli pattern-backtest --universe stocks --sample 300
-python -m eastmoney_quant_mcp.cli pattern-optimize --cache signals.csv
+python -m stock_analysis_mcp.cli rebuild --dry-run          # 预览重建步骤, 不联网不写库
+python -m stock_analysis_mcp.cli rebuild --workers 8 --with-sectors
+python -m stock_analysis_mcp.cli backfill --start 2026-01-01
+python -m stock_analysis_mcp.cli daily-capture              # 晚间采集 (任务计划用)
+python -m stock_analysis_mcp.cli cleanup --dry-run
+python -m stock_analysis_mcp.cli pattern-scan --universe sectors --date 2026-08-14
+python -m stock_analysis_mcp.cli pattern-backtest --universe stocks --sample 300
+python -m stock_analysis_mcp.cli pattern-optimize --cache signals.csv
 ```
 
-`npm install` triggers `node bin/eastmoney-quant.js postinstall`, which asks before configuring anything (TTY-only prompt; silently skipped in CI / non-interactive installs). For a checked setup run `eastmoney-quant install --agents auto` explicitly.
+`npm install` triggers `node bin/stock-analysis.js postinstall`, which asks before configuring anything (TTY-only prompt; silently skipped in CI / non-interactive installs). For a checked setup run `stock-analysis install --agents auto` explicitly.
 
 There is **no linter, formatter, or typechecker** configured in this repo.
 
@@ -82,8 +82,8 @@ There is **no linter, formatter, or typechecker** configured in this repo.
 
 - Python >= 3.10
 - Node.js >= 18 (for `npx` usage and the CLI)
-- `uv` — required only by `eastmoney-quant install` / `setup` for the managed Python runtime
-- No external services needed — all data comes from public Eastmoney APIs.
+- `uv` — required only by `stock-analysis install` / `setup` for the managed Python runtime
+- No external services needed — all data comes from public market-data APIs.
 
 ## Network quirk
 
@@ -119,17 +119,17 @@ Use `normalize_symbol()` / `to_prefixed_symbol()` / `normalize_sector_code()` fr
 
 ## Environment
 
-Settings resolve as **env var → `~/.eastmoney-quant/config.toml` → default** (`core/config.py`). The CLI's `eastmoney-quant setup --data-root <dir>` writes `config.toml`.
+Settings resolve as **env var → `~/.stock-analysis/config.toml` → default** (`core/config.py`). The CLI's `stock-analysis setup --data-root <dir>` writes `config.toml`.
 
 | Variable | Purpose | Default |
 |----------|---------|---------|
-| `EASTMONEY_PYTHON` | Override Python interpreter path | managed runtime → `python` |
-| `EASTMONEY_DATA_DIR` | Root directory for both DBs | Win: `~/Desktop`; Linux/macOS: `~/.eastmoney-quant/data` |
-| `EASTMONEY_STOCK_DATA_DIR` | Stock SQLite DB directory | `<data_root>/股票信息` (Linux/macOS default: `stocks`) |
-| `EASTMONEY_SECTOR_DATA_DIR` | Sector SQLite DB directory | `<data_root>/分析板块` (Linux/macOS default: `sectors`) |
-| `EASTMONEY_CONFIG` | Override config.toml path | `~/.eastmoney-quant/config.toml` |
+| `STOCK_ANALYSIS_PYTHON` | Override Python interpreter path | managed runtime → `python` |
+| `STOCK_ANALYSIS_DATA_DIR` | Root directory for both DBs | Win: `~/Desktop`; Linux/macOS: `~/.stock-analysis/data` |
+| `STOCK_ANALYSIS_STOCK_DATA_DIR` | Stock SQLite DB directory | `<data_root>/股票信息` (Linux/macOS default: `stocks`) |
+| `STOCK_ANALYSIS_SECTOR_DATA_DIR` | Sector SQLite DB directory | `<data_root>/分析板块` (Linux/macOS default: `sectors`) |
+| `STOCK_ANALYSIS_CONFIG` | Override config.toml path | `~/.stock-analysis/config.toml` |
 | `EASTMONEY_COOKIE` | Manual cookie string for Eastmoney APIs | auto-extract from Edge |
-| `EASTMONEY_QUANT_HOME` | Override home dir for Node CLI state | user home |
+| `STOCK_ANALYSIS_HOME` | Override home dir for Node CLI state | user home |
 
 The Node shim sets `PYTHONPATH` to include `src/` automatically.
 
@@ -170,7 +170,7 @@ Unregistered library helpers used by Skills/internal code: `get_sector_members_f
 
 - **Build**: `hatchling` (Python), no transpilation (Node is plain ESM)
 - **Test**: `pytest` with `asyncio_mode = "auto"`. Default run is unit-only (`addopts = "-m 'not integration'"`): symbol/klt normalization, pattern registry, config resolution. `tests/test_integration.py` is marked `integration` (real network + DB writes). `node-tests/` covers the installer adapters via `node:test`.
-- **Package name**: `eastmoney-quant-mcp` (npm & PyPI)
+- **Package name**: `stock-analysis-mcp` (npm & PyPI)
 - **Optional deps**: `browser` extra installs `playwright` — not used by default tools
 
 ## Tool registration gotcha
@@ -186,4 +186,4 @@ name: skill-identifier
 description: What it does and when to trigger...
 ---
 ```
-This matches the [official skill-creator format](https://github.com/anthropics/claude-plugins-official). `lib/adapters.js` (invoked by `eastmoney-quant install`) copies them to `<agent>/skills/<skill-id>/SKILL.md` for skill-aware agents — Claude Code: `~/.claude/skills/`, Codex: `~/.codex/skills/`, Qoder: `~/.qoder/skills/`. Cursor and VS Code Copilot only get the MCP server registration (they do not consume SKILL.md).
+This matches the [official skill-creator format](https://github.com/anthropics/claude-plugins-official). `lib/adapters.js` (invoked by `stock-analysis install`) copies them to `<agent>/skills/<skill-id>/SKILL.md` for skill-aware agents — Claude Code: `~/.claude/skills/`, Codex: `~/.codex/skills/`, Qoder: `~/.qoder/skills/`. Cursor and VS Code Copilot only get the MCP server registration (they do not consume SKILL.md).

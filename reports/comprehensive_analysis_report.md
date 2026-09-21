@@ -760,4 +760,4 @@
 
 ---
 
-*本报告由 eastmoney-quant-mcp 量化分析系统自动生成，数据来源：东方财富网公开API*
+*本报告由 stock-analysis-mcp 量化分析系统自动生成，数据来源：东方财富网公开API*

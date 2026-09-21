@@ -14,9 +14,9 @@ from datetime import datetime
 
 sys.path.insert(0, 'src')
 
-from eastmoney_quant_mcp.data.storage import get_stock_db, get_sector_db, query_stock_db
-from eastmoney_quant_mcp.tools.analysis import generate_stock_report
-from eastmoney_quant_mcp.strategies.patterns import (
+from stock_analysis_mcp.data.storage import get_stock_db, get_sector_db, query_stock_db
+from stock_analysis_mcp.tools.analysis import generate_stock_report
+from stock_analysis_mcp.strategies.patterns import (
     get_key_levels, scan_universe, prepare_df, detect_patterns,
     PATTERN_NAMES, passes_filter, PATTERN_FILTERS,
 )

@@ -1,4 +1,4 @@
-from eastmoney_quant_mcp.alerts import AlertState, PriceUpdate, ZoneRule, evaluate_zone
+from stock_analysis_mcp.alerts import AlertState, PriceUpdate, ZoneRule, evaluate_zone
 
 
 def _rule(**kwargs):
@@ -37,10 +37,10 @@ def test_invalidated_is_once_and_terminal():
 
 
 def test_alert_state_and_events_persist_idempotently(tmp_path):
-    from eastmoney_quant_mcp.alerts import (
+    from stock_analysis_mcp.alerts import (
         list_alert_events, load_alert_state, persist_alert_evaluation,
     )
-    from eastmoney_quant_mcp.data import storage
+    from stock_analysis_mcp.data import storage
 
     storage.set_db_paths(str(tmp_path / "stock.db"), str(tmp_path / "sector.db"))
     try:

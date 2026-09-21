@@ -8,8 +8,8 @@ Local-first A-share intelligent research MCP. A Node ESM shim launches the Pytho
 
 ## Runtime
 
-- `index.js`: resolves `EASTMONEY_PYTHON` → managed `runtime.json` → `python`, sets `PYTHONPATH`, and proxies stdio.
-- `src/eastmoney_quant_mcp/server.py`: real MCP server and 20-tool `@register` registry.
+- `index.js`: resolves `STOCK_ANALYSIS_PYTHON` → managed `runtime.json` → `python`, sets `PYTHONPATH`, and proxies stdio.
+- `src/stock_analysis_mcp/server.py`: real MCP server and 20-tool `@register` registry.
 - `bin/` and `lib/`: installer/configuration/agent adapters; root `skills/` is copied dynamically to Claude Code, Codex and Qoder.
 - Every tool result is `{data, meta, warnings, error}`.
 
@@ -34,11 +34,11 @@ pytest
 pytest -m integration
 npm run test:node
 
-python -m eastmoney_quant_mcp.cli rebuild --dry-run
-python -m eastmoney_quant_mcp.cli backfill --start YYYY-MM-DD
-python -m eastmoney_quant_mcp.cli daily-capture
-python -m eastmoney_quant_mcp.cli pattern-scan --universe stocks --strict
-python -m eastmoney_quant_mcp.cli pattern-backtest --universe stocks --sample 300
+python -m stock_analysis_mcp.cli rebuild --dry-run
+python -m stock_analysis_mcp.cli backfill --start YYYY-MM-DD
+python -m stock_analysis_mcp.cli daily-capture
+python -m stock_analysis_mcp.cli pattern-scan --universe stocks --strict
+python -m stock_analysis_mcp.cli pattern-backtest --universe stocks --sample 300
 ```
 
 Integration tests use real public APIs and local databases, so they are opt-in. There is no configured linter, formatter or type checker.

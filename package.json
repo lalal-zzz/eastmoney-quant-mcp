@@ -1,12 +1,12 @@
 {
-  "name": "eastmoney-quant-mcp",
+  "name": "stock-analysis-mcp",
   "version": "0.3.0",
-  "description": "Local-first A-share intelligent research MCP — Eastmoney data, screening, chart structure, reports, multi-timeframe analysis, and backtesting",
+  "description": "Local-first A-share stock analysis MCP with Agent Skills, screening, chart structure, reports, multi-timeframe analysis, and backtesting",
   "type": "module",
   "main": "index.js",
   "bin": {
-    "eastmoney-quant-mcp": "./index.js",
-    "eastmoney-quant": "./bin/eastmoney-quant.js"
+    "stock-analysis-mcp": "./index.js",
+    "stock-analysis": "./bin/stock-analysis.js"
   },
   "files": [
     "index.js",
@@ -25,16 +25,15 @@
     "LICENSE"
   ],
   "scripts": {
-    "postinstall": "node bin/eastmoney-quant.js postinstall",
+    "postinstall": "node bin/stock-analysis.js postinstall",
     "test:node": "node --test node-tests/*.test.js",
     "start": "node index.js"
   },
   "keywords": [
     "mcp",
     "model-context-protocol",
-    "eastmoney",
     "stock",
-    "quant",
+    "stock-analysis",
     "china-stock",
     "a-stock",
     "ai",
@@ -44,12 +43,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lalal-zzz/eastmoney-quant-mcp"
+    "url": "https://github.com/lalal-zzz/stock-analysis-mcp"
   },
   "bugs": {
-    "url": "https://github.com/lalal-zzz/eastmoney-quant-mcp/issues"
+    "url": "https://github.com/lalal-zzz/stock-analysis-mcp/issues"
   },
-  "homepage": "https://github.com/lalal-zzz/eastmoney-quant-mcp#readme",
+  "homepage": "https://github.com/lalal-zzz/stock-analysis-mcp#readme",
   "engines": {
     "node": ">=18"
   },
@@ -57,7 +56,7 @@
     "server": {
       "command": "npx",
       "args": [
-        "eastmoney-quant-mcp"
+        "stock-analysis-mcp"
       ]
     },
     "tools": [

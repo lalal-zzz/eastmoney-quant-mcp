@@ -18,8 +18,8 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from eastmoney_quant_mcp.data import storage
-from eastmoney_quant_mcp.data.util import parse_em_kline_rows, safe_float
+from stock_analysis_mcp.data import storage
+from stock_analysis_mcp.data.util import parse_em_kline_rows, safe_float
 
 
 # ── data/util ──
@@ -83,20 +83,20 @@ def test_combined_preserves_spot_cols(tmp_stock_db):
 # ── server ──
 
 def test_server_registers_19_tools():
-    from eastmoney_quant_mcp import server
+    from stock_analysis_mcp import server
     assert len(server.TOOL_HANDLERS) == 20
     assert "render_stock_charts" in server.TOOL_HANDLERS
 
 
 def test_server_duplicate_register_raises():
-    from eastmoney_quant_mcp import server
+    from stock_analysis_mcp import server
     with pytest.raises(ValueError):
         server.register("get_data_status", "dup", {"type": "object"})(lambda: None)
 
 
 @pytest.mark.asyncio
 async def test_server_call_tool_invalid_params():
-    from eastmoney_quant_mcp.server import call_tool
+    from stock_analysis_mcp.server import call_tool
     out = await call_tool("get_kline_local_or_net", {})
     env = json.loads(out[0].text)
     assert env["error"]["code"] == "INVALID_PARAMS"
@@ -105,7 +105,7 @@ async def test_server_call_tool_invalid_params():
 
 @pytest.mark.asyncio
 async def test_server_call_tool_unknown_param():
-    from eastmoney_quant_mcp.server import call_tool
+    from stock_analysis_mcp.server import call_tool
     out = await call_tool("get_rank_trend_data", {"symbol": "000001", "bogus": 1})
     env = json.loads(out[0].text)
     assert env["error"]["code"] == "INVALID_PARAMS"
@@ -113,7 +113,7 @@ async def test_server_call_tool_unknown_param():
 
 @pytest.mark.asyncio
 async def test_server_call_tool_validates_schema_types_and_ranges():
-    from eastmoney_quant_mcp.server import call_tool
+    from stock_analysis_mcp.server import call_tool
     wrong_type = await call_tool("get_kline_local_or_net", {"symbol": "000001", "days": "30"})
     assert json.loads(wrong_type[0].text)["error"]["code"] == "INVALID_PARAMS"
     out_of_range = await call_tool("get_stock_kline_period", {"symbol": "000001", "period": "999"})
@@ -124,7 +124,7 @@ async def test_server_call_tool_validates_schema_types_and_ranges():
 
 @pytest.mark.asyncio
 async def test_server_error_envelope_has_meta():
-    from eastmoney_quant_mcp.server import call_tool, TOOL_HANDLERS
+    from stock_analysis_mcp.server import call_tool, TOOL_HANDLERS
     info = TOOL_HANDLERS["get_data_status"]
 
     async def boom():
@@ -142,7 +142,7 @@ async def test_server_error_envelope_has_meta():
 
 @pytest.mark.asyncio
 async def test_server_promotes_business_warnings_to_envelope():
-    from eastmoney_quant_mcp.server import call_tool, TOOL_HANDLERS
+    from stock_analysis_mcp.server import call_tool, TOOL_HANDLERS
     info = TOOL_HANDLERS["get_data_status"]
 
     async def result_with_warning():
@@ -174,7 +174,7 @@ def tmp_dbs(tmp_path, monkeypatch):
 
 
 def test_golden_cross_and_oversold(tmp_dbs):
-    from eastmoney_quant_mcp.tools import pattern_scan
+    from stock_analysis_mcp.tools import pattern_scan
     storage.init_stock_db()
     # 两个交易日: 昨日 MA5<=MA20, 今日 MA5>MA20, RSI14=65 → 金叉
     rows = []
@@ -196,7 +196,7 @@ def test_golden_cross_and_oversold(tmp_dbs):
 
 def test_render_kline_chart(tmp_path):
     pytest.importorskip("matplotlib")
-    from eastmoney_quant_mcp.charting import render_kline_chart, resample_daily
+    from stock_analysis_mcp.charting import render_kline_chart, resample_daily
     n = 80
     df = pd.DataFrame({
         "date": pd.date_range("2026-01-01", periods=n, freq="B"),
@@ -215,6 +215,6 @@ def test_render_kline_chart(tmp_path):
 # ── strategies ──
 
 def test_ma_window_whitelist_matches_ctx_columns():
-    from eastmoney_quant_mcp.strategies.patterns import MA_WINDOW_WHITELIST, _Ctx
+    from stock_analysis_mcp.strategies.patterns import MA_WINDOW_WHITELIST, _Ctx
     cols = {int(c[2:]) for c in _Ctx._COLUMNS if c.startswith("MA") and c[2:].isdigit()}
     assert MA_WINDOW_WHITELIST == frozenset(cols)

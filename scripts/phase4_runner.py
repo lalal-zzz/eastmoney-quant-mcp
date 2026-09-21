@@ -2,7 +2,7 @@ import sys
 import os
 
 # Redirect output to file for reliable capture
-out_file = r'c:\Users\20127\Desktop\opensource_project\eastmoney-quant-mcp\scripts\run_output.txt'
+out_file = r'c:\Users\20127\Desktop\opensource_project\stock-analysis-mcp\scripts\run_output.txt'
 
 sys.stdout = open(out_file, 'w', encoding='utf-8')
 sys.stderr = sys.stdout
@@ -10,12 +10,12 @@ sys.stderr = sys.stdout
 print("=== Phase 4: Rising Candidates ===")
 sys.stdout.flush()
 
-sys.path.insert(0, r'c:\Users\20127\Desktop\opensource_project\eastmoney-quant-mcp\src')
+sys.path.insert(0, r'c:\Users\20127\Desktop\opensource_project\stock-analysis-mcp\src')
 
 print("Step 0: Imports...")
 sys.stdout.flush()
 
-from eastmoney_quant_mcp.tools.research import screen_rising_candidates, prepare_stock_analysis
+from stock_analysis_mcp.tools.research import screen_rising_candidates, prepare_stock_analysis
 print("Imports OK")
 sys.stdout.flush()
 

@@ -1,8 +1,8 @@
 """
 data/storage/paths.py — 数据库路径解析 (懒加载 + 测试重定向)
 
-股票数据库 → EASTMONEY_STOCK_DATA_DIR 或 Desktop/股票信息/stock_data.db
-板块数据库 → EASTMONEY_SECTOR_DATA_DIR 或 Desktop/分析板块/sector_data.db
+股票数据库 → STOCK_ANALYSIS_STOCK_DATA_DIR 或 Desktop/股票信息/stock_data.db
+板块数据库 → STOCK_ANALYSIS_SECTOR_DATA_DIR 或 Desktop/分析板块/sector_data.db
 
 路径在首次访问时才计算 (不在 import 时触发 mkdir), 保证轻量导入与单元测试
 不会创建目录。内部一律通过 get_stock_db() / get_sector_db() / _resolve_path()

@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from eastmoney_quant_mcp.data import network
-from eastmoney_quant_mcp.core import config
+from stock_analysis_mcp.data import network
+from stock_analysis_mcp.core import config
 
 
 # ── 熔断器: 空数据不应计入网络失败 ──
@@ -75,7 +75,7 @@ def test_toml_inline_comment_stripped(monkeypatch, tmp_path):
 
 @pytest.mark.asyncio
 async def test_spot_paging_returns_rows_without_unpacking(monkeypatch):
-    from eastmoney_quant_mcp.tools import stock_data
+    from stock_analysis_mcp.tools import stock_data
 
     monkeypatch.setattr(
         stock_data, "_spot_page_sync",
@@ -86,7 +86,7 @@ async def test_spot_paging_returns_rows_without_unpacking(monkeypatch):
 
 
 def test_large_sector_filter_does_not_duplicate_bindings(monkeypatch):
-    from eastmoney_quant_mcp.data import search, storage
+    from stock_analysis_mcp.data import search, storage
 
     monkeypatch.setattr(
         storage, "query_sector_db",
@@ -106,7 +106,7 @@ def test_large_sector_filter_does_not_duplicate_bindings(monkeypatch):
 @pytest.mark.asyncio
 async def test_incremental_sync_only_processes_stale_symbols(monkeypatch):
     from datetime import date, timedelta
-    from eastmoney_quant_mcp.data import sync
+    from stock_analysis_mcp.data import sync
 
     today = date.today()
     stale_date = today - timedelta(days=3)
@@ -147,8 +147,8 @@ async def test_incremental_sync_only_processes_stale_symbols(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_incremental_empty_fetch_preserves_existing_coverage(monkeypatch):
-    from eastmoney_quant_mcp.data import sync
-    from eastmoney_quant_mcp.tools import stock_data
+    from stock_analysis_mcp.data import sync
+    from stock_analysis_mcp.tools import stock_data
 
     async def empty_history(*args, **kwargs):
         return []
@@ -165,19 +165,19 @@ async def test_incremental_empty_fetch_preserves_existing_coverage(monkeypatch):
 # ── CLI: pattern-backtest 透传失败返回码 ──
 
 def test_cli_backtest_failure_returns_nonzero(monkeypatch):
-    from eastmoney_quant_mcp import cli
+    from stock_analysis_mcp import cli
 
     def boom(argv):
         raise RuntimeError("cache missing")
-    monkeypatch.setattr("eastmoney_quant_mcp.strategies.pattern_backtest.main", boom)
+    monkeypatch.setattr("stock_analysis_mcp.strategies.pattern_backtest.main", boom)
     rc = cli.main(["pattern-backtest", "--cache", "x.csv"])
     assert rc == 1
 
 
 def test_cli_backtest_help_exit_code(monkeypatch):
-    from eastmoney_quant_mcp import cli
+    from stock_analysis_mcp import cli
 
     def _help(argv):
         raise SystemExit(0)
-    monkeypatch.setattr("eastmoney_quant_mcp.strategies.pattern_backtest.main", _help)
+    monkeypatch.setattr("stock_analysis_mcp.strategies.pattern_backtest.main", _help)
     assert cli.main(["pattern-backtest"]) == 0

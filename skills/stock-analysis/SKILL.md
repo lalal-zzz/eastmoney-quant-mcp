@@ -1,9 +1,9 @@
 ---
-name: eastmoney-quant
-description: Route A-share research requests across the Eastmoney Quant MCP data, screening, chart, report, multi-timeframe, rising-pattern, and backtest workflows. Use for broad stock-research requests or when the correct specialized workflow is unclear.
+name: stock-analysis
+description: Route A-share research requests across the Stock Analysis MCP data, screening, chart, report, multi-timeframe, rising-pattern, and backtest workflows. Use for broad stock-research requests or when the correct specialized workflow is unclear.
 ---
 
-# Eastmoney Quant research router
+# Stock Analysis research router
 
 Use the MCP as a local-first evidence service. Programs fetch, normalize, calculate, rank, render, and backtest; the agent interprets the evidence and states uncertainty. Never turn a score or chart label into a guaranteed price prediction.
 
@@ -20,13 +20,13 @@ Call `get_data_status` before market-wide work or when freshness matters.
 
 | Request | Skill | Primary tools |
 |---|---|---|
-| Initialize, update, inspect, repair data | `eastmoney-quant-data-init` | `get_data_status`, `init_full_data`, `update_daily_data`, `sync_stock_kline_universe` |
-| General factor/sector/name screening | `eastmoney-quant-stock-screening` | `screen_stocks`, `get_sector_list`, `scan_patterns` |
-| Find rising structures and deeply review 20 stocks | `eastmoney-quant-rising-patterns` | `screen_rising_candidates`, `prepare_stock_analysis` |
-| Analyze one stock | `eastmoney-quant-report-generation` | `prepare_stock_analysis`, `generate_stock_report`, `get_key_levels` |
-| Compare monthly/weekly/daily/intraday structure or historical shape similarity | `eastmoney-quant-multi-timeframe` | `prepare_stock_analysis`, `get_stock_kline_period`, `find_cross_timeframe_similar_patterns` |
-| Read candlestick images, trendlines, channels, ranges, W/M, and directional position | `eastmoney-quant-chart-trend` | `render_stock_charts`, `get_key_levels` |
-| Validate signals or candidate rules | `eastmoney-quant-strategy-backtest` | `backtest_pattern_strategy`, pattern backtest/optimize CLI |
+| Initialize, update, inspect, repair data | `stock-analysis-data-init` | `get_data_status`, `init_full_data`, `update_daily_data`, `sync_stock_kline_universe` |
+| General factor/sector/name screening | `stock-analysis-stock-screening` | `screen_stocks`, `get_sector_list`, `scan_patterns` |
+| Find rising structures and deeply review 20 stocks | `stock-analysis-rising-patterns` | `screen_rising_candidates`, `prepare_stock_analysis` |
+| Analyze one stock | `stock-analysis-report-generation` | `prepare_stock_analysis`, `generate_stock_report`, `get_key_levels` |
+| Compare monthly/weekly/daily/intraday structure or historical shape similarity | `stock-analysis-multi-timeframe` | `prepare_stock_analysis`, `get_stock_kline_period`, `find_cross_timeframe_similar_patterns` |
+| Read candlestick images, trendlines, channels, ranges, W/M, and directional position | `stock-analysis-chart-trend` | `render_stock_charts`, `get_key_levels` |
+| Validate signals or candidate rules | `stock-analysis-strategy-backtest` | `backtest_pattern_strategy`, pattern backtest/optimize CLI |
 
 ## Shared analysis contract
 

@@ -14,11 +14,11 @@ strategies/pattern_backtest.py — 形态信号历史回测 + 技术共性分析
   6. 分年度胜率
 
 用法:
-    python -m eastmoney_quant_mcp.strategies.pattern_backtest --sample 300 --workers 8
-    python -m eastmoney_quant_mcp.strategies.pattern_backtest --workers 8
-    python -m eastmoney_quant_mcp.strategies.pattern_backtest --universe sectors --workers 8
-    python -m eastmoney_quant_mcp.strategies.pattern_backtest --cache signals.csv
-    python -m eastmoney_quant_mcp.strategies.pattern_backtest --csv out.csv
+    python -m stock_analysis_mcp.strategies.pattern_backtest --sample 300 --workers 8
+    python -m stock_analysis_mcp.strategies.pattern_backtest --workers 8
+    python -m stock_analysis_mcp.strategies.pattern_backtest --universe sectors --workers 8
+    python -m stock_analysis_mcp.strategies.pattern_backtest --cache signals.csv
+    python -m stock_analysis_mcp.strategies.pattern_backtest --csv out.csv
 """
 
 import argparse
@@ -352,7 +352,7 @@ def parse_patterns(text: str | None) -> list[str] | None:
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
-        prog="eastmoney-quant pattern-backtest",
+        prog="stock-analysis pattern-backtest",
         description="形态信号历史回测与技术共性分析")
     parser.add_argument("--universe", default="stocks", choices=("stocks", "sectors"),
                         help="标的宇宙: stocks(股票, 默认) | sectors(板块)")

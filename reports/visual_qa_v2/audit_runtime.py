@@ -3,9 +3,9 @@ from pathlib import Path
 
 import pandas as pd
 
-from eastmoney_quant_mcp.charting import _to_df, resample_daily
-from eastmoney_quant_mcp.data.search import get_stock_kline_local
-from eastmoney_quant_mcp.strategies.structure import analyze_market_structure
+from stock_analysis_mcp.charting import _to_df, resample_daily
+from stock_analysis_mcp.data.search import get_stock_kline_local
+from stock_analysis_mcp.strategies.structure import analyze_market_structure
 
 
 SYMBOLS = ["600000", "000858", "300750", "601398"]

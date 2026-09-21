@@ -1,12 +1,12 @@
 [English](README.md) | [中文](README.zh-CN.md)
 
-# Eastmoney Intelligent Research MCP
+# Stock Analysis MCP + Skills
 
-[![npm version](https://img.shields.io/npm/v/eastmoney-quant-mcp.svg)](https://www.npmjs.com/package/eastmoney-quant-mcp)
-[![Python](https://img.shields.io/pypi/pyversions/eastmoney-quant-mcp.svg)](https://pypi.org/project/eastmoney-quant-mcp/)
-[![License](https://img.shields.io/github/license/lalal-zzz/eastmoney-quant-mcp)](LICENSE)
+[![npm version](https://img.shields.io/npm/v/stock-analysis-mcp.svg)](https://www.npmjs.com/package/stock-analysis-mcp)
+[![Python](https://img.shields.io/pypi/pyversions/stock-analysis-mcp.svg)](https://pypi.org/project/stock-analysis-mcp/)
+[![License](https://img.shields.io/github/license/lalal-zzz/stock-analysis-mcp)](LICENSE)
 
-**Eastmoney Intelligent Research MCP** is a local-first A-share research workbench for AI Agents. It turns Eastmoney public APIs and complementary market providers into reusable local SQLite evidence: market data, indicators, sector flow, chart structure, multi-timeframe review, research reports, and reproducible backtests.
+**Stock Analysis MCP + Skills** is a local-first A-share analysis workbench for AI Agents. It combines multiple public market-data providers into reusable local SQLite evidence: market data, indicators, sector flow, chart structure, multi-timeframe review, research reports, and reproducible backtests.
 
 It is designed for a complete research loop: **check data quality → build a candidate universe → inspect numeric and chart evidence → compare scenarios → validate rules with out-of-sample backtests**. It does not provide guaranteed predictions or automatic trading instructions.
 
@@ -24,10 +24,10 @@ These capabilities are planned and are not part of the current release.
 ## Agent setup (npm)
 
 ```bash
-npm install -g eastmoney-quant-mcp
-eastmoney-quant install --agents auto   # auto-configure detected Agents + copy skills
-eastmoney-quant setup --data-root "D:/MarketData"   # choose where SQLite data lives
-eastmoney-quant doctor                  # verify runtime / config / agent status
+npm install -g stock-analysis-mcp
+stock-analysis install --agents auto   # auto-configure detected Agents + copy skills
+stock-analysis setup --data-root "D:/MarketData"   # choose where SQLite data lives
+stock-analysis doctor                  # verify runtime / config / agent status
 ```
 
 **Supported Agents** (auto-detected and configured by `install --agents auto`):
@@ -40,9 +40,9 @@ eastmoney-quant doctor                  # verify runtime / config / agent status
 | VS Code Copilot | VS Code user `mcp.json` | — |
 | Qoder | `~/.qoder/mcp.json` | ✅ `~/.qoder/skills/` |
 
-The installer manages an isolated Python environment with [`uv`](https://docs.astral.sh/uv/); install `uv` first if it is not already available. It asks before changing any Agent configuration and creates a backup (restorable via `eastmoney-quant uninstall`). For OpenCode and other MCP clients, a manual JSON template is printed by `eastmoney-quant install --agents auto --dry-run`.
+The installer manages an isolated Python environment with [`uv`](https://docs.astral.sh/uv/); install `uv` first if it is not already available. It asks before changing any Agent configuration and creates a backup (restorable via `stock-analysis uninstall`). For OpenCode and other MCP clients, a manual JSON template is printed by `stock-analysis install --agents auto --dry-run`.
 
-The data directory is user-owned and is never placed in the npm package directory. Settings resolve as **env var → `~/.eastmoney-quant/config.toml` → default**, so existing `EASTMONEY_STOCK_DATA_DIR`, `EASTMONEY_SECTOR_DATA_DIR`, and `EASTMONEY_PYTHON` environment variables keep working and override the config file.
+The data directory is user-owned and is never placed in the npm package directory. Settings resolve as **env var → `~/.stock-analysis/config.toml` → default**. Use `STOCK_ANALYSIS_DATA_DIR`, `STOCK_ANALYSIS_STOCK_DATA_DIR`, `STOCK_ANALYSIS_SECTOR_DATA_DIR`, and `STOCK_ANALYSIS_PYTHON`; legacy environment names remain supported for compatibility.
 
 ## Core Capabilities
 
@@ -64,13 +64,13 @@ The data directory is user-owned and is never placed in the npm package director
 
 ```bash
 # Claude Code (recommended)
-claude mcp add eastmoney-quant -- npx eastmoney-quant-mcp
+claude mcp add stock-analysis -- npx stock-analysis-mcp
 
 # or npm global
-npm install -g eastmoney-quant-mcp
+npm install -g stock-analysis-mcp
 
 # or pip
-pip install eastmoney-quant-mcp
+pip install stock-analysis-mcp
 ```
 
 **Requirements**: Python >= 3.10 | Node.js >= 18
@@ -176,18 +176,18 @@ pip install eastmoney-quant-mcp
 
 Every tool publishes a JSON Schema. The server validates required and unknown fields, basic types, enum values, and numeric ranges. Results use `{data, meta, warnings, error}`: check `error` first, preserve `warnings`, and use both `meta` and the data cutoff date for freshness. The server does not provide persistent monitoring, push notifications, or deterministic buy/sell decisions.
 
-Ships with **8 Agent Skills** (installed automatically by `eastmoney-quant install`):
+Ships with **8 Agent Skills** (installed automatically by `stock-analysis install`):
 
 | Skill | Purpose |
 |-------|---------|
-| `eastmoney-quant` | Main index — check data readiness before research |
-| `eastmoney-quant-data-init` | Existing-data reuse, initialization, coverage-aware updates and troubleshooting |
-| `eastmoney-quant-stock-screening` | Composing screening conditions and workflows |
-| `eastmoney-quant-report-generation` | Evidence-based single-stock report and conditional scenarios |
-| `eastmoney-quant-multi-timeframe` | Monthly/weekly/daily/intraday analysis and conflict resolution |
-| `eastmoney-quant-strategy-backtest` | Chart pattern backtesting and parameter optimization |
-| `eastmoney-quant-chart-trend` | Per-stock visual structure attribution with pivot and line uncertainty checks |
-| `eastmoney-quant-rising-patterns` | Rank 20 candidates, deeply review every monthly/weekly/daily chart, and summarize common traits |
+| `stock-analysis` | Main index — check data readiness before research |
+| `stock-analysis-data-init` | Existing-data reuse, initialization, coverage-aware updates and troubleshooting |
+| `stock-analysis-stock-screening` | Composing screening conditions and workflows |
+| `stock-analysis-report-generation` | Evidence-based single-stock report and conditional scenarios |
+| `stock-analysis-multi-timeframe` | Monthly/weekly/daily/intraday analysis and conflict resolution |
+| `stock-analysis-strategy-backtest` | Chart pattern backtesting and parameter optimization |
+| `stock-analysis-chart-trend` | Per-stock visual structure attribution with pivot and line uncertainty checks |
+| `stock-analysis-rising-patterns` | Rank 20 candidates, deeply review every monthly/weekly/daily chart, and summarize common traits |
 
 ### What each Skill delivers
 
@@ -195,14 +195,14 @@ The Skills are output-oriented: each one turns MCP tool results into a consisten
 
 | Skill | Result view | Typical result contents |
 |-------|-------------|-------------------------|
-| `eastmoney-quant` | Research route card | Chosen workflow, data-quality gate, tool chain, warnings, and next action |
-| `eastmoney-quant-data-init` | Data health report | Expected trading date, latest date, per-dataset coverage, successes/failures, provider warnings, remaining gaps |
-| `eastmoney-quant-stock-screening` | Sortable candidate table | Code/name, cutoff, filters, pattern/stage, score components, sector context, support/resistance/invalidation, rejected or missing-data notes |
-| `eastmoney-quant-report-generation` | Single-stock evidence report | Conclusion/confidence, data block, monthly/weekly/daily evidence, key-level table, scenarios, risks, limitations |
-| `eastmoney-quant-multi-timeframe` | Timeframe comparison matrix | Monthly/weekly/daily/intraday metrics, agreement/conflict matrix, primary/alternate view, exact confirmation and invalidation levels |
-| `eastmoney-quant-chart-trend` | Chart review card | Chart cutoff, pivots, trendlines/channels/ranges/W-M/Fibonacci zones, program-vs-chart agreement, volume evidence |
-| `eastmoney-quant-rising-patterns` | Candidate cards + comparison | One evidence card per returned stock, reviewed ranking, current-vs-history commonality, and coverage caveats |
-| `eastmoney-quant-strategy-backtest` | Backtest result pack | Universe/period, coverage, signal/trade counts, assumptions, event and portfolio metrics, train/test and yearly stability, report/CSV paths |
+| `stock-analysis` | Research route card | Chosen workflow, data-quality gate, tool chain, warnings, and next action |
+| `stock-analysis-data-init` | Data health report | Expected trading date, latest date, per-dataset coverage, successes/failures, provider warnings, remaining gaps |
+| `stock-analysis-stock-screening` | Sortable candidate table | Code/name, cutoff, filters, pattern/stage, score components, sector context, support/resistance/invalidation, rejected or missing-data notes |
+| `stock-analysis-report-generation` | Single-stock evidence report | Conclusion/confidence, data block, monthly/weekly/daily evidence, key-level table, scenarios, risks, limitations |
+| `stock-analysis-multi-timeframe` | Timeframe comparison matrix | Monthly/weekly/daily/intraday metrics, agreement/conflict matrix, primary/alternate view, exact confirmation and invalidation levels |
+| `stock-analysis-chart-trend` | Chart review card | Chart cutoff, pivots, trendlines/channels/ranges/W-M/Fibonacci zones, program-vs-chart agreement, volume evidence |
+| `stock-analysis-rising-patterns` | Candidate cards + comparison | One evidence card per returned stock, reviewed ranking, current-vs-history commonality, and coverage caveats |
+| `stock-analysis-strategy-backtest` | Backtest result pack | Universe/period, coverage, signal/trade counts, assumptions, event and portfolio metrics, train/test and yearly stability, report/CSV paths |
 
 Example compact result card:
 
@@ -235,26 +235,26 @@ A full-market claim requires at least 95% eligible-stock K-line coverage. The fi
 
 ## Unified CLI
 
-In addition to the MCP server, a unified CLI is provided for database maintenance, backfilling, and quantitative strategy backtesting:
+In addition to the MCP server, a unified CLI is provided for database maintenance, backfilling, pattern analysis, and strategy backtesting:
 
 ```bash
 # Rebuild local databases with dry-run preview
-python -m eastmoney_quant_mcp.cli rebuild --dry-run
-python -m eastmoney_quant_mcp.cli rebuild --workers 8 --with-sectors
+python -m stock_analysis_mcp.cli rebuild --dry-run
+python -m stock_analysis_mcp.cli rebuild --workers 8 --with-sectors
 
 # Auto-detect and backfill historical data gaps
-python -m eastmoney_quant_mcp.cli backfill --start 2026-01-01
+python -m stock_analysis_mcp.cli backfill --start 2026-01-01
 
 # Daily evening capture after market close
-python -m eastmoney_quant_mcp.cli daily-capture
+python -m stock_analysis_mcp.cli daily-capture
 
 # Cleanup database redundancy and VACUUM
-python -m eastmoney_quant_mcp.cli cleanup
+python -m stock_analysis_mcp.cli cleanup
 
 # Pattern scanning and backtesting
-python -m eastmoney_quant_mcp.cli pattern-scan --universe sectors --date 2026-08-14
-python -m eastmoney_quant_mcp.cli pattern-backtest --universe stocks --sample 300
-python -m eastmoney_quant_mcp.cli pattern-optimize --cache signals.csv
+python -m stock_analysis_mcp.cli pattern-scan --universe sectors --date 2026-08-14
+python -m stock_analysis_mcp.cli pattern-backtest --universe stocks --sample 300
+python -m stock_analysis_mcp.cli pattern-optimize --cache signals.csv
 ```
 
 ---
@@ -265,24 +265,24 @@ Data is stored in local SQLite databases using WAL mode for high-concurrency rea
 
 | Database | Default Path (Windows) | Default Path (Linux/macOS) | Contents |
 |----------|------------------------|----------------------------|----------|
-| Stock DB | `~/Desktop/股票信息/stock_data.db` | `~/.eastmoney-quant/data/stocks/stock_data.db` | stock quotes + adjustment-aware K-lines + popularity + indicators + combined + coverage/signals |
-| Sector DB | `~/Desktop/分析板块/sector_data.db` | `~/.eastmoney-quant/data/sectors/sector_data.db` | sector quotes + capital flow + Eastmoney-only K-lines + members + indicators |
+| Stock DB | `~/Desktop/股票信息/stock_data.db` | `~/.stock-analysis/data/stocks/stock_data.db` | stock quotes + adjustment-aware K-lines + popularity + indicators + combined + coverage/signals |
+| Sector DB | `~/Desktop/分析板块/sector_data.db` | `~/.stock-analysis/data/sectors/sector_data.db` | sector quotes + capital flow + Eastmoney-only K-lines + members + indicators |
 
-Override with `EASTMONEY_STOCK_DATA_DIR` and `EASTMONEY_SECTOR_DATA_DIR`.
+Override with `STOCK_ANALYSIS_STOCK_DATA_DIR` and `STOCK_ANALYSIS_SECTOR_DATA_DIR`.
 
 ---
 
 ## Environment Variables
 
-Resolution order: **env var → `~/.eastmoney-quant/config.toml` → default**.
+Resolution order: **env var → `~/.stock-analysis/config.toml` → default**.
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `EASTMONEY_PYTHON` | managed runtime $\rightarrow$ `python` | Python interpreter for the Node shim |
-| `EASTMONEY_DATA_DIR` | Win: `~/Desktop`; Linux/macOS: `~/.eastmoney-quant/data` | Root directory for both databases |
-| `EASTMONEY_STOCK_DATA_DIR` | `<data_root>/股票信息` (Linux/macOS: `stocks`) | Stock database directory |
-| `EASTMONEY_SECTOR_DATA_DIR` | `<data_root>/分析板块` (Linux/macOS: `sectors`) | Sector database directory |
-| `EASTMONEY_CONFIG` | `~/.eastmoney-quant/config.toml` | Override config.toml path |
+| `STOCK_ANALYSIS_PYTHON` | managed runtime $\rightarrow$ `python` | Python interpreter for the Node shim |
+| `STOCK_ANALYSIS_DATA_DIR` | Win: `~/Desktop`; Linux/macOS: `~/.stock-analysis/data` | Root directory for both databases |
+| `STOCK_ANALYSIS_STOCK_DATA_DIR` | `<data_root>/股票信息` (Linux/macOS: `stocks`) | Stock database directory |
+| `STOCK_ANALYSIS_SECTOR_DATA_DIR` | `<data_root>/分析板块` (Linux/macOS: `sectors`) | Sector database directory |
+| `STOCK_ANALYSIS_CONFIG` | `~/.stock-analysis/config.toml` | Override config.toml path |
 | `EASTMONEY_COOKIE` | auto-extract from Edge | Manual Eastmoney API cookie string |
 
 ---
@@ -292,7 +292,7 @@ Resolution order: **env var → `~/.eastmoney-quant/config.toml` → default**.
 ### Claude Desktop / Claude Code
 
 ```bash
-claude mcp add eastmoney-quant -- npx eastmoney-quant-mcp
+claude mcp add stock-analysis -- npx stock-analysis-mcp
 ```
 
 Or manually in `claude_desktop_config.json`:
@@ -300,9 +300,9 @@ Or manually in `claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
-    "eastmoney-quant": {
+    "stock-analysis": {
       "command": "npx",
-      "args": ["eastmoney-quant-mcp"]
+      "args": ["stock-analysis-mcp"]
     }
   }
 }
@@ -310,29 +310,29 @@ Or manually in `claude_desktop_config.json`:
 
 ### Codex
 
-Run `eastmoney-quant install --agents codex`, or add to `~/.codex/config.toml`:
+Run `stock-analysis install --agents codex`, or add to `~/.codex/config.toml`:
 
 ```toml
-[mcp_servers.eastmoney-quant]
+[mcp_servers.stock-analysis]
 command = "npx"
-args = ["eastmoney-quant-mcp"]
+args = ["stock-analysis-mcp"]
 ```
 
 ### Cursor
 
-Run `eastmoney-quant install --agents cursor`, or add the JSON block to `~/.cursor/mcp.json`.
+Run `stock-analysis install --agents cursor`, or add the JSON block to `~/.cursor/mcp.json`.
 
 ### VS Code Copilot
 
-Run `eastmoney-quant install --agents copilot`, or add to VS Code user `mcp.json` (Windows: `%APPDATA%\Code\User\mcp.json`):
+Run `stock-analysis install --agents copilot`, or add to VS Code user `mcp.json` (Windows: `%APPDATA%\Code\User\mcp.json`):
 
 ```json
 {
   "servers": {
-    "eastmoney-quant": {
+    "stock-analysis": {
       "type": "stdio",
       "command": "npx",
-      "args": ["eastmoney-quant-mcp"]
+      "args": ["stock-analysis-mcp"]
     }
   }
 }
@@ -340,16 +340,16 @@ Run `eastmoney-quant install --agents copilot`, or add to VS Code user `mcp.json
 
 ### Qoder
 
-Run `eastmoney-quant install --agents qoder`, or add to `~/.qoder/mcp.json`.
+Run `stock-analysis install --agents qoder`, or add to `~/.qoder/mcp.json`.
 
 ### OpenCode / Other MCP Clients
 
 ```json
 {
   "mcpServers": {
-    "eastmoney-quant": {
+    "stock-analysis": {
       "command": "npx",
-      "args": ["eastmoney-quant-mcp"]
+      "args": ["stock-analysis-mcp"]
     }
   }
 }
@@ -360,9 +360,9 @@ Run `eastmoney-quant install --agents qoder`, or add to `~/.qoder/mcp.json`.
 ```json
 {
   "mcpServers": {
-    "eastmoney-quant": {
+    "stock-analysis": {
       "command": "python",
-      "args": ["-m", "eastmoney_quant_mcp.server"]
+      "args": ["-m", "stock_analysis_mcp.server"]
     }
   }
 }
@@ -419,8 +419,8 @@ backtest_pattern_strategy(mode="both", split="2022-01-01")
 ## Development
 
 ```bash
-git clone https://github.com/lalal-zzz/eastmoney-quant-mcp.git
-cd eastmoney-quant-mcp
+git clone https://github.com/lalal-zzz/stock-analysis-mcp.git
+cd stock-analysis-mcp
 pip install -e ".[dev]"
 pytest                    # Python unit tests
 npm run test:node         # Node installer tests

@@ -28,6 +28,6 @@ try {
   else if (command === "doctor") print(doctor())
   else if (command === "uninstall") print(uninstall(value("--agent")))
   else if (command === "config" && args[0] === "show") print({ path: appConfigPath() })
-  else if (command === "postinstall") { const ran = await askPostinstall(root); if (!ran) console.log("[eastmoney-quant] 安装完成。运行 eastmoney-quant install --agents auto 配置 Agent。") }
-  else print("Usage: eastmoney-quant <install|setup|doctor|uninstall|config show>\n  install --agents auto|claude-code,codex,cursor,copilot,qoder [--dry-run] [--data-root <dir>]")
-} catch (error) { console.error(`[eastmoney-quant] ${error.message}`); process.exitCode = 1 }
+  else if (command === "postinstall") { const ran = await askPostinstall(root); if (!ran) console.log("[stock-analysis] 安装完成。运行 stock-analysis install --agents auto 配置 Agent。") }
+  else print("Usage: stock-analysis <install|setup|doctor|uninstall|config show>\n  install --agents auto|claude-code,codex,cursor,copilot,qoder [--dry-run] [--data-root <dir>]")
+} catch (error) { console.error(`[stock-analysis] ${error.message}`); process.exitCode = 1 }

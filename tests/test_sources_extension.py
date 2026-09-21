@@ -2,7 +2,7 @@
 
 import pytest
 
-from eastmoney_quant_mcp.data import sources
+from stock_analysis_mcp.data import sources
 
 
 # ---------------------------------------------------------------------------
@@ -77,7 +77,7 @@ def test_clip_and_sort_limit_keeps_tail():
 
 
 def test_spot_field_map_covers_storage_columns():
-    from eastmoney_quant_mcp.data.storage import SPOT_COLUMNS
+    from stock_analysis_mcp.data.storage import SPOT_COLUMNS
 
     mapped = set(sources.SPOT_FIELD_MAP.values())
     for col in ("latest_price", "pe_ttm", "main_net_inflow", "sector_name",

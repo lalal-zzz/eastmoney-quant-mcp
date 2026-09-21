@@ -3,24 +3,24 @@ import os
 
 import pytest
 
-from eastmoney_quant_mcp import cli
+from stock_analysis_mcp import cli
 
 
 @pytest.fixture(autouse=True)
 def _clean_data_dir_env():
-    """cli.main 内部会写 EASTMONEY_DATA_DIR, 测试后必须还原, 否则污染 config 测试"""
-    saved = os.environ.get("EASTMONEY_DATA_DIR")
+    """cli.main 内部会写 STOCK_ANALYSIS_DATA_DIR, 测试后必须还原, 否则污染 config 测试"""
+    saved = os.environ.get("STOCK_ANALYSIS_DATA_DIR")
     yield
     if saved is None:
-        os.environ.pop("EASTMONEY_DATA_DIR", None)
+        os.environ.pop("STOCK_ANALYSIS_DATA_DIR", None)
     else:
-        os.environ["EASTMONEY_DATA_DIR"] = saved
+        os.environ["STOCK_ANALYSIS_DATA_DIR"] = saved
 
 
 @pytest.fixture(autouse=True)
 def _no_net(monkeypatch):
     """任何网络入口被调用都直接炸 -> 证明 dry-run 分支完全短路未触网"""
-    import eastmoney_quant_mcp.data.build as build
+    import stock_analysis_mcp.data.build as build
 
     def boom(*a, **k):
         raise AssertionError("network touched in dry-run")
@@ -78,7 +78,7 @@ def test_cleanup_dry_run(capsys, tmp_path, _no_net):
 
 
 def test_parse_patterns():
-    from eastmoney_quant_mcp.strategies.patterns import PATTERN_NAMES
+    from stock_analysis_mcp.strategies.patterns import PATTERN_NAMES
     keys = cli._parse_patterns("回调,ma_rebound,w底,不存在的形态")
     assert keys is not None
     assert "ma_rebound" in keys

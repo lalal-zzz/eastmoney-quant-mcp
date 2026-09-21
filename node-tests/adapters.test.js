@@ -5,8 +5,8 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { createHash } from "node:crypto"
 
-const home = mkdtempSync(join(tmpdir(), "eastmoney-quant-test-"))
-process.env.EASTMONEY_QUANT_HOME = home
+const home = mkdtempSync(join(tmpdir(), "stock-analysis-test-"))
+process.env.STOCK_ANALYSIS_HOME = home
 const { ADAPTERS } = await import("../lib/adapters.js")
 const { install, uninstall } = await import("../lib/installer.js")
 const { installStatePath } = await import("../lib/paths.js")
@@ -29,7 +29,7 @@ test("Codex adapter preserves unrelated configuration and is idempotent", () => 
   adapter.install(process.cwd(), command)
   const content = readFileSync(path, "utf8")
   assert.match(content, /\[model\]/)
-  assert.equal((content.match(/\[mcp_servers\.eastmoney-quant\]/g) || []).length, 1)
+  assert.equal((content.match(/\[mcp_servers\.stock-analysis\]/g) || []).length, 1)
 })
 
 test("Cursor adapter preserves other servers, registers no skills", () => {
@@ -44,10 +44,10 @@ test("Cursor adapter preserves other servers, registers no skills", () => {
   assert.equal(second.changed, false)
   assert.equal(first.skills.length, 0)
   const config = JSON.parse(readFileSync(path, "utf8"))
-  assert.deepEqual(config.mcpServers["eastmoney-quant"], command)
+  assert.deepEqual(config.mcpServers["stock-analysis"], command)
   assert.ok(config.mcpServers.other)
   adapter.uninstall()
-  assert.equal("eastmoney-quant" in JSON.parse(readFileSync(path, "utf8")).mcpServers, false)
+  assert.equal("stock-analysis" in JSON.parse(readFileSync(path, "utf8")).mcpServers, false)
 })
 
 test("Copilot adapter writes VS Code servers format with stdio type", () => {
@@ -55,7 +55,7 @@ test("Copilot adapter writes VS Code servers format with stdio type", () => {
   const command = { command: "node", args: ["server.js"] }
   adapter.install(process.cwd(), command)
   const config = JSON.parse(readFileSync(adapter.configPath(), "utf8"))
-  assert.deepEqual(config.servers["eastmoney-quant"], { type: "stdio", ...command })
+  assert.deepEqual(config.servers["stock-analysis"], { type: "stdio", ...command })
 })
 
 test("Qoder adapter installs mcp server and skills", () => {
@@ -65,11 +65,11 @@ test("Qoder adapter installs mcp server and skills", () => {
   const command = { command: "node", args: ["server.js"] }
   const result = adapter.install(process.cwd(), command)
   assert.equal(result.skills.length, 8)
-  assert.ok(existsSync(join(home, ".qoder", "skills", "eastmoney-quant", "SKILL.md")))
+  assert.ok(existsSync(join(home, ".qoder", "skills", "stock-analysis", "SKILL.md")))
   const config = JSON.parse(readFileSync(adapter.configPath(), "utf8"))
-  assert.deepEqual(config.mcpServers["eastmoney-quant"], command)
+  assert.deepEqual(config.mcpServers["stock-analysis"], command)
   adapter.uninstall()
-  assert.equal(existsSync(join(home, ".qoder", "skills", "eastmoney-quant")), false)
+  assert.equal(existsSync(join(home, ".qoder", "skills", "stock-analysis")), false)
 })
 
 test("uninstall preserves later config edits and removes recorded skills", () => {
@@ -83,16 +83,16 @@ test("uninstall preserves later config edits and removes recorded skills", () =>
   const installed = readFileSync(configPath, "utf8")
   const configHash = createHash("sha256").update(installed).digest("hex")
   writeFileSync(configPath, `${installed}\n[extra]\nvalue = true\n`)
-  const skillPath = join(home, ".codex", "skills", "eastmoney-quant", "SKILL.md")
-  mkdirSync(join(home, ".codex", "skills", "eastmoney-quant"), { recursive: true })
+  const skillPath = join(home, ".codex", "skills", "stock-analysis", "SKILL.md")
+  mkdirSync(join(home, ".codex", "skills", "stock-analysis"), { recursive: true })
   writeFileSync(skillPath, "managed skill")
-  mkdirSync(join(home, ".eastmoney-quant"), { recursive: true })
+  mkdirSync(join(home, ".stock-analysis"), { recursive: true })
   writeFileSync(installStatePath(), `${JSON.stringify({ agents: { codex: { configPath, backup, configHash, skills: [skillPath] } } })}\n`)
 
   const result = uninstall("codex")
   const content = readFileSync(configPath, "utf8")
   assert.match(content, /\[extra\]/)
-  assert.doesNotMatch(content, /mcp_servers\.eastmoney-quant/)
+  assert.doesNotMatch(content, /mcp_servers\.stock-analysis/)
   assert.equal(existsSync(skillPath), false)
   assert.ok(result.skillsRemoved >= 1)
 })

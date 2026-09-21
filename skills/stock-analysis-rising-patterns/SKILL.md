@@ -1,5 +1,5 @@
 ---
-name: eastmoney-quant-rising-patterns
+name: stock-analysis-rising-patterns
 description: Rank rising-structure A-share candidates and deeply review every candidate with monthly, weekly, and daily numeric and chart evidence. Use for 上涨形态选股, W底, 趋势回调, 颈线收复, 平台突破, 大均线反弹, 斐波那契共振, or requests to find and analyze the top 20 stocks.
 ---
 

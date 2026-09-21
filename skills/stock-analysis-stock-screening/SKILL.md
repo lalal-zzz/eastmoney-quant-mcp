@@ -1,6 +1,6 @@
 ---
-name: eastmoney-quant-stock-screening
-description: Screen Chinese A-shares by valuation, liquidity, momentum, name, sector, or programmatic chart-pattern conditions. Use for general 选股, 条件筛选, 板块选股, 排名, or building a reproducible candidate universe; use eastmoney-quant-rising-patterns when every top candidate needs chart-by-chart review.
+name: stock-analysis-stock-screening
+description: Screen Chinese A-shares by valuation, liquidity, momentum, name, sector, or programmatic chart-pattern conditions. Use for general 选股, 条件筛选, 板块选股, 排名, or building a reproducible candidate universe; use stock-analysis-rising-patterns when every top candidate needs chart-by-chart review.
 ---
 
 # Reproducible stock screening

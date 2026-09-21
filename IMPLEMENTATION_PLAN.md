@@ -1,4 +1,4 @@
-# Eastmoney Quant MCP unified implementation plan
+# Stock Analysis MCP + Skills unified implementation plan
 
 ## Product objective
 

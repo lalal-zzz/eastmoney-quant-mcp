@@ -10,12 +10,12 @@ sys.path.insert(0, 'src')
 import numpy as np
 import pandas as pd
 
-from eastmoney_quant_mcp.strategies.pattern_backtest import (
+from stock_analysis_mcp.strategies.pattern_backtest import (
     collect_signals, report_overall, report_levels, report_wave,
     report_factors, report_filter_search, report_yearly,
     FORWARD_DAYS, BACKTEST_START,
 )
-from eastmoney_quant_mcp.strategies.patterns import PATTERN_NAMES
+from stock_analysis_mcp.strategies.patterns import PATTERN_NAMES
 
 # ── 配置 ──
 UNIVERSE = "stocks"

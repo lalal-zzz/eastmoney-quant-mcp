@@ -3,16 +3,16 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "eastmoney-quant-mcp"
+name = "stock-analysis-mcp"
 version = "0.3.0"
-description = "东方财富智能投研 MCP - 本地优先行情、选股、K线结构、研报、多周期分析与策略回测"
+description = "股票分析 MCP + Skills - 本地优先行情、选股、K线结构、研报、多周期分析与策略回测"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
 authors = [
     { name = "lalal-zzz", email = "lalal-zzz@users.noreply.github.com" }
 ]
-keywords = ["eastmoney", "stock", "quant", "mcp", "ai", "china-stock"]
+keywords = ["stock", "stock-analysis", "mcp", "agent-skills", "ai", "china-stock"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -48,11 +48,19 @@ browser = [
 ]
 
 [project.scripts]
-eastmoney-quant-mcp = "eastmoney_quant_mcp.server:main"
-eastmoney-quant-cli = "eastmoney_quant_mcp.cli:main"
+stock-analysis-mcp = "stock_analysis_mcp.server:main"
+stock-analysis-cli = "stock_analysis_mcp.cli:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/eastmoney_quant_mcp"]
+packages = ["src/stock_analysis_mcp"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src/stock_analysis_mcp",
+    "/README.md",
+    "/LICENSE",
+    "/pyproject.toml",
+]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

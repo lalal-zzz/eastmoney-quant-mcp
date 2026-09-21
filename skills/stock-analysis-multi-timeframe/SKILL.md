@@ -1,5 +1,5 @@
 ---
-name: eastmoney-quant-multi-timeframe
+name: stock-analysis-multi-timeframe
 description: Analyze one or more A-shares across monthly, weekly, daily, 60-minute, and 15/30-minute bars, resolving timeframe conflicts with exact numeric evidence. Use for 多周期, 月周日联立, 60分钟, 分时, 周期共振, trend hierarchy, or entry-timing context.
 ---
 

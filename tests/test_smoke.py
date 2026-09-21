@@ -6,12 +6,12 @@
 import asyncio
 
 async def smoke():
-    from eastmoney_quant_mcp.tools.data_manager import (
+    from stock_analysis_mcp.tools.data_manager import (
         get_data_status, screen_stocks, get_kline_local_or_net,
         get_rank_trend_data, get_stock_belong_sectors,
     )
-    from eastmoney_quant_mcp.tools.sector_data import get_sector_list
-    from eastmoney_quant_mcp.tools.analysis import generate_stock_report
+    from stock_analysis_mcp.tools.sector_data import get_sector_list
+    from stock_analysis_mcp.tools.analysis import generate_stock_report
 
     # 1. status
     s = await get_data_status()

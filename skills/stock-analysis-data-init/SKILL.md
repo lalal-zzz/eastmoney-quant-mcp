@@ -1,6 +1,6 @@
 ---
-name: eastmoney-quant-data-init
-description: Initialize, inspect, incrementally update, migrate, and troubleshoot the local Eastmoney Quant SQLite databases. Use for 数据初始化, 数据更新, 数据覆盖率, 数据库状态, 缺口回填, storage paths, or stale market data.
+name: stock-analysis-data-init
+description: Initialize, inspect, incrementally update, migrate, and troubleshoot the local Stock Analysis SQLite databases. Use for 数据初始化, 数据更新, 数据覆盖率, 数据库状态, 缺口回填, storage paths, or stale market data.
 ---
 
 # Local data initialization and maintenance
@@ -45,9 +45,9 @@ Use `sync_stock_kline_universe` for explicit full-universe or symbol-list K-line
 CLI maintenance is appropriate for local operators:
 
 ```bash
-python -m eastmoney_quant_mcp.cli backfill --start YYYY-MM-DD --end YYYY-MM-DD
-python -m eastmoney_quant_mcp.cli daily-capture
-python -m eastmoney_quant_mcp.cli cleanup --dry-run
+python -m stock_analysis_mcp.cli backfill --start YYYY-MM-DD --end YYYY-MM-DD
+python -m stock_analysis_mcp.cli daily-capture
+python -m stock_analysis_mcp.cli cleanup --dry-run
 ```
 
 Never run `rebuild --force`, delete a DB, or VACUUM a large live DB unless the user explicitly requests it and the exact paths and recovery plan are confirmed.
@@ -61,7 +61,7 @@ Never run `rebuild --force`, delete a DB, or VACUUM a large live DB unless the u
 
 ## Storage paths
 
-Resolution is environment variable → `~/.eastmoney-quant/config.toml` → platform default. Use `eastmoney-quant setup --data-root <dir>` to change the root. Report the resolved paths from `get_data_status` rather than assuming them.
+Resolution is environment variable → `~/.stock-analysis/config.toml` → platform default. Use `stock-analysis setup --data-root <dir>` to change the root. Report the resolved paths from `get_data_status` rather than assuming them.
 
 ## Completion report
 

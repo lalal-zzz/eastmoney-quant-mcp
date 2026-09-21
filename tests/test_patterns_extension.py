@@ -9,9 +9,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from eastmoney_quant_mcp.data import storage
-from eastmoney_quant_mcp.data.indicators import compute_all_indicators
-from eastmoney_quant_mcp.strategies import patterns
+from stock_analysis_mcp.data import storage
+from stock_analysis_mcp.data.indicators import compute_all_indicators
+from stock_analysis_mcp.strategies import patterns
 
 
 # ---------------------------------------------------------------------------

@@ -2,7 +2,7 @@ from pathlib import Path
 from shutil import rmtree
 from tempfile import mkdtemp
 
-from eastmoney_quant_mcp.core.config import get_settings
+from stock_analysis_mcp.core.config import get_settings
 
 
 def test_config_file_sets_data_root(monkeypatch):
@@ -30,3 +30,11 @@ def test_environment_overrides_config(monkeypatch):
         assert get_settings().stock_dir == override
     finally:
         rmtree(temp_path)
+
+
+def test_new_environment_names_take_precedence(monkeypatch, tmp_path):
+    preferred = tmp_path / "preferred"
+    legacy = tmp_path / "legacy"
+    monkeypatch.setenv("STOCK_ANALYSIS_DATA_DIR", str(preferred))
+    monkeypatch.setenv("EASTMONEY_DATA_DIR", str(legacy))
+    assert get_settings().data_root == preferred

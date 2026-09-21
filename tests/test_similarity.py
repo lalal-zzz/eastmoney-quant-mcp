@@ -1,6 +1,6 @@
 import numpy as np
 
-from eastmoney_quant_mcp.strategies.similarity import (
+from stock_analysis_mcp.strategies.similarity import (
     _period_rows,
     compare_cross_timeframe_patterns,
 )

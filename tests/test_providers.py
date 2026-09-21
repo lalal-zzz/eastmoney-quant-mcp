@@ -2,8 +2,8 @@
 
 import pytest
 
-from eastmoney_quant_mcp.data import network
-from eastmoney_quant_mcp.data.providers import boardmap, sina, sohu, tencent
+from stock_analysis_mcp.data import network
+from stock_analysis_mcp.data.providers import boardmap, sina, sohu, tencent
 
 
 def _reset_health():
@@ -314,7 +314,7 @@ def test_boardmap_normalizes_names(monkeypatch):
 
 def test_stock_history_chain_tencent_primary(monkeypatch):
     """腾讯有数据时不再触达 akshare/搜狐"""
-    from eastmoney_quant_mcp.tools import stock_data
+    from stock_analysis_mcp.tools import stock_data
 
     tencent_rows = [{
         "date": "2026-08-14", "symbol": "600000", "open": 9.14, "close": 9.10,
@@ -323,13 +323,13 @@ def test_stock_history_chain_tencent_primary(monkeypatch):
         "turnover_rate": None,
     }]
     monkeypatch.setattr(
-        "eastmoney_quant_mcp.data.providers.tencent.fetch_stock_kline",
+        "stock_analysis_mcp.data.providers.tencent.fetch_stock_kline",
         lambda *a, **kw: list(tencent_rows),
     )
     monkeypatch.setattr(stock_data, "_akshare_history",
                         lambda *a: pytest.fail("akshare 不应被触达"))
     monkeypatch.setattr(
-        "eastmoney_quant_mcp.data.providers.sohu.fetch_stock_kline_daily",
+        "stock_analysis_mcp.data.providers.sohu.fetch_stock_kline_daily",
         lambda *a, **kw: pytest.fail("sohu 不应被触达"),
     )
     rows = stock_data._stock_history_sync("600000", "20260101", "20260816")
@@ -339,10 +339,10 @@ def test_stock_history_chain_tencent_primary(monkeypatch):
 
 def test_stock_history_chain_falls_to_sohu(monkeypatch):
     """腾讯空 + 东财空 → 搜狐兜底"""
-    from eastmoney_quant_mcp.tools import stock_data
+    from stock_analysis_mcp.tools import stock_data
 
     monkeypatch.setattr(
-        "eastmoney_quant_mcp.data.providers.tencent.fetch_stock_kline",
+        "stock_analysis_mcp.data.providers.tencent.fetch_stock_kline",
         lambda *a, **kw: [],
     )
     monkeypatch.setattr(stock_data, "_akshare_history", lambda *a: None)
@@ -353,7 +353,7 @@ def test_stock_history_chain_falls_to_sohu(monkeypatch):
         "turnover_rate": 0.13,
     }]
     monkeypatch.setattr(
-        "eastmoney_quant_mcp.data.providers.sohu.fetch_stock_kline_daily",
+        "stock_analysis_mcp.data.providers.sohu.fetch_stock_kline_daily",
         lambda *a, **kw: list(sohu_rows),
     )
     rows = stock_data._stock_history_sync("600000", "20260801", "20260816")
@@ -362,7 +362,7 @@ def test_stock_history_chain_falls_to_sohu(monkeypatch):
 
 
 def test_clip_kline_rows_filters_and_sorts_desc():
-    from eastmoney_quant_mcp.tools.stock_data import _clip_kline_rows
+    from stock_analysis_mcp.tools.stock_data import _clip_kline_rows
 
     rows = [
         {"date": "2026-08-14"}, {"date": "2026-07-01"},
@@ -374,7 +374,7 @@ def test_clip_kline_rows_filters_and_sorts_desc():
 
 async def test_sector_members_chain_sina_primary(monkeypatch):
     """新浪命中映射时直接返回, 不触达东财"""
-    from eastmoney_quant_mcp.tools import sector_data
+    from stock_analysis_mcp.tools import sector_data
 
     monkeypatch.setattr(
         boardmap, "resolve_sina_node",
@@ -394,7 +394,7 @@ async def test_sector_members_chain_sina_primary(monkeypatch):
 
 async def test_sector_members_chain_em_fallback(monkeypatch):
     """新浪无映射(概念板块多数对不上) → 东财"""
-    from eastmoney_quant_mcp.tools import sector_data
+    from stock_analysis_mcp.tools import sector_data
 
     monkeypatch.setattr(boardmap, "resolve_sina_node", lambda code, name=None: (None, name))
 
@@ -411,8 +411,8 @@ async def test_sector_members_chain_em_fallback(monkeypatch):
 
 def test_sector_kline_em_only_with_breaker(monkeypatch):
     """板块K线为东财单源: 正常时走 try_kline_hosts; 熔断冷却期不发请求直接空返"""
-    import eastmoney_quant_mcp.tools.sector_data as sector_data
-    from eastmoney_quant_mcp.data import network
+    import stock_analysis_mcp.tools.sector_data as sector_data
+    from stock_analysis_mcp.data import network
 
     _reset_health()
     calls = []

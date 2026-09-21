@@ -3,8 +3,8 @@ import json
 from pathlib import Path
 
 import pandas as pd
-from eastmoney_quant_mcp.tools.research import prepare_stock_analysis
-from eastmoney_quant_mcp.strategies.patterns import prepare_df
+from stock_analysis_mcp.tools.research import prepare_stock_analysis
+from stock_analysis_mcp.strategies.patterns import prepare_df
 
 OUT = Path(__file__).resolve().parent
 

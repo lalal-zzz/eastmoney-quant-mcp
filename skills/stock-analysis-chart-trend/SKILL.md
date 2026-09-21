@@ -1,5 +1,5 @@
 ---
-name: eastmoney-quant-chart-trend
+name: stock-analysis-chart-trend
 description: Render and inspect A-share candlestick charts for confirmed trendlines, parallel or horizontal channels, non-symmetric W/M structures, key levels, and directional Fibonacci position. Use for 看图, 画K线, 趋势线, 通道, 横盘箱体, W底, M顶, 颈线, or visual confirmation of a programmatic signal.
 ---
 

@@ -24,7 +24,7 @@ def _plt():
         import matplotlib
     except ImportError as e:
         raise RuntimeError(
-            "图表渲染需要 chart extra: pip install 'eastmoney-quant-mcp[chart]'") from e
+            "图表渲染需要 chart extra: pip install 'stock-analysis-mcp[chart]'") from e
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     # Windows 下中文字体; 找不到时 matplotlib 自动回退, 仅图例可能乱码
@@ -220,9 +220,9 @@ def render_kline_chart(df: pd.DataFrame, title: str, out_path: str,
 
 
 def _default_out_dir() -> str:
-    # 复用 core.config 的目录体系: Windows 默认 Desktop, Linux/macOS 默认 ~/.eastmoney-quant/data
+    # 复用 core.config 的目录体系: Windows 默认 Desktop, Linux/macOS 默认 ~/.stock-analysis/data
     from .core.config import get_settings
-    base = os.environ.get("EASTMONEY_DATA_DIR") or str(get_settings().data_root)
+    base = str(get_settings().data_root)
     return os.path.join(base, "K线图片")
 
 
